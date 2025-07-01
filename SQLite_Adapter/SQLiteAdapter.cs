@@ -22,6 +22,7 @@
 
 using BH.Adapter;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Configs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,12 +39,23 @@ namespace BH.Adapter.SQLite
         /***************************************************/
 
         [Description("Adapter for SQLite.")]
-        [Output("The created SQLite adapter.")]
-        public SQLiteAdapter()
+        [Input("filepath", "File path to the SQLite database. Use empty string for in-memory database.")]
+        [Input("settings", "SQLite-specific settings for database operations. If null, default settings will be used.")]
+        [Input("active", "Whether the adapter should be active and ready for operations.")]
+        [Output("adapter", "The created SQLite adapter.")]
+        public SQLiteAdapter(string filepath = "", SQLiteSettings settings = null, bool active = false)
         {
             // The Adapter constructor can be used to configure the Adapter behaviour.
             // For example:
             m_AdapterSettings.DefaultPushType = oM.Adapter.PushType.CreateOnly; // Adapter `Push` Action simply calls "Create" method.
+            
+            // Set the SQLite-specific settings
+            if (settings != null)
+                m_AdapterSettings = settings;
+            
+            // Store the file path and active state
+            m_FilePath = filepath;
+            m_Active = active;
             
             // See the wiki, the AdapterSettings object and other Adapters to see how it can be configured.
 
@@ -57,6 +69,9 @@ namespace BH.Adapter.SQLite
         /***************************************************/
         /**** Private  Fields                           ****/
         /***************************************************/
+
+        private string m_FilePath = "";
+        private bool m_Active = false;
 
         // You can add any private variable that should be in common to any other adapter methods here.
         // If you need to add some private methods, please consider first what their nature is:

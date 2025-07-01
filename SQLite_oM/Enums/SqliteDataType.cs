@@ -29,29 +29,29 @@ namespace BH.oM.SQLite
     /****               Public Enums               ****/
     /***************************************************/
 
-    [Description("Defines Sqlite data types and storage classes for column definitions and type mapping.")]
+    [Description("Defines SQLite data types and storage classes for column definitions and type mapping.")]
     public enum SqliteDataType
     {
-        [Description("Undefined Sqlite data type.")]
+        [Description("Undefined SQLite data type.")]
         Undefined,
 
-        [Description("Sqlite Blob storage class for binary data.")]
+        [Description("SQLite Blob storage class for binary data.")]
         [DisplayText("Blob")]
         BLOB,
 
-        [Description("Sqlite Integer storage class for whole numbers.")]
+        [Description("SQLite Integer storage class for whole numbers.")]
         [DisplayText("Integer")]
         INTEGER,
 
-        [Description("Sqlite Numeric storage class for numbers with potential decimal precision.")]
+        [Description("SQLite Numeric storage class for numbers with potential decimal precision.")]
         [DisplayText("Numeric")]
         NUMERIC,
 
-        [Description("Sqlite Real storage class for floating point numbers.")]
+        [Description("SQLite Real storage class for floating point numbers.")]
         [DisplayText("Real")]
         REAL,
 
-        [Description("Sqlite Text storage class for string data.")]
+        [Description("SQLite Text storage class for string data.")]
         [DisplayText("Text")]
         TEXT
     }
