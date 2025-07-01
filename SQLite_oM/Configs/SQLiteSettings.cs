@@ -22,7 +22,6 @@
 
 using BH.oM.Base.Attributes;
 using BH.oM.Adapter;
-using BH.oM.SQLite.Enums;
 using System.ComponentModel;
 
 namespace BH.oM.SQLite.Configs

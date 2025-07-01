@@ -22,6 +22,7 @@
 
 using BH.Adapter;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using BH.oM.SQLite.Configs;
 using System;
 using System.Collections.Generic;
@@ -72,6 +73,19 @@ namespace BH.Adapter.SQLite
 
         private string m_FilePath = "";
         private bool m_Active = false;
+
+        // Connection state and diagnostics
+        private ConnectionState m_ConnectionState = ConnectionState.Closed;
+        private string m_ConnectionString = "";
+        private string m_SqliteVersion = "";
+        private DateTime m_ConnectedAt = DateTime.MinValue;
+        private DateTime m_LastUsed = DateTime.MinValue;
+
+        // Database configuration state (actual vs requested)
+        private bool m_WalModeEnabled = false;
+        private bool m_ForeignKeysEnabled = false;
+        private int m_PageSize = 4096;
+        private int m_CacheSize = -2000;
 
         // You can add any private variable that should be in common to any other adapter methods here.
         // If you need to add some private methods, please consider first what their nature is:

@@ -22,45 +22,48 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using System.ComponentModel;
-using System.Collections.Generic;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Represents the definition of a column in a SQLite table including type, constraints, and metadata.")]
+    public class ColumnDefinition : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("The SQLite data type for this column.")]
+        public virtual SqliteDataType DataType { get; set; } = SqliteDataType.TEXT;
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Abort;
+        [Description("Whether this column can contain null values.")]
+        public virtual bool AllowNull { get; set; } = true;
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
+        [Description("Whether this column is a primary key.")]
+        public virtual bool IsPrimaryKey { get; set; } = false;
 
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
+        [Description("Whether this column auto-increments for integer primary keys.")]
+        public virtual bool IsAutoIncrement { get; set; } = false;
 
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
+        [Description("Whether this column has a unique constraint.")]
+        public virtual bool IsUnique { get; set; } = false;
 
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
+        [Description("The default value for this column as a string. null if no default.")]
+        public virtual string DefaultValue { get; set; } = null;
 
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
+        [Description("The maximum length for text columns. Zero means no limit.")]
+        public virtual int MaxLength { get; set; } = 0;
 
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        [Description("The position of this column in the table (0-based).")]
+        public virtual int Position { get; set; } = 0;
+
+        [Description("Additional column attributes or constraints as SQL text.")]
+        public virtual string AdditionalConstraints { get; set; } = "";
 
         /***************************************************/
     }

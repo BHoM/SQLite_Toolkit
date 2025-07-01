@@ -22,45 +22,57 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.Quantities.Attributes;
+using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Represents the result of a SQLite query operation including data, metadata, and execution information.")]
+    public class QueryResult : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("The data rows returned by the query. Each row is represented as a dictionary of column name to value.")]
+        public virtual List<Dictionary<string, object>> Data { get; set; } = new List<Dictionary<string, object>>();
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Abort;
+        [Description("The column names in the result set in order.")]
+        public virtual List<string> ColumnNames { get; set; } = new List<string>();
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
+        [Description("The number of rows returned in the result set.")]
+        public virtual int RowCount { get; set; } = 0;
 
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
+        [Description("The number of rows affected by the query (for INSERT, UPDATE, DELETE operations).")]
+        public virtual int AffectedRows { get; set; } = 0;
 
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
+        [Description("The time taken to execute the query. Returned in milliseconds but converted as per BHoM conventions.")]
+        [Time]
+        public virtual double ExecutionTime { get; set; } = 0;
 
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
+        [Description("The SQL query that was executed.")]
+        public virtual string ExecutedQuery { get; set; } = "";
 
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
+        [Description("Whether the query executed successfully.")]
+        public virtual bool IsSuccess { get; set; } = true;
 
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        [Description("Error message if the query failed.")]
+        public virtual string ErrorMessage { get; set; } = "";
+
+        [Description("When the query was executed.")]
+        public virtual DateTime ExecutedAt { get; set; } = DateTime.Now;
+
+        [Description("Whether this result was cached or came directly from the database.")]
+        public virtual bool IsCached { get; set; } = false;
+
+        [Description("Additional metadata about the query execution.")]
+        public virtual Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 
         /***************************************************/
     }

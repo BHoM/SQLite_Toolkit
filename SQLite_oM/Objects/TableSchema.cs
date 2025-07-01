@@ -25,42 +25,45 @@ using BH.oM.Base.Attributes;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Represents the complete schema definition of a SQLite table including columns, indexes, and constraints.")]
+    public class TableSchema : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
+        [Description("The name of the table.")]
         public virtual string TableName { get; set; } = "";
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Abort;
+        [Description("List of column definitions for this table.")]
+        public virtual List<ColumnDefinition> Columns { get; set; } = new List<ColumnDefinition>();
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
+        [Description("List of index definitions for this table.")]
+        public virtual List<IndexDefinition> Indexes { get; set; } = new List<IndexDefinition>();
 
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
+        [Description("List of foreign key constraint definitions.")]
+        public virtual List<string> ForeignKeys { get; set; } = new List<string>();
 
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
+        [Description("The SQL CREATE TABLE statement that created this table.")]
+        public virtual string CreateStatement { get; set; } = "";
 
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
+        [Description("Whether this is a temporary table.")]
+        public virtual bool IsTemporary { get; set; } = false;
 
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
+        [Description("Whether this table has a WITHOUT ROWID optimisation.")]
+        public virtual bool WithoutRowId { get; set; } = false;
 
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        [Description("Number of rows in the table if available.")]
+        public virtual long RowCount { get; set; } = -1;
+
+        [Description("Size of the table in bytes if available.")]
+        public virtual long SizeInBytes { get; set; } = -1;
 
         /***************************************************/
     }
