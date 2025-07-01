@@ -20,31 +20,34 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Adapters.SoftwareName;
 using BH.oM.Base;
+using BH.oM.Base.Attributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BH.Adapter.SoftwareName
+namespace BH.Engine.Adapters.SQLite
 {
-    public static partial class Convert
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        // Add methods for converting from BHoM to the specific software types
-        // Example:
-        public static ExampleObject ToSoftwareName(this BHoMObject node)
+        [Description("Description of the method. Will appear in the UI tooltip.")]
+        [Input("someInput1", "Description of the input. Will appear in the UI tooltip.")]
+        [Input("someInput2", "Description of the input. Will appear in the UI tooltip.")]
+        [Output("outputName", "Description of the output. Will appear in the UI tooltip.")]
+        public static void ExampleComputeMethod(string someInput1, string someInput2)
         {
-            //Insert code for convertion
+            // This method will appear in every UI (e.g. Grasshopper) as a component.
+            // Find it using the CTRL+Shift+B search bar, or by navigating the `Compute` component (Engine tab) right click menu.
             throw new NotImplementedException();
         }
 
         /***************************************************/
+
     }
 }
 

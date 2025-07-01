@@ -20,32 +20,39 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Adapter;
+using BH.oM.Adapters.SQLite;
+using BH.oM.Base;
+using BH.oM.Base.Attributes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BH.Adapter.SoftwareName
+namespace BH.Engine.Adapters.SQLite
 {
-    public partial class SoftwareNameAdapter : BHoMAdapter
+    public static partial class Query
     {
-        // Basic Delete method that deletes objects depending on their Type and Id. 
-        // It gets called by the Push or by the Remove Adapter Actions.
-        // Its implementation is facultative (not needed for a simple export/import scenario). 
-        // Toolkits need to implement (override) this only to get the full CRUD to work.
-        protected override int IDelete(Type type, IEnumerable<object> ids, ActionConfig actionConfig = null)
+        /***************************************************/
+        /**** Public Methods                            ****/
+        /***************************************************/
+
+        [Description("Description of the method. Will appear in the UI tooltip.")]
+        [Input("exampleObject", "Description of the input. Will appear in the UI tooltip.")]
+        [Input("additionalInput", "Description of the input. Will appear in the UI tooltip.")]
+        [Output("outputName", "Description of the output. Will appear in the UI tooltip.")]
+        public static string ExampleQueryMethod(this ExampleObject exampleObject, string additionalInput = "")
         {
-            //Insert code here to enable deletion of specific types of objects with specific ids
-            BH.Engine.Base.Compute.RecordError($"Delete for objects of type {type.Name} is not implemented in {(this as dynamic).GetType().Name}.");
-            return 0;
+            // NOTE: Extension method
+            // Query methods should return some data that is derivable from a main input object on which they operate upon. 
+            // For this reason, they are to be written as extension methods (using the `this` keyword on the first input).
+
+            // This method will appear in every UI (e.g. Grasshopper) as a component.
+            // Find it using the CTRL+Shift+B search bar, or by navigating the `Create` component (Engine tab) right click menu.
+            return exampleObject.SomeStringProperty + exampleObject.SomeNumberProperty.ToString() + additionalInput;
         }
 
-        // There are more virtual Delete methods you might want to override and implement.
-        // Check the base BHoM_Adapter solution and the wiki for more info.
-
         /***************************************************/
+
     }
 }
 

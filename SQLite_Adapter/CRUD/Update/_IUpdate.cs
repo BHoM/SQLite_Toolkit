@@ -20,31 +20,31 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Adapters.SoftwareName;
-using BH.oM.Base;
+using BH.oM.Adapter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BH.Adapter.SoftwareName
+namespace BH.Adapter.SQLite
 {
-    public static partial class Convert
+    public partial class SQLiteAdapter : BHoMAdapter
     {
-        /***************************************************/
-        /**** Public Methods                            ****/
-        /***************************************************/
+        // This method gets called when appropriate by the Push method contained in the base Adapter class.
+        // Unlike the Create, Delete and Read, this method already exposes a simple implementation: it calls Delete and then Create.
+        // It can be overridden here keeping in mind the following:
+        // - it gets called once per each Type, and if equal objects are found;
+        // - the object equality is tested through this.AdapterComparers, that need to be implemented for each type.
+        // See the wiki for more info.
 
-        // Add methods for converting to BHoM from the specific software types. 
-        // Example:
-        public static BHoMObject FromSoftwareName(this ExampleObject node)
+        protected override bool IUpdate<T>(IEnumerable<T> objects, ActionConfig actionConfig = null)
         {
-            //Insert code for convertion
-            throw new NotImplementedException();
+            return base.IUpdate(objects, actionConfig);
         }
 
         /***************************************************/
+
     }
 }
 

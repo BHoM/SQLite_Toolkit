@@ -29,17 +29,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BH.Adapter.SoftwareName
+namespace BH.Adapter.SQLite
 {
-    public partial class SoftwareNameAdapter : BHoMAdapter
+    public partial class SQLiteAdapter : BHoMAdapter
     {
         /***************************************************/
         /**** Constructors                              ****/
         /***************************************************/
 
-        [Description("Adapter for SoftwareName.")]
-        [Output("The created SoftwareName adapter.")]
-        public SoftwareNameAdapter()
+        [Description("Adapter for SQLite.")]
+        [Output("The created SQLite adapter.")]
+        public SQLiteAdapter()
         {
             // The Adapter constructor can be used to configure the Adapter behaviour.
             // For example:
