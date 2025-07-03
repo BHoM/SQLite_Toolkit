@@ -24,6 +24,7 @@ using BH.Adapter;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Configs;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -73,6 +74,7 @@ namespace BH.Adapter.SQLite
 
         private string m_FilePath = "";
         private bool m_Active = false;
+        private SqliteConnection m_Connection = null;
 
         // Connection state and diagnostics
         private ConnectionState m_ConnectionState = ConnectionState.Closed;
