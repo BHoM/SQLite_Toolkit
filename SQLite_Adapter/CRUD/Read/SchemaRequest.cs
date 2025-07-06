@@ -87,7 +87,7 @@ namespace BH.Adapter.SQLite
                                 cid as ColumnId,
                                 name as ColumnName,
                                 type as DataType,
-                                [notnull] as NotNull,
+                                [notnull] as ""NotNull"",
                                 dflt_value as DefaultValue,
                                 pk as IsPrimaryKey
                             FROM pragma_table_info('{tableName}')";

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32901.82
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite_Adapter", "SQLite_Adapter\SQLite_Adapter.csproj", "{F84BEFC2-C702-4A86-9626-C7FA48785606}"
 EndProject
@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite_Engine", "SQLite_Eng
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite_oM", "SQLite_oM\SQLite_oM.csproj", "{FA23407E-1C08-4183-A02E-A57FA9D09BCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite_Toolkit.TestConsole", "SQLite_Toolkit.TestConsole\SQLite_Toolkit.TestConsole.csproj", "{A8B12C34-D567-48E9-F012-3456789ABCDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SQLite_Toolkit.Tests", "SQLite_Toolkit.Tests\SQLite_Toolkit.Tests.csproj", "{F5E6D7C8-9A0B-1C2D-3E4F-5A6B7C8D9E0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,10 +28,10 @@ Global
 		{FA23407E-1C08-4183-A02E-A57FA9D09BCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA23407E-1C08-4183-A02E-A57FA9D09BCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA23407E-1C08-4183-A02E-A57FA9D09BCA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A8B12C34-D567-48E9-F012-3456789ABCDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8B12C34-D567-48E9-F012-3456789ABCDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8B12C34-D567-48E9-F012-3456789ABCDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8B12C34-D567-48E9-F012-3456789ABCDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5E6D7C8-9A0B-1C2D-3E4F-5A6B7C8D9E0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5E6D7C8-9A0B-1C2D-3E4F-5A6B7C8D9E0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5E6D7C8-9A0B-1C2D-3E4F-5A6B7C8D9E0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5E6D7C8-9A0B-1C2D-3E4F-5A6B7C8D9E0F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -41,12 +41,10 @@ namespace BH.Adapter.SQLite
 
             QueryResult queryResult = ExecuteQuery(customRequest.SqlQuery, customRequest.Parameters, customRequest.TimeoutSeconds);
             
-            if (queryResult.IsSuccess)
-            {
-                // For custom SQL requests, return the QueryResult object
-                result.Add(queryResult);
-            }
-            else
+            // Always return the QueryResult object so callers can inspect success/failure
+            result.Add(queryResult);
+            
+            if (!queryResult.IsSuccess)
             {
                 BH.Engine.Base.Compute.RecordError($"Custom SQL query failed: {queryResult.ErrorMessage}");
             }
@@ -54,7 +52,8 @@ namespace BH.Adapter.SQLite
             return result;
         }
 
-        private QueryResult ExecuteQuery(string sqlQuery, Dictionary<string, object> parameters = null, int timeoutSeconds = 0)
+        private QueryResult 
+            ExecuteQuery(string sqlQuery, Dictionary<string, object> parameters = null, int timeoutSeconds = 0)
         {
             QueryResult result = new QueryResult
             {

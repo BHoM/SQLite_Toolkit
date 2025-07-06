@@ -198,7 +198,12 @@ namespace BH.Engine.SQLite
 
         private static string GenerateCreateIndexSql(IndexDefinition index)
         {
-            if (index == null || string.IsNullOrWhiteSpace(index.IndexName) || !index.Columns.Any())
+            if (index == null || !index.Columns.Any())
+                return string.Empty;
+
+            // Check for index name from both IndexName property and inherited Name property
+            string indexName = !string.IsNullOrWhiteSpace(index.IndexName) ? index.IndexName : index.Name;
+            if (string.IsNullOrWhiteSpace(indexName))
                 return string.Empty;
 
             StringBuilder sql = new StringBuilder();
@@ -207,9 +212,9 @@ namespace BH.Engine.SQLite
             if (index.IsUnique)
                 sql.Append("UNIQUE ");
                 
-            sql.Append($"INDEX IF NOT EXISTS \"{index.IndexName}\" ON \"{index.TableName}\" (");
+            sql.Append($"INDEX IF NOT EXISTS \"{indexName}\" ON \"{index.TableName}\" (");
             
-            List<string> quotedColumns = index.Columns.Select(col => $"\"{col}\"").ToList(); // Column name?
+            List<string> quotedColumns = index.Columns.Select(col => $"\"{col}\"").ToList();
             sql.Append(string.Join(", ", quotedColumns));
             
             sql.Append(");");
