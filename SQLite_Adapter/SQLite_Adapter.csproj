@@ -16,12 +16,19 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SQLite_Engine\SQLite_Engine.csproj" />
     <ProjectReference Include="..\SQLite_oM\SQLite_oM.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="$(NuGetPackageRoot)sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll">
+      <Link>e_sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -51,12 +58,18 @@
       <SpecificVersion>false</SpecificVersion>
     </Reference>
     <Reference Include="Data_oM">
-      <HintPath>..\..\..\..\..\..\ProgramData\BHoM\Assemblies\Data_oM.dll</HintPath>
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Data_oM.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;$(TargetDir)$(TargetFileName)&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
+    <Exec Command="xcopy &quot;$(TargetDir)Microsoft.Data.Sqlite.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
+    <Exec Command="xcopy &quot;$(TargetDir)SQLitePCLRaw.batteries_v2.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
+    <Exec Command="xcopy &quot;$(TargetDir)SQLitePCLRaw.core.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
+	<Exec Command="xcopy &quot;$(TargetDir)SQLitePCLRaw.provider.e_sqlite3.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
+    <Exec Command="xcopy &quot;$(TargetDir)e_sqlite3.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
   </Target>
 
 </Project>
