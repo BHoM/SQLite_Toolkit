@@ -64,15 +64,7 @@ namespace BH.Adapter.SQLite
             }
             else if (query is TableRequest tableRequest)
             {
-                // Check if this is a schema request or data request
-                if (IsSchemaRequest(tableRequest))
-                {
-                    return ReadTableSchema(tableRequest);
-                }
-                else
-                {
-                    return ReadTableRequest(tableRequest);
-                }
+                return ReadTableRequest(tableRequest);
             }
             else
             {

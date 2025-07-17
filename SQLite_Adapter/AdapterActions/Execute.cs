@@ -154,63 +154,89 @@ namespace BH.Adapter.SQLite
 
         private SqliteConnection ConnectToDatabase(string filePath, SQLiteSettings settings)
         {
-            SqliteConnectionStringBuilder builder = new SqliteConnectionStringBuilder();
-
-            // Set data source based on database mode
-            switch (settings.DatabaseMode)
+            try
             {
-                case DatabaseMode.InMemoryDatabase:
-                    builder.DataSource = ":memory:";
-                    break;
-                case DatabaseMode.TemporaryDatabase:
-                    builder.DataSource = "";
-                    break;
-                case DatabaseMode.FileDatabase:
-                default:
-                    if (string.IsNullOrEmpty(filePath))
-                    {
-                        BH.Engine.Base.Compute.RecordWarning("No file path provided for file database. Using in-memory database instead.");
+                SqliteConnectionStringBuilder builder = new SqliteConnectionStringBuilder();
+
+                // Set data source based on database mode
+                switch (settings.DatabaseMode)
+                {
+                    case DatabaseMode.InMemoryDatabase:
                         builder.DataSource = ":memory:";
-                    }
-                    else
-                    {
-                        builder.DataSource = filePath;
-                        
-                        // Create directory if it doesn't exist
-                        string directory = Path.GetDirectoryName(filePath);
-                        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                        break;
+                    case DatabaseMode.TemporaryDatabase:
+                        builder.DataSource = "";
+                        break;
+                    case DatabaseMode.FileDatabase:
+                    default:
+                        if (string.IsNullOrEmpty(filePath))
                         {
-                            Directory.CreateDirectory(directory);
+                            BH.Engine.Base.Compute.RecordWarning("No file path provided for file database. Using in-memory database instead.");
+                            builder.DataSource = ":memory:";
                         }
-                    }
-                    break;
+                        else
+                        {
+                            builder.DataSource = filePath;
+                            
+                            // Create directory if it doesn't exist
+                            string directory = Path.GetDirectoryName(filePath);
+                            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                            {
+                                try
+                                {
+                                    Directory.CreateDirectory(directory);
+                                }
+                                catch (Exception ex)
+                                {
+                                    BH.Engine.Base.Compute.RecordError($"Failed to create directory for database: {ex.Message}");
+                                    return null;
+                                }
+                            }
+                        }
+                        break;
+                }
+
+                // Set connection timeout
+                builder.DefaultTimeout = settings.ConnectionTimeoutSeconds;
+
+                // Set cache mode based on optimisation strategy
+                switch (settings.OptimisationMode)
+                {
+                    case OptimisationMode.ReadOptimised:
+                        builder.Cache = SqliteCacheMode.Shared;
+                        break;
+                    case OptimisationMode.WriteOptimised:
+                    case OptimisationMode.MaxPerformance:
+                        builder.Cache = SqliteCacheMode.Private;
+                        break;
+                    default:
+                        builder.Cache = SqliteCacheMode.Default;
+                        break;
+                }
+
+                SqliteConnection connection = new SqliteConnection(builder.ConnectionString);
+                
+                try
+                {
+                    connection.Open();
+                }
+                catch (Exception ex)
+                {
+                    BH.Engine.Base.Compute.RecordError($"Failed to open SQLite connection: {ex.Message}");
+                    connection.Dispose();
+                    return null;
+                }
+
+                // Configure the connection based on settings
+                ConfigureConnection(connection, settings);
+
+                return connection;
             }
-
-            // Set connection timeout
-            builder.DefaultTimeout = settings.ConnectionTimeoutSeconds;
-
-            // Set cache mode based on optimisation strategy
-            switch (settings.OptimisationMode)
+            catch (Exception ex)
             {
-                case OptimisationMode.ReadOptimised:
-                    builder.Cache = SqliteCacheMode.Shared;
-                    break;
-                case OptimisationMode.WriteOptimised:
-                case OptimisationMode.MaxPerformance:
-                    builder.Cache = SqliteCacheMode.Private;
-                    break;
-                default:
-                    builder.Cache = SqliteCacheMode.Default;
-                    break;
+                BH.Engine.Base.Compute.RecordError($"Failed to create SQLite connection: {ex.Message}");
+                return null;
             }
-
-            SqliteConnection connection = new SqliteConnection(builder.ConnectionString);
-            connection.Open();
-
-            // Configure the connection based on settings
-            ConfigureConnection(connection, settings);
-
-            return connection;
         }
 
         private void ConfigureConnection(SqliteConnection connection, SQLiteSettings settings)
@@ -220,35 +246,63 @@ namespace BH.Adapter.SQLite
                 // Enable WAL mode if requested
                 if (settings.EnableWalMode)
                 {
-                    using (SqliteCommand command = connection.CreateCommand())
+                    try
                     {
-                        command.CommandText = "PRAGMA journal_mode = WAL;";
-                        command.ExecuteNonQuery();
-                        m_WalModeEnabled = true;
+                        using (SqliteCommand command = connection.CreateCommand())
+                        {
+                            command.CommandText = "PRAGMA journal_mode = WAL;";
+                            command.ExecuteNonQuery();
+                            m_WalModeEnabled = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        BH.Engine.Base.Compute.RecordWarning($"Failed to enable WAL mode: {ex.Message}");
                     }
                 }
 
                 // Enable foreign keys if requested
                 if (settings.EnableForeignKeys)
                 {
-                    using (SqliteCommand command = connection.CreateCommand())
+                    try
                     {
-                        command.CommandText = "PRAGMA foreign_keys = ON;";
-                        command.ExecuteNonQuery();
-                        m_ForeignKeysEnabled = true;
+                        using (SqliteCommand command = connection.CreateCommand())
+                        {
+                            command.CommandText = "PRAGMA foreign_keys = ON;";
+                            command.ExecuteNonQuery();
+                            m_ForeignKeysEnabled = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        BH.Engine.Base.Compute.RecordWarning($"Failed to enable foreign keys: {ex.Message}");
                     }
                 }
 
                 // Set cache size
-                using (SqliteCommand command = connection.CreateCommand())
+                try
                 {
-                    command.CommandText = $"PRAGMA cache_size = {settings.CacheSize};";
-                    command.ExecuteNonQuery();
-                    m_CacheSize = settings.CacheSize;
+                    using (SqliteCommand command = connection.CreateCommand())
+                    {
+                        command.CommandText = $"PRAGMA cache_size = {settings.CacheSize};";
+                        command.ExecuteNonQuery();
+                        m_CacheSize = settings.CacheSize;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    BH.Engine.Base.Compute.RecordWarning($"Failed to set cache size: {ex.Message}");
                 }
 
                 // Set optimisation-specific pragmas
-                ApplyOptimisationSettings(connection, settings.OptimisationMode);
+                try
+                {
+                    ApplyOptimisationSettings(connection, settings.OptimisationMode);
+                }
+                catch (Exception ex)
+                {
+                    BH.Engine.Base.Compute.RecordWarning($"Failed to apply optimisation settings: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
@@ -258,46 +312,53 @@ namespace BH.Adapter.SQLite
 
         private void ApplyOptimisationSettings(SqliteConnection connection, OptimisationMode mode)
         {
-            using (SqliteCommand command = connection.CreateCommand())
+            try
             {
-                switch (mode)
+                using (SqliteCommand command = connection.CreateCommand())
                 {
-                    case OptimisationMode.ReadOptimised:
-                        command.CommandText = @"
-                            PRAGMA query_only = ON;
-                            PRAGMA temp_store = MEMORY;
-                            PRAGMA mmap_size = 268435456;";
-                        break;
+                    switch (mode)
+                    {
+                        case OptimisationMode.ReadOptimised:
+                            command.CommandText = @"
+                                PRAGMA query_only = ON;
+                                PRAGMA temp_store = MEMORY;
+                                PRAGMA mmap_size = 268435456;";
+                            break;
 
-                    case OptimisationMode.WriteOptimised:
-                        command.CommandText = @"
-                            PRAGMA synchronous = NORMAL;
-                            PRAGMA temp_store = MEMORY;";
-                        break;
+                        case OptimisationMode.WriteOptimised:
+                            command.CommandText = @"
+                                PRAGMA synchronous = NORMAL;
+                                PRAGMA temp_store = MEMORY;";
+                            break;
 
-                    case OptimisationMode.MaxPerformance:
-                        command.CommandText = @"
-                            PRAGMA synchronous = OFF;
-                            PRAGMA temp_store = MEMORY;
-                            PRAGMA mmap_size = 268435456;";
-                        break;
+                        case OptimisationMode.MaxPerformance:
+                            command.CommandText = @"
+                                PRAGMA synchronous = OFF;
+                                PRAGMA temp_store = MEMORY;
+                                PRAGMA mmap_size = 268435456;";
+                            break;
 
-                    case OptimisationMode.MemoryOptimised:
-                        command.CommandText = @"
-                            PRAGMA temp_store = FILE;
-                            PRAGMA mmap_size = 0;";
-                        break;
+                        case OptimisationMode.MemoryOptimised:
+                            command.CommandText = @"
+                                PRAGMA temp_store = FILE;
+                                PRAGMA mmap_size = 0;";
+                            break;
 
-                    case OptimisationMode.Balanced:
-                    case OptimisationMode.Default:
-                    default:
-                        command.CommandText = @"
-                            PRAGMA synchronous = FULL;
-                            PRAGMA temp_store = DEFAULT;";
-                        break;
+                        case OptimisationMode.Balanced:
+                        case OptimisationMode.Default:
+                        default:
+                            command.CommandText = @"
+                                PRAGMA synchronous = FULL;
+                                PRAGMA temp_store = DEFAULT;";
+                            break;
+                    }
+
+                    command.ExecuteNonQuery();
                 }
-
-                command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to apply optimisation settings for mode {mode}: {ex.Message}");
             }
         }
 

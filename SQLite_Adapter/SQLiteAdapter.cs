@@ -31,6 +31,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SQLitePCL;
 
 namespace BH.Adapter.SQLite
 {
@@ -47,6 +48,17 @@ namespace BH.Adapter.SQLite
         [Output("adapter", "The created SQLite adapter.")]
         public SQLiteAdapter(string filepath = "", SQLiteSettings settings = null, bool active = false)
         {
+            // Initialize SQLitePCLRaw to ensure native library is loaded
+            try
+            {
+                SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
+                BH.Engine.Base.Compute.RecordNote("SQLitePCLRaw initialized successfully.");
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to initialize SQLitePCLRaw: {ex.Message}");
+            }
+
             // The Adapter constructor can be used to configure the Adapter behaviour.
             // For example:
             m_AdapterSettings.DefaultPushType = oM.Adapter.PushType.CreateOnly; // Adapter `Push` Action simply calls "Create" method.

@@ -37,89 +37,28 @@ namespace BH.Adapter.SQLite
         /**** Private Methods                           ****/
         /***************************************************/
 
-        private IEnumerable<object> ReadTableSchema(TableRequest tableRequest)
+        private bool TableExists(string tableName)
         {
-            List<object> result = new List<object>();
-
-            if (string.IsNullOrEmpty(tableRequest.TableName))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot get table schema: table name is null or empty.");
-                return result;
-            }
-
             try
             {
-                TableSchema schema = GetTableSchemaFromRequest(tableRequest);
+                using (SqliteCommand command = m_Connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        SELECT COUNT(*) 
+                        FROM sqlite_master 
+                        WHERE type = 'table' AND name = @tableName;";
 
-                if (schema != null)
-                {
-                    result.Add(schema);
-                    BH.Engine.Base.Compute.RecordNote($"Successfully retrieved schema for table: {tableRequest.TableName}");
-                }
-                else
-                {
-                    BH.Engine.Base.Compute.RecordError($"Failed to retrieve schema for table: {tableRequest.TableName}");
+                    command.Parameters.AddWithValue("@tableName", tableName);
+
+                    object result = command.ExecuteScalar();
+                    int count = System.Convert.ToInt32(result);
+                    return count > 0;
                 }
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Failed to get table schema for {tableRequest.TableName}: {ex.Message}");
-            }
-
-            return result;
-        }
-
-        private TableSchema GetTableSchemaFromRequest(TableRequest tableRequest)
-        {
-            string tableName = tableRequest.TableName;
-
-            // Check if table exists
-            if (!TableExists(tableName))
-            {
-                BH.Engine.Base.Compute.RecordError($"Table '{tableName}' does not exist.");
-                return null;
-            }
-
-            TableSchema schema = new TableSchema
-            {
-                TableName = tableName,
-                Name = tableName
-            };
-
-            // Get column information
-            schema.Columns = GetColumnDefinitions(tableName);
-
-            // Get CREATE TABLE statement
-            schema.CreateStatement = GetCreateStatement(tableName);
-
-            // Get indexes (always include for schema requests)
-            schema.Indexes = GetIndexDefinitions(tableName);
-
-            // Get foreign keys (always include for schema requests)
-            schema.ForeignKeys = GetForeignKeyDefinitions(tableName);
-
-            // Get table statistics
-            GetTableStatistics(tableName, schema);
-
-            // Check for special table properties
-            CheckTableProperties(schema);
-
-            return schema;
-        }
-
-        private bool TableExists(string tableName)
-        {
-            using (SqliteCommand command = m_Connection.CreateCommand())
-            {
-                command.CommandText = @"
-                    SELECT COUNT(*) 
-                    FROM sqlite_master 
-                    WHERE type = 'table' AND name = @tableName;";
-
-                command.Parameters.AddWithValue("@tableName", tableName);
-
-                int count = System.Convert.ToInt32(command.ExecuteScalar());
-                return count > 0;
+                BH.Engine.Base.Compute.RecordError($"Failed to check if table '{tableName}' exists: {ex.Message}");
+                return false;
             }
         }
 
@@ -127,46 +66,53 @@ namespace BH.Adapter.SQLite
         {
             List<ColumnDefinition> columns = new List<ColumnDefinition>();
 
-            using (SqliteCommand command = m_Connection.CreateCommand())
+            try
             {
-                command.CommandText = $"PRAGMA table_info(\"{tableName}\");";
-
-                using (SqliteDataReader reader = command.ExecuteReader())
+                using (SqliteCommand command = m_Connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = $"PRAGMA table_info(\"{tableName}\");";
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        // PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk
-                        ColumnDefinition column = new ColumnDefinition
+                        while (reader.Read())
                         {
-                            Position = reader.GetInt32(0),        // cid
-                            Name = reader.GetString(1),           // name
-                            AllowNull = reader.GetInt32(3) == 0,  // notnull (0 = nullable, 1 = not null)
-                            IsPrimaryKey = reader.GetInt32(5) > 0, // pk
-                            DefaultValue = reader.IsDBNull(4) ? null : reader.GetString(4) // dflt_value
-                        };
-
-                        // Parse data type
-                        string typeString = reader.GetString(2).ToUpper(); // type
-                        column.DataType = ParseSqliteDataType(typeString);
-
-                        // Extract max length from type string if present
-                        if (typeString.Contains("(") && typeString.Contains(")"))
-                        {
-                            string lengthPart = typeString.Substring(typeString.IndexOf("(") + 1);
-                            lengthPart = lengthPart.Substring(0, lengthPart.IndexOf(")"));
-                            if (int.TryParse(lengthPart, out int maxLength))
+                            // PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk
+                            ColumnDefinition column = new ColumnDefinition
                             {
-                                column.MaxLength = maxLength;
-                            }
-                        }
+                                Position = reader.GetInt32(0),        // cid
+                                Name = reader.GetString(1),           // name
+                                AllowNull = reader.GetInt32(3) == 0,  // notnull (0 = nullable, 1 = not null)
+                                IsPrimaryKey = reader.GetInt32(5) > 0, // pk
+                                DefaultValue = reader.IsDBNull(4) ? null : reader.GetString(4) // dflt_value
+                            };
 
-                        columns.Add(column);
+                            // Parse data type
+                            string typeString = reader.GetString(2).ToUpper(); // type
+                            column.DataType = ParseSqliteDataType(typeString);
+
+                            // Extract max length from type string if present
+                            if (typeString.Contains("(") && typeString.Contains(")"))
+                            {
+                                string lengthPart = typeString.Substring(typeString.IndexOf("(") + 1);
+                                lengthPart = lengthPart.Substring(0, lengthPart.IndexOf(")"));
+                                if (int.TryParse(lengthPart, out int maxLength))
+                                {
+                                    column.MaxLength = maxLength;
+                                }
+                            }
+
+                            columns.Add(column);
+                        }
                     }
                 }
-            }
 
-            // Check for auto-increment on primary key columns
-            CheckAutoIncrement(tableName, columns);
+                // Check for auto-increment on primary key columns
+                CheckAutoIncrement(tableName, columns);
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Failed to get column definitions for table '{tableName}': {ex.Message}");
+            }
 
             return columns;
         }
@@ -192,8 +138,41 @@ namespace BH.Adapter.SQLite
 
         private void CheckAutoIncrement(string tableName, List<ColumnDefinition> columns)
         {
-            ColumnDefinition pkColumn = columns.Find(c => c.IsPrimaryKey && c.DataType == SqliteDataType.INTEGER);
-            if (pkColumn != null)
+            try
+            {
+                ColumnDefinition pkColumn = columns.Find(c => c.IsPrimaryKey && c.DataType == SqliteDataType.INTEGER);
+                if (pkColumn != null)
+                {
+                    using (SqliteCommand command = m_Connection.CreateCommand())
+                    {
+                        command.CommandText = @"
+                            SELECT sql 
+                            FROM sqlite_master 
+                            WHERE type = 'table' AND name = @tableName;";
+
+                        command.Parameters.AddWithValue("@tableName", tableName);
+
+                        object result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            string createSql = result.ToString().ToUpper();
+                            if (createSql.Contains("AUTOINCREMENT"))
+                            {
+                                pkColumn.IsAutoIncrement = true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to check auto-increment for table '{tableName}': {ex.Message}");
+            }
+        }
+
+        private string GetCreateStatement(string tableName)
+        {
+            try
             {
                 using (SqliteCommand command = m_Connection.CreateCommand())
                 {
@@ -205,31 +184,13 @@ namespace BH.Adapter.SQLite
                     command.Parameters.AddWithValue("@tableName", tableName);
 
                     object result = command.ExecuteScalar();
-                    if (result != null)
-                    {
-                        string createSql = result.ToString().ToUpper();
-                        if (createSql.Contains("AUTOINCREMENT"))
-                        {
-                            pkColumn.IsAutoIncrement = true;
-                        }
-                    }
+                    return result?.ToString();
                 }
             }
-        }
-
-        private string GetCreateStatement(string tableName)
-        {
-            using (SqliteCommand command = m_Connection.CreateCommand())
+            catch (Exception ex)
             {
-                command.CommandText = @"
-                    SELECT sql 
-                    FROM sqlite_master 
-                    WHERE type = 'table' AND name = @tableName;";
-
-                command.Parameters.AddWithValue("@tableName", tableName);
-
-                object result = command.ExecuteScalar();
-                return result?.ToString();
+                BH.Engine.Base.Compute.RecordWarning($"Failed to get CREATE statement for table '{tableName}': {ex.Message}");
+                return null;
             }
         }
 
@@ -237,44 +198,51 @@ namespace BH.Adapter.SQLite
         {
             List<IndexDefinition> indexes = new List<IndexDefinition>();
 
-            using (SqliteCommand command = m_Connection.CreateCommand())
+            try
             {
-                command.CommandText = @"
-                    SELECT name, [unique], sql
-                    FROM sqlite_master 
-                    WHERE type = 'index' 
-                    AND tbl_name = @tableName
-                    AND name NOT LIKE 'sqlite_autoindex_%'
-                    ORDER BY name;";
-
-                command.Parameters.AddWithValue("@tableName", tableName);
-
-                using (SqliteDataReader reader = command.ExecuteReader())
+                using (SqliteCommand command = m_Connection.CreateCommand())
                 {
-                    while (reader.Read())
-                    {
-                        // sqlite_master columns: name, unique, sql
-                        IndexDefinition index = new IndexDefinition
-                        {
-                            IndexName = reader.GetString(0),        // name
-                            TableName = tableName,
-                            IsUnique = reader.GetInt32(1) == 1,     // unique
-                            CreateStatement = reader.IsDBNull(2) ? null : reader.GetString(2) // sql
-                        };
+                    command.CommandText = @"
+                        SELECT name, [unique], sql
+                        FROM sqlite_master 
+                        WHERE type = 'index' 
+                        AND tbl_name = @tableName
+                        AND name NOT LIKE 'sqlite_autoindex_%'
+                        ORDER BY name;";
 
-                        indexes.Add(index);
+                    command.Parameters.AddWithValue("@tableName", tableName);
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // sqlite_master columns: name, unique, sql
+                            IndexDefinition index = new IndexDefinition
+                            {
+                                IndexName = reader.GetString(0),        // name
+                                TableName = tableName,
+                                IsUnique = reader.GetInt32(1) == 1,     // unique
+                                CreateStatement = reader.IsDBNull(2) ? null : reader.GetString(2) // sql
+                            };
+
+                            indexes.Add(index);
+                        }
+                    }
+                }
+
+                // Get column information for each index
+                foreach (IndexDefinition index in indexes)
+                {
+                    GetIndexColumns(index);
+                    if (string.IsNullOrEmpty(index.CreateStatement))
+                    {
+                        GenerateIndexCreateStatement(index);
                     }
                 }
             }
-
-            // Get column information for each index
-            foreach (IndexDefinition index in indexes)
+            catch (Exception ex)
             {
-                GetIndexColumns(index);
-                if (string.IsNullOrEmpty(index.CreateStatement))
-                {
-                    GenerateIndexCreateStatement(index);
-                }
+                BH.Engine.Base.Compute.RecordWarning($"Failed to get index definitions for table '{tableName}': {ex.Message}");
             }
 
             return indexes;
@@ -282,19 +250,26 @@ namespace BH.Adapter.SQLite
 
         private void GetIndexColumns(IndexDefinition index)
         {
-            using (SqliteCommand command = m_Connection.CreateCommand())
+            try
             {
-                command.CommandText = $"PRAGMA index_info(\"{index.IndexName}\");";
-
-                using (SqliteDataReader reader = command.ExecuteReader())
+                using (SqliteCommand command = m_Connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = $"PRAGMA index_info(\"{index.IndexName}\");";
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        // PRAGMA index_info returns: seqno, cid, name
-                        string columnName = reader.GetString(2); // name (column 2)
-                        index.Columns.Add(columnName);
+                        while (reader.Read())
+                        {
+                            // PRAGMA index_info returns: seqno, cid, name
+                            string columnName = reader.GetString(2); // name (column 2)
+                            index.Columns.Add(columnName);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to get columns for index '{index.IndexName}': {ex.Message}");
             }
         }
 
@@ -323,38 +298,45 @@ namespace BH.Adapter.SQLite
         {
             List<string> foreignKeys = new List<string>();
 
-            using (SqliteCommand command = m_Connection.CreateCommand())
+            try
             {
-                command.CommandText = $"PRAGMA foreign_key_list(\"{tableName}\");";
-
-                using (SqliteDataReader reader = command.ExecuteReader())
+                using (SqliteCommand command = m_Connection.CreateCommand())
                 {
-                    while (reader.Read())
+                    command.CommandText = $"PRAGMA foreign_key_list(\"{tableName}\");";
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        // PRAGMA foreign_key_list returns: id, seq, table, from, to, on_update, on_delete, match
-                        string fromColumn = reader.GetString(3);   // from
-                        string toTable = reader.GetString(2);      // table
-                        string toColumn = reader.GetString(4);     // to
-
-                        string fkDefinition = $"FOREIGN KEY (\"{fromColumn}\") REFERENCES \"{toTable}\" (\"{toColumn}\")";
-
-                        if (!reader.IsDBNull(5)) // on_update
+                        while (reader.Read())
                         {
-                            string onUpdate = reader.GetString(5);
-                            if (!string.IsNullOrEmpty(onUpdate))
-                                fkDefinition += $" ON UPDATE {onUpdate}";
-                        }
+                            // PRAGMA foreign_key_list returns: id, seq, table, from, to, on_update, on_delete, match
+                            string fromColumn = reader.GetString(3);   // from
+                            string toTable = reader.GetString(2);      // table
+                            string toColumn = reader.GetString(4);     // to
 
-                        if (!reader.IsDBNull(6)) // on_delete
-                        {
-                            string onDelete = reader.GetString(6);
-                            if (!string.IsNullOrEmpty(onDelete))
-                                fkDefinition += $" ON DELETE {onDelete}";
-                        }
+                            string fkDefinition = $"FOREIGN KEY (\"{fromColumn}\") REFERENCES \"{toTable}\" (\"{toColumn}\")";
 
-                        foreignKeys.Add(fkDefinition);
+                            if (!reader.IsDBNull(5)) // on_update
+                            {
+                                string onUpdate = reader.GetString(5);
+                                if (!string.IsNullOrEmpty(onUpdate))
+                                    fkDefinition += $" ON UPDATE {onUpdate}";
+                            }
+
+                            if (!reader.IsDBNull(6)) // on_delete
+                            {
+                                string onDelete = reader.GetString(6);
+                                if (!string.IsNullOrEmpty(onDelete))
+                                    fkDefinition += $" ON DELETE {onDelete}";
+                            }
+
+                            foreignKeys.Add(fkDefinition);
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to get foreign key definitions for table '{tableName}': {ex.Message}");
             }
 
             return foreignKeys;
@@ -390,31 +372,5 @@ namespace BH.Adapter.SQLite
             }
         }
 
-        /***************************************************/
-        /**** Helper Methods                            ****/
-        /***************************************************/
-
-        private bool IsSchemaRequest(TableRequest tableRequest)
-        {
-            // Check if this is a schema request based on requested columns
-            if (tableRequest.Columns != null && tableRequest.Columns.Any())
-            {
-                List<string> schemaColumns = new List<string>
-                {
-                    "ColumnName", "DataType", "IsPrimaryKey", "AllowNull", "DefaultValue",
-                    "Position", "MaxLength", "IsAutoIncrement"
-                };
-
-                // If any schema-specific columns are requested, treat as schema request
-                return tableRequest.Columns.Any(col => schemaColumns.Contains(col, StringComparer.OrdinalIgnoreCase));
-            }
-
-            // If no specific columns requested, check for schema-specific patterns
-            return tableRequest.WhereConditions.Any(w => w.ToUpper().Contains("SCHEMA") ||
-                                                          w.ToUpper().Contains("COLUMN") ||
-                                                          w.ToUpper().Contains("TABLE_INFO"));
-        }
-
-        /***************************************************/
     }
 }
