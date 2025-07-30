@@ -49,9 +49,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = "TestTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -60,7 +60,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
@@ -68,7 +68,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Value",
                         DataType = SqliteDataType.REAL,
@@ -111,9 +111,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = "ExecutionTestTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -122,7 +122,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
@@ -130,7 +130,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Value",
                         DataType = SqliteDataType.REAL,
@@ -167,33 +167,33 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = "DataTypesTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "IntegerCol",
                         DataType = SqliteDataType.INTEGER,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "RealCol",
                         DataType = SqliteDataType.REAL,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "TextCol",
                         DataType = SqliteDataType.TEXT,
                         Position = 3
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "BlobCol",
                         DataType = SqliteDataType.BLOB,
                         Position = 4
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "NumericCol",
                         DataType = SqliteDataType.NUMERIC,
@@ -224,9 +224,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = "ConstraintsTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -235,7 +235,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "UniqueCol",
                         DataType = SqliteDataType.TEXT,
@@ -243,14 +243,14 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "DefaultCol",
                         DataType = SqliteDataType.TEXT,
                         DefaultValue = "'default_value'",
                         Position = 3
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "NullableCol",
                         DataType = SqliteDataType.TEXT,
@@ -284,38 +284,38 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = "IndexTestTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
                         IsPrimaryKey = true,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Category",
                         DataType = SqliteDataType.TEXT,
                         Position = 3
                     }
                 },
-                Indexes = new List<IndexDefinition>()
+                Indexes = new List<BH.oM.SQLite.Objects.Index>()
                 {
-                    new IndexDefinition()
+                    new BH.oM.SQLite.Objects.Index()
                     {
                         Name = "idx_name",
                         TableName = "IndexTestTable",
                         Columns = new List<string> { "Name" },
                         IsUnique = false
                     },
-                    new IndexDefinition()
+                    new BH.oM.SQLite.Objects.Index()
                     {
                         Name = "idx_category",
                         TableName = "IndexTestTable",
@@ -366,9 +366,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema emptyNameSchema = new TableSchema()
             {
                 TableName = "",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -384,7 +384,7 @@ namespace SQLite_Toolkit.Tests
             TableSchema noColumnsSchema = new TableSchema()
             {
                 TableName = "TestTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
             };
 
             string noColumnsSql = BH.Engine.SQLite.Create.Table(noColumnsSchema);
@@ -413,9 +413,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = "IfNotExistsTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -469,9 +469,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema complexTableSchema = new TableSchema()
             {
                 TableName = "ComplexTable",
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -480,7 +480,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Code",
                         DataType = SqliteDataType.TEXT,
@@ -489,7 +489,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
@@ -497,7 +497,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 3
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Value",
                         DataType = SqliteDataType.REAL,
@@ -505,7 +505,7 @@ namespace SQLite_Toolkit.Tests
                         DefaultValue = "0.0",
                         Position = 4
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "IsActive",
                         DataType = SqliteDataType.INTEGER,
@@ -513,7 +513,7 @@ namespace SQLite_Toolkit.Tests
                         DefaultValue = "1",
                         Position = 5
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "CreatedAt",
                         DataType = SqliteDataType.TEXT,
@@ -521,7 +521,7 @@ namespace SQLite_Toolkit.Tests
                         DefaultValue = "CURRENT_TIMESTAMP",
                         Position = 6
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Data",
                         DataType = SqliteDataType.BLOB,
@@ -529,16 +529,16 @@ namespace SQLite_Toolkit.Tests
                         Position = 7
                     }
                 },
-                Indexes = new List<IndexDefinition>()
+                Indexes = new List<BH.oM.SQLite.Objects.Index>()
                 {
-                    new IndexDefinition()
+                    new BH.oM.SQLite.Objects.Index()
                     {
                         Name = "idx_complex_name",
                         TableName = "ComplexTable",
                         Columns = new List<string> { "Name" },
                         IsUnique = false
                     },
-                    new IndexDefinition()
+                    new BH.oM.SQLite.Objects.Index()
                     {
                         Name = "idx_complex_active",
                         TableName = "ComplexTable",

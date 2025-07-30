@@ -148,7 +148,7 @@ namespace SQLite_Toolkit.Tests.Base
         /// <param name="tableName">Name of the table to create</param>
         /// <param name="columns">Column definitions for the table</param>
         /// <returns>True if table was created successfully</returns>
-        protected bool CreateTestTable(string tableName, List<ColumnDefinition> columns)
+        protected bool CreateTestTable(string tableName, List<Column> columns)
         {
             var tableSchema = new TableSchema()
             {
@@ -172,9 +172,9 @@ namespace SQLite_Toolkit.Tests.Base
         /// <returns>True if table was created successfully</returns>
         protected bool CreateSimpleTestTable(string tableName = "TestTable")
         {
-            var columns = new List<ColumnDefinition>()
+            var columns = new List<Column>()
             {
-                new ColumnDefinition()
+                new Column()
                 {
                     Name = "Id",
                     DataType = SqliteDataType.INTEGER,
@@ -183,7 +183,7 @@ namespace SQLite_Toolkit.Tests.Base
                     AllowNull = false,
                     Position = 1
                 },
-                new ColumnDefinition()
+                new Column()
                 {
                     Name = "Name",
                     DataType = SqliteDataType.TEXT,
@@ -191,14 +191,14 @@ namespace SQLite_Toolkit.Tests.Base
                     MaxLength = 100,
                     Position = 2
                 },
-                new ColumnDefinition()
+                new Column()
                 {
                     Name = "Value",
                     DataType = SqliteDataType.REAL,
                     AllowNull = true,
                     Position = 3
                 },
-                new ColumnDefinition()
+                new Column()
                 {
                     Name = "CreatedAt",
                     DataType = SqliteDataType.TEXT,

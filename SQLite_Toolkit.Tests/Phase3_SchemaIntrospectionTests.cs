@@ -431,9 +431,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = tableName,
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -441,23 +441,23 @@ namespace SQLite_Toolkit.Tests
                         IsAutoIncrement = true,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Category",
                         DataType = SqliteDataType.TEXT,
                         Position = 3
                     }
                 },
-                Indexes = new List<IndexDefinition>()
+                Indexes = new List<BH.oM.SQLite.Objects.Index>()
                 {
-                    new IndexDefinition()
+                    new BH.oM.SQLite.Objects.Index()
                     {
                         Name = "idx_name",
                         TableName = tableName,
@@ -482,9 +482,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = tableName,
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -493,7 +493,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
@@ -501,7 +501,7 @@ namespace SQLite_Toolkit.Tests
                         MaxLength = 100,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Code",
                         DataType = SqliteDataType.TEXT,
@@ -509,7 +509,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 3
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Value",
                         DataType = SqliteDataType.REAL,
@@ -517,7 +517,7 @@ namespace SQLite_Toolkit.Tests
                         DefaultValue = "0.0",
                         Position = 4
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "IsActive",
                         DataType = SqliteDataType.INTEGER,
@@ -543,9 +543,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = tableName,
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -554,7 +554,7 @@ namespace SQLite_Toolkit.Tests
                         AllowNull = false,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "UniqueCode",
                         DataType = SqliteDataType.TEXT,
@@ -563,7 +563,7 @@ namespace SQLite_Toolkit.Tests
                         MaxLength = 50,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Description",
                         DataType = SqliteDataType.TEXT,
@@ -571,7 +571,7 @@ namespace SQLite_Toolkit.Tests
                         MaxLength = 200,
                         Position = 3
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Amount",
                         DataType = SqliteDataType.REAL,
@@ -579,7 +579,7 @@ namespace SQLite_Toolkit.Tests
                         DefaultValue = "0.0",
                         Position = 4
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Status",
                         DataType = SqliteDataType.INTEGER,
@@ -587,7 +587,7 @@ namespace SQLite_Toolkit.Tests
                         DefaultValue = "1",
                         Position = 5
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "CreatedAt",
                         DataType = SqliteDataType.TEXT,
@@ -595,7 +595,7 @@ namespace SQLite_Toolkit.Tests
                         DefaultValue = "CURRENT_TIMESTAMP",
                         Position = 6
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "BinaryData",
                         DataType = SqliteDataType.BLOB,

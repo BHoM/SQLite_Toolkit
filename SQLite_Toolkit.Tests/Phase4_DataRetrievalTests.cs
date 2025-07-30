@@ -472,9 +472,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = tableName,
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -482,14 +482,14 @@ namespace SQLite_Toolkit.Tests
                         IsAutoIncrement = true,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Value",
                         DataType = SqliteDataType.REAL,
@@ -522,9 +522,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema categorySchema = new TableSchema()
             {
                 TableName = tableName,
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -532,14 +532,14 @@ namespace SQLite_Toolkit.Tests
                         IsAutoIncrement = true,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "ProductId",
                         DataType = SqliteDataType.INTEGER,
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "CategoryName",
                         DataType = SqliteDataType.TEXT,
@@ -573,9 +573,9 @@ namespace SQLite_Toolkit.Tests
             TableSchema tableSchema = new TableSchema()
             {
                 TableName = tableName,
-                Columns = new List<ColumnDefinition>()
+                Columns = new List<Column>()
                 {
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Id",
                         DataType = SqliteDataType.INTEGER,
@@ -583,14 +583,14 @@ namespace SQLite_Toolkit.Tests
                         IsAutoIncrement = true,
                         Position = 1
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Name",
                         DataType = SqliteDataType.TEXT,
                         AllowNull = false,
                         Position = 2
                     },
-                    new ColumnDefinition()
+                    new Column()
                     {
                         Name = "Value",
                         DataType = SqliteDataType.REAL,
