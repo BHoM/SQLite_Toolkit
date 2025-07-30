@@ -25,42 +25,27 @@ using BH.oM.Base.Attributes;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Analysis result containing table schemas and relationship information for BHoM objects.")]
+    public class ObjectRelationshipAnalysis : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("Analyses of individual object types and their properties.")]
+        public virtual List<ObjectTypeAnalysis> TypeAnalyses { get; set; } = new List<ObjectTypeAnalysis>();
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Ignore;
+        [Description("Generated table schemas for the analysed object types.")]
+        public virtual List<TableSchema> TableSchemas { get; set; } = new List<TableSchema>();
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
-
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
-
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
-
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
-
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
-
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        [Description("Identified relationships between objects.")]
+        public virtual List<ObjectRelationship> Relationships { get; set; } = new List<ObjectRelationship>();
 
         /***************************************************/
     }

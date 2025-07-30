@@ -371,6 +371,12 @@ namespace BH.Adapter.SQLite
             {
                 if (m_Connection.State == System.Data.ConnectionState.Open)
                 {
+                    // Perform WAL checkpoint if WAL mode is enabled
+                    if (m_WalModeEnabled)
+                    {
+                        BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                    }
+
                     // Run optimisation commands if requested
                     if (optimiseOnClose)
                     {

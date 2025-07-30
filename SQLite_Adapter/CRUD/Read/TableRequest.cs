@@ -55,7 +55,7 @@ namespace BH.Adapter.SQLite
 
         private QueryResult ExecuteTableQuery(TableRequest tableRequest)
         {
-            if (string.IsNullOrEmpty(tableRequest.TableName))
+            if (string.IsNullOrEmpty(tableRequest.Name))
             {
                 QueryResult errorResult = new QueryResult
                 {
@@ -78,7 +78,7 @@ namespace BH.Adapter.SQLite
             // Build DISTINCT clause
             string distinctClause = tableRequest.Distinct ? "DISTINCT " : "";
 
-            string sqlQuery = $"SELECT {distinctClause}{selectClause} FROM \"{tableRequest.TableName}\"";
+            string sqlQuery = $"SELECT {distinctClause}{selectClause} FROM \"{tableRequest.Name}\"";
             
             // Add WHERE clause if specified
             if (tableRequest.WhereConditions != null && tableRequest.WhereConditions.Any())

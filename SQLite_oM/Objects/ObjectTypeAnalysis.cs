@@ -22,8 +22,9 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.SQLite;
+using System;
 using System.ComponentModel;
+using System.Collections.Generic;
 
 namespace BH.oM.SQLite.Objects
 {
@@ -31,39 +32,24 @@ namespace BH.oM.SQLite.Objects
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Represents the definition of a column in a SQLite table including type, constraints, and metadata.")]
-    public class ColumnDefinition : BHoMObject
+    [Description("Analysis of an individual object type including its properties and relationships.")]
+    public class ObjectTypeAnalysis : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The SQLite data type for this column.")]
-        public virtual SqliteDataType DataType { get; set; } = SqliteDataType.TEXT;
+        [Description("The object type being analysed.")]
+        public virtual Type ObjectType { get; set; }
 
-        [Description("Whether this column can contain null values.")]
-        public virtual bool AllowNull { get; set; } = true;
+        [Description("Analysis of individual properties within the object type.")]
+        public virtual List<PropertyAnalysis> Properties { get; set; } = new List<PropertyAnalysis>();
 
-        [Description("Whether this column is a primary key.")]
-        public virtual bool IsPrimaryKey { get; set; } = false;
+        [Description("Identified relationships for this object type.")]
+        public virtual List<ObjectRelationship> Relationships { get; set; } = new List<ObjectRelationship>();
 
-        [Description("Whether this column auto-increments for integer primary keys.")]
-        public virtual bool IsAutoIncrement { get; set; } = false;
-
-        [Description("Whether this column has a unique constraint.")]
-        public virtual bool IsUnique { get; set; } = false;
-
-        [Description("The default value for this column as a string. null if no default.")]
-        public virtual string DefaultValue { get; set; } = null;
-
-        [Description("The maximum length for text columns. Zero means no limit.")]
-        public virtual int MaxLength { get; set; } = 0;
-
-        [Description("The position of this column in the table (0-based).")]
-        public virtual int Position { get; set; } = 0;
-
-        [Description("Additional column attributes or constraints as SQL text.")]
-        public virtual string AdditionalConstraints { get; set; } = "";
+        [Description("Whether this object type has circular references to itself or other types.")]
+        public virtual bool HasCircularReference { get; set; } = false;
 
         /***************************************************/
     }

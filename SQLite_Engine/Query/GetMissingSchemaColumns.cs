@@ -1,6 +1,6 @@
 /*
  * This file is part of the Buildings and Habitats object Model (BHoM)
- * Copyright (c) 2015 - 2024, the respective contributors. All rights reserved.
+ * Copyright (c) 2015 - 2025, the respective contributors. All rights reserved.
  *
  * Each contributor holds copyright over their respective contributions.
  * The project versioning (Git) records all such contribution source information.
@@ -20,35 +20,48 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.Adapters.SQLite;
-using System;
+using BH.oM.SQLite.Objects;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace BH.Engine.Adapters.SQLite
+namespace BH.Engine.SQLite
 {
-    public static partial class Modify
+    public static partial class Query
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Description of the method. Will appear in the UI tooltip.")]
-        [Input("objectToModify", "Description of the input. Will appear in the UI tooltip.")]
-        [Output("outputName", "Description of the output. Will appear in the UI tooltip.")]
-        public static ExampleObject ExampleCreateMethod(ExampleObject objectToModify)
+        [Description("Gets a list of column names that exist in the data but not in the schema.")]
+        [Input("tableData", "The TableData object to analyse.")]
+        [Output("columns", "List of column names missing from the schema.")]
+        public static List<string> GetMissingSchemaColumns(Table tableData)
         {
-            // This method will appear in every UI (e.g. Grasshopper) as a component.
-            // Find it using the CTRL+Shift+B search bar, or by navigating the `Create` component (Engine tab) right click menu.
-            throw new NotImplementedException();
+            if (tableData == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot analyse missing schema columns: tableData is null.");
+                return new List<string>();
+            }
+
+            if (tableData.Rows == null || !tableData.Rows.Any())
+                return new List<string>();
+
+            HashSet<string> schemaColumns = tableData.Schema?.Columns?.Select(c => c.Name).ToHashSet() ?? new HashSet<string>();
+            HashSet<string> dataColumns = new HashSet<string>();
+
+            foreach (var row in tableData.Rows)
+            {
+                foreach (string key in row.Keys)
+                {
+                    dataColumns.Add(key);
+                }
+            }
+
+            return dataColumns.Where(col => !schemaColumns.Contains(col)).ToList();
         }
 
         /***************************************************/
-
     }
-}
-
-
+} 

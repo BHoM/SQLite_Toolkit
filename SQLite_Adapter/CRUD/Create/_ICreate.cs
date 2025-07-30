@@ -22,6 +22,8 @@
 
 using BH.oM.Adapter;
 using BH.oM.Base;
+using BH.oM.SQLite.Objects;
+using BH.oM.SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,42 +38,67 @@ namespace BH.Adapter.SQLite
         // All methods in the CRUD folder are used as "back-end" methods by the Adapter itself.
         // They are automatically invoked by the Adapter Actions (Push, Pull, etc.).
         // Specifically, the Create is primarily called by the Push (in the context of the CRUD method, and also by other methods that require it: Update, UpdateProperty).
-        // See the wiki for more information.
 
         // The Create should only contain the logic that generates the objects in the external software.
         protected override bool ICreate<T>(IEnumerable<T> objects, ActionConfig actionConfig = null)
         {
+            // The base BHoM adapter handles most of the push logic
+            // This override just ensures connection is available and updates timestamps
+            if (m_Connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot push data: no database connection. Please open a connection first.");
+                return false;
+            }
+
+            // Update last used timestamp
+            m_LastUsed = DateTime.Now;
+
             bool success = true;
 
-            // Preferrably, different Create logic for different object types should go in separate methods.
-            // We achieve this by using the ICreate method to only dynamically dispatching to *type-specific Create implementations*
-            // In other words:
             foreach (T obj in objects)
             {
                 success &= Create(obj as dynamic);
             }
 
-            // Then place the specific Create methods below this method or, better, in separate file for each object type.
+            // Perform WAL checkpoint after push operation if WAL mode is enabled
+            if (m_WalModeEnabled && success)
+            {
+                BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+            }
+
             return success;
         }
-
-        // Write your type-specific implementations of Create like:
-        // protected bool Create(IEnumerable<BH.oM.Structure.Elements.Node> node) //`Node` is just an example BHoM Type.
-        // { 
-        //      // Code to do the Create of `Node`s, including:
-        //      //  - calling `Convert` methods from the BHoM type to the external object model
-        //      //    (Convert methods should be defined in the specific `Convert` folder);
-        //      //  - any API call that do the actual export to the external software.
-        //    return true; // if successfull
-        // }
 
         /***************************************************/
 
         // Fallback case. If no specific Create is found, here we should handle what happens then.
         protected bool Create(IBHoMObject obj)
         {
-            BH.Engine.Base.Compute.RecordError("No specific Create method found for {obj.GetType().Name}.");
+            BH.Engine.Base.Compute.RecordError($"No specific Create method found for {obj.GetType().Name}.");
             return false;
+        }
+
+        /***************************************************/
+        /**** Private Helper Methods                   ****/
+        /***************************************************/
+
+        private string GetConflictClause(ConflictResolution conflictResolution)
+        {
+            switch(conflictResolution)
+            {
+                case ConflictResolution.Replace:
+                    return "OR REPLACE";
+                case ConflictResolution.Ignore:
+                    return "OR IGNORE";
+                case ConflictResolution.Fail:
+                    return "OR FAIL";
+                case ConflictResolution.Abort:
+                    return "OR FAIL"; // OR ABORT is not valid for INSERT statements, use OR FAIL instead
+                case ConflictResolution.Rollback:
+                    return "OR ROLLBACK";
+                default:
+                    return "";
+            };
         }
     }
 }

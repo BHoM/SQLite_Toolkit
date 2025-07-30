@@ -20,47 +20,49 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using System.ComponentModel;
+using BH.oM.Base;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
-namespace BH.oM.SQLite.Objects
+namespace BH.Engine.SQLite
 {
-    /***************************************************/
-    /****               Public Classes              ****/
-    /***************************************************/
-
-    [Description("Represents the complete schema definition of a SQLite table including columns, indexes, and constraints.")]
-    public class TableSchema : BHoMObject
+    public static partial class Compute
     {
         /***************************************************/
-        /**** Properties                              ****/
+        /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("List of column definitions for this table.")]
-        public virtual List<Column> Columns { get; set; } = new List<Column>();
+        [Description("Creates a HashSet<T> from an IEnumerable<T> using the default equality comparer.")]
+        [Input("source", "The source collection to convert to a HashSet.")]
+        [Output("hashSet", "A new HashSet containing the elements from the source collection.")]
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
+        {
+            if (source == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Source collection cannot be null.");
+                return new HashSet<T>();
+            }
 
-        [Description("List of index definitions for this table.")]
-        public virtual List<Index> Indexes { get; set; } = new List<Index>();
+            return new HashSet<T>(source);
+        }
 
-        [Description("List of foreign key constraint definitions.")]
-        public virtual List<string> ForeignKeys { get; set; } = new List<string>();
+        [Description("Creates a HashSet<T> from an IEnumerable<T> using the specified equality comparer.")]
+        [Input("source", "The source collection to convert to a HashSet.")]
+        [Input("comparer", "The equality comparer to use for the HashSet.")]
+        [Output("hashSet", "A new HashSet containing the elements from the source collection.")]
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer)
+        {
+            if (source == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Source collection cannot be null.");
+                return new HashSet<T>();
+            }
 
-        [Description("The SQL CREATE TABLE statement that created this table.")]
-        public virtual string CreateStatement { get; set; } = "";
-
-        [Description("Whether this is a temporary table.")]
-        public virtual bool IsTemporary { get; set; } = false;
-
-        [Description("Whether this table has a WITHOUT ROWID optimisation.")]
-        public virtual bool WithoutRowId { get; set; } = false;
-
-        [Description("Number of rows in the table if available.")]
-        public virtual long RowCount { get; set; } = -1;
-
-        [Description("Size of the table in bytes if available.")]
-        public virtual long SizeInBytes { get; set; } = -1;
+            return new HashSet<T>(source, comparer);
+        }
 
         /***************************************************/
     }

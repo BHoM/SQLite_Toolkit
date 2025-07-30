@@ -22,45 +22,49 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Configs;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Represents a combination of table schema definition and data rows for atomic table creation and population operations.")]
+    public class TableData : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("The table schema definition including columns, indexes, and constraints.")]
+        public virtual TableSchema Schema { get; set; } = new TableSchema();
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Ignore;
+        [Description("The data rows to insert into the table. Each dictionary represents a row with column names as keys.")]
+        public virtual List<Dictionary<string, object>> Rows { get; set; } = new List<Dictionary<string, object>>();
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
+        [Description("Configuration settings for table creation and data insertion operations.")]
+        public virtual TableConfig TableConfig { get; set; } = new TableConfig();
 
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
+        [Description("Whether to create the table if it doesn't exist before inserting data.")]
+        public virtual bool CreateTableIfNotExists { get; set; } = true;
 
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
+        [Description("Whether to drop and recreate the table if it already exists.")]
+        public virtual bool DropTableIfExists { get; set; } = false;
 
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
+        [Description("Whether to validate that all row data matches the schema before insertion.")]
+        public virtual bool ValidateDataAgainstSchema { get; set; } = true;
 
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
+        [Description("Whether to automatically add missing columns to the schema based on data row keys.")]
+        public virtual bool AutoExpandSchema { get; set; } = false;
 
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        [Description("Default data type to use for auto-expanded columns when data type cannot be inferred.")]
+        public virtual SqliteDataType DefaultDataType { get; set; } = SqliteDataType.TEXT;
+
+        [Description("Maximum number of rows to validate against schema. Set to -1 to validate all rows.")]
+        public virtual int MaxValidationRows { get; set; } = 100;
 
         /***************************************************/
     }

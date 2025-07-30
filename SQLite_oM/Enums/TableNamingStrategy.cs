@@ -1,6 +1,6 @@
 /*
  * This file is part of the Buildings and Habitats object Model (BHoM)
- * Copyright (c) 2015 - 2024, the respective contributors. All rights reserved.
+ * Copyright (c) 2015 - 2025, the respective contributors. All rights reserved.
  *
  * Each contributor holds copyright over their respective contributions.
  * The project versioning (Git) records all such contribution source information.
@@ -20,32 +20,30 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Adapters.SQLite;
-using BH.oM.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BH.oM.Base.Attributes;
+using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.oM.SQLite
 {
-    public static partial class Convert
+    /***************************************************/
+    /****              Public Enums                ****/
+    /***************************************************/
+
+    [Description("Strategy for naming automatically created tables.")]
+    public enum TableNamingStrategy
     {
-        /***************************************************/
-        /**** Public Methods                            ****/
-        /***************************************************/
+        [Description("Use the object type name as the table name.")]
+        TypeName,
 
-        // Add methods for converting from BHoM to the specific software types
-        // Example:
-        public static ExampleObject ToSQLite(this BHoMObject node)
-        {
-            //Insert code for convertion
-            throw new NotImplementedException();
-        }
+        [Description("Use the object type name with a prefix.")]
+        TypeNameWithPrefix,
 
-        /***************************************************/
+        [Description("Use the property name that contains the object.")]
+        PropertyName,
+
+        [Description("Use a combination of parent type and property name.")]
+        ParentTypePropertyName
     }
-}
 
-
+    /***************************************************/
+} 

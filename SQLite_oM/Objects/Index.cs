@@ -25,42 +25,42 @@ using BH.oM.Base.Attributes;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Represents the definition of an index in a SQLite database including columns and properties.")]
+    public class Index : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
+        [Description("The name of the table this index belongs to.")]
         public virtual string TableName { get; set; } = "";
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Ignore;
+        [Description("List of column names included in this index in order.")]
+        public virtual List<string> Columns { get; set; } = new List<string>();
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
+        [Description("Whether this is a unique index that enforces uniqueness.")]
+        public virtual bool IsUnique { get; set; } = false;
 
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
+        [Description("Whether this is a partial index with a WHERE clause.")]
+        public virtual bool IsPartial { get; set; } = false;
 
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
+        [Description("The WHERE clause for partial indexes.")]
+        public virtual string WhereClause { get; set; } = "";
 
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
+        [Description("The SQL CREATE INDEX statement that created this index.")]
+        public virtual string CreateStatement { get; set; } = "";
 
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
+        [Description("Whether this index was created automatically by SQLite (e.g., for primary keys).")]
+        public virtual bool IsAutoIndex { get; set; } = false;
 
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        [Description("Sort order for each column in the index (ASC/DESC). Must match Columns list length.")]
+        public virtual List<string> SortOrders { get; set; } = new List<string>();
 
         /***************************************************/
     }

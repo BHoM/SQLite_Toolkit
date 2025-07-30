@@ -22,45 +22,55 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Configs;
+using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Context information for object relationship analysis operations.")]
+    public class AnalysisContext : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("Push configuration settings that control the analysis behaviour.")]
+        public virtual PushConfig PushConfig { get; set; }
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Ignore;
+        [Description("Names of tables that already exist in the database.")]
+        public virtual HashSet<string> ExistingTables { get; set; }
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
+        [Description("Types that have already been processed to prevent infinite recursion.")]
+        public virtual HashSet<Type> ProcessedTypes { get; set; }
 
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
+        /***************************************************/
+        /**** Constructors                            ****/
+        /***************************************************/
 
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
+        [Description("Creates a new analysis context with the specified configuration and existing data.")]
+        public AnalysisContext(PushConfig pushConfig, HashSet<string> existingTables, HashSet<Type> processedTypes)
+        {
+            PushConfig = pushConfig;
+            ExistingTables = existingTables;
+            ProcessedTypes = processedTypes;
+        }
 
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
+        /***************************************************/
+        /**** Fallback Constructor                    ****/
+        /***************************************************/
 
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
-
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        public AnalysisContext()
+        {
+            PushConfig = new PushConfig();
+            ExistingTables = new HashSet<string>();
+            ProcessedTypes = new HashSet<Type>();
+        }
 
         /***************************************************/
     }

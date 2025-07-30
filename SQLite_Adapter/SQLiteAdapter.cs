@@ -48,37 +48,17 @@ namespace BH.Adapter.SQLite
         [Output("adapter", "The created SQLite adapter.")]
         public SQLiteAdapter(string filepath = "", SQLiteSettings settings = null, bool active = false)
         {
-            // Initialize SQLitePCLRaw to ensure native library is loaded
-            try
-            {
-                SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
-                BH.Engine.Base.Compute.RecordNote("SQLitePCLRaw initialized successfully.");
-            }
-            catch (Exception ex)
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Failed to initialize SQLitePCLRaw: {ex.Message}");
-            }
-
-            // The Adapter constructor can be used to configure the Adapter behaviour.
-            // For example:
-            m_AdapterSettings.DefaultPushType = oM.Adapter.PushType.CreateOnly; // Adapter `Push` Action simply calls "Create" method.
-            
             // Set the SQLite-specific settings
             if (settings != null)
-                m_AdapterSettings = settings;
+                m_sqliteSettings = settings;
             
             // Store the file path and active state
             m_FilePath = filepath;
             m_Active = active;
-            
-            // See the wiki, the AdapterSettings object and other Adapters to see how it can be configured.
+            m_AdapterSettings.UseAdapterId = false;
 
-            // If your toolkit needs to define this.AdapterComparers and or this.DependencyTypes,
-            // this constructor has to populate those properties.
-            // See the wiki for more information.
+            ExecuteCommand(new oM.Adapter.Commands.Open() { FileName = m_FilePath });
         }
-
-        // You can add any other constructors that take more inputs here. 
 
         /***************************************************/
         /**** Private  Fields                           ****/
@@ -96,16 +76,11 @@ namespace BH.Adapter.SQLite
         private DateTime m_LastUsed = DateTime.MinValue;
 
         // Database configuration state (actual vs requested)
+        private SQLiteSettings m_sqliteSettings;
         private bool m_WalModeEnabled = false;
         private bool m_ForeignKeysEnabled = false;
         private int m_PageSize = 4096;
         private int m_CacheSize = -2000;
-
-        // You can add any private variable that should be in common to any other adapter methods here.
-        // If you need to add some private methods, please consider first what their nature is:
-        // if a method does not need any external call (API call, connection call, etc.)
-        // we place them in the Engine project, and then reference them from the Adapter.
-        // See the wiki for more information.
 
         /***************************************************/
     }

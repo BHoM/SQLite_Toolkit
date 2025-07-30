@@ -22,8 +22,8 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using System.ComponentModel;
-using System.Collections.Generic;
 
 namespace BH.oM.SQLite.Objects
 {
@@ -31,39 +31,39 @@ namespace BH.oM.SQLite.Objects
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Represents the definition of an index in a SQLite database including columns and properties.")]
-    public class IndexDefinition : BHoMObject
+    [Description("Represents the definition of a column in a SQLite table including type, constraints, and metadata.")]
+    public class Column : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the index.")]
-        public virtual string IndexName { get; set; } = "";
+        [Description("The SQLite data type for this column.")]
+        public virtual SqliteDataType DataType { get; set; } = SqliteDataType.TEXT;
 
-        [Description("The name of the table this index belongs to.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("Whether this column can contain null values.")]
+        public virtual bool AllowNull { get; set; } = true;
 
-        [Description("List of column names included in this index in order.")]
-        public virtual List<string> Columns { get; set; } = new List<string>();
+        [Description("Whether this column is a primary key.")]
+        public virtual bool IsPrimaryKey { get; set; } = false;
 
-        [Description("Whether this is a unique index that enforces uniqueness.")]
+        [Description("Whether this column auto-increments for integer primary keys.")]
+        public virtual bool IsAutoIncrement { get; set; } = false;
+
+        [Description("Whether this column has a unique constraint.")]
         public virtual bool IsUnique { get; set; } = false;
 
-        [Description("Whether this is a partial index with a WHERE clause.")]
-        public virtual bool IsPartial { get; set; } = false;
+        [Description("The default value for this column as a string. null if no default.")]
+        public virtual string DefaultValue { get; set; } = null;
 
-        [Description("The WHERE clause for partial indexes.")]
-        public virtual string WhereClause { get; set; } = "";
+        [Description("The maximum length for text columns. Zero means no limit.")]
+        public virtual int MaxLength { get; set; } = 0;
 
-        [Description("The SQL CREATE INDEX statement that created this index.")]
-        public virtual string CreateStatement { get; set; } = "";
+        [Description("The position of this column in the table (0-based).")]
+        public virtual int Position { get; set; } = 0;
 
-        [Description("Whether this index was created automatically by SQLite (e.g., for primary keys).")]
-        public virtual bool IsAutoIndex { get; set; } = false;
-
-        [Description("Sort order for each column in the index (ASC/DESC). Must match Columns list length.")]
-        public virtual List<string> SortOrders { get; set; } = new List<string>();
+        [Description("Additional column attributes or constraints as SQL text.")]
+        public virtual string AdditionalConstraints { get; set; } = "";
 
         /***************************************************/
     }

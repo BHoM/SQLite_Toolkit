@@ -62,9 +62,9 @@ namespace BH.Adapter.SQLite
             }
         }
 
-        private List<ColumnDefinition> GetColumnDefinitions(string tableName)
+        private List<Column> GetColumnDefinitions(string tableName)
         {
-            List<ColumnDefinition> columns = new List<ColumnDefinition>();
+            List<Column> columns = new List<Column>();
 
             try
             {
@@ -77,7 +77,7 @@ namespace BH.Adapter.SQLite
                         while (reader.Read())
                         {
                             // PRAGMA table_info returns: cid, name, type, notnull, dflt_value, pk
-                            ColumnDefinition column = new ColumnDefinition
+                            Column column = new Column
                             {
                                 Position = reader.GetInt32(0),        // cid
                                 Name = reader.GetString(1),           // name
@@ -136,11 +136,11 @@ namespace BH.Adapter.SQLite
                 return SqliteDataType.TEXT;
         }
 
-        private void CheckAutoIncrement(string tableName, List<ColumnDefinition> columns)
+        private void CheckAutoIncrement(string tableName, List<Column> columns)
         {
             try
             {
-                ColumnDefinition pkColumn = columns.Find(c => c.IsPrimaryKey && c.DataType == SqliteDataType.INTEGER);
+                Column pkColumn = columns.Find(c => c.IsPrimaryKey && c.DataType == SqliteDataType.INTEGER);
                 if (pkColumn != null)
                 {
                     using (SqliteCommand command = m_Connection.CreateCommand())
@@ -194,9 +194,9 @@ namespace BH.Adapter.SQLite
             }
         }
 
-        private List<IndexDefinition> GetIndexDefinitions(string tableName)
+        private List<Index> GetIndexDefinitions(string tableName)
         {
-            List<IndexDefinition> indexes = new List<IndexDefinition>();
+            List<Index> indexes = new List<Index>();
 
             try
             {
@@ -217,9 +217,9 @@ namespace BH.Adapter.SQLite
                         while (reader.Read())
                         {
                             // sqlite_master columns: name, unique, sql
-                            IndexDefinition index = new IndexDefinition
+                            Index index = new Index
                             {
-                                IndexName = reader.GetString(0),        // name
+                                Name = reader.GetString(0),        // name
                                 TableName = tableName,
                                 IsUnique = reader.GetInt32(1) == 1,     // unique
                                 CreateStatement = reader.IsDBNull(2) ? null : reader.GetString(2) // sql
@@ -231,7 +231,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Get column information for each index
-                foreach (IndexDefinition index in indexes)
+                foreach (Index index in indexes)
                 {
                     GetIndexColumns(index);
                     if (string.IsNullOrEmpty(index.CreateStatement))
@@ -248,13 +248,13 @@ namespace BH.Adapter.SQLite
             return indexes;
         }
 
-        private void GetIndexColumns(IndexDefinition index)
+        private void GetIndexColumns(Index index)
         {
             try
             {
                 using (SqliteCommand command = m_Connection.CreateCommand())
                 {
-                    command.CommandText = $"PRAGMA index_info(\"{index.IndexName}\");";
+                    command.CommandText = $"PRAGMA index_info(\"{index.Name}\");";
 
                     using (SqliteDataReader reader = command.ExecuteReader())
                     {
@@ -269,11 +269,11 @@ namespace BH.Adapter.SQLite
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordWarning($"Failed to get columns for index '{index.IndexName}': {ex.Message}");
+                BH.Engine.Base.Compute.RecordWarning($"Failed to get columns for index '{index.Name}': {ex.Message}");
             }
         }
 
-        private void GenerateIndexCreateStatement(IndexDefinition index)
+        private void GenerateIndexCreateStatement(Index index)
         {
             if (index.Columns.Any())
             {
@@ -283,7 +283,7 @@ namespace BH.Adapter.SQLite
                 if (index.IsUnique)
                     sql.Append("UNIQUE ");
 
-                sql.Append($"INDEX \"{index.IndexName}\" ON \"{index.TableName}\" (");
+                sql.Append($"INDEX \"{index.Name}\" ON \"{index.Name}\" (");
 
                 List<string> quotedColumns = index.Columns.Select(col => $"\"{col}\"").ToList();
                 sql.Append(string.Join(", ", quotedColumns));

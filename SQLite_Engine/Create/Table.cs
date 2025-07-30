@@ -50,7 +50,7 @@ namespace BH.Engine.SQLite
                 return null;
             }
 
-            if (string.IsNullOrWhiteSpace(tableSchema.TableName))
+            if (string.IsNullOrWhiteSpace(tableSchema.Name))
             {
                 BH.Engine.Base.Compute.RecordError("Cannot create table SQL: table name is null or empty.");
                 return null;
@@ -69,7 +69,7 @@ namespace BH.Engine.SQLite
                 // Drop table if requested
                 if (dropIfExists)
                 {
-                    sqlBuilder.AppendLine($"DROP TABLE IF EXISTS \"{tableSchema.TableName}\";");
+                    sqlBuilder.AppendLine($"DROP TABLE IF EXISTS \"{tableSchema.Name}\";");
                 }
 
                 // Generate CREATE TABLE statement
@@ -79,7 +79,7 @@ namespace BH.Engine.SQLite
                 // Create indexes if defined
                 if (tableSchema.Indexes != null && tableSchema.Indexes.Any())
                 {
-                    foreach (IndexDefinition index in tableSchema.Indexes)
+                    foreach (Index index in tableSchema.Indexes)
                     {
                         string indexSql = GenerateCreateIndexSql(index);
                         sqlBuilder.AppendLine(indexSql);
@@ -90,7 +90,7 @@ namespace BH.Engine.SQLite
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Failed to generate table SQL for {tableSchema.TableName}: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to generate table SQL for {tableSchema.Name}: {ex.Message}");
                 return null;
             }
         }
@@ -107,7 +107,7 @@ namespace BH.Engine.SQLite
             if (ifNotExists)
                 sql.Append("IF NOT EXISTS ");
             
-            sql.Append($"\"{tableSchema.TableName}\" (");
+            sql.Append($"\"{tableSchema.Name}\" (");
 
             // Add columns
             IEnumerable<string> columnDefinitions = tableSchema.Columns.OrderBy(c => c.Position).Select(GenerateColumnDefinition);
@@ -131,7 +131,7 @@ namespace BH.Engine.SQLite
             return sql.ToString();
         }
 
-        private static string GenerateColumnDefinition(ColumnDefinition column)
+        private static string GenerateColumnDefinition(Column column)
         {
             StringBuilder def = new StringBuilder();
             
@@ -196,13 +196,13 @@ namespace BH.Engine.SQLite
             }
         }
 
-        private static string GenerateCreateIndexSql(IndexDefinition index)
+        private static string GenerateCreateIndexSql(Index index)
         {
             if (index == null || !index.Columns.Any())
                 return string.Empty;
 
             // Check for index name from both IndexName property and inherited Name property
-            string indexName = !string.IsNullOrWhiteSpace(index.IndexName) ? index.IndexName : index.Name;
+            string indexName = index.Name;
             if (string.IsNullOrWhiteSpace(indexName))
                 return string.Empty;
 
@@ -212,7 +212,7 @@ namespace BH.Engine.SQLite
             if (index.IsUnique)
                 sql.Append("UNIQUE ");
                 
-            sql.Append($"INDEX IF NOT EXISTS \"{indexName}\" ON \"{index.TableName}\" (");
+            sql.Append($"INDEX IF NOT EXISTS \"{indexName}\" ON \"{index.Name}\" (");
             
             List<string> quotedColumns = index.Columns.Select(col => $"\"{col}\"").ToList();
             sql.Append(string.Join(", ", quotedColumns));

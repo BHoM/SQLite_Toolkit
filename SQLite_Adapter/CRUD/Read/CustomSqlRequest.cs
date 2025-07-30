@@ -54,8 +54,7 @@ namespace BH.Adapter.SQLite
             return result;
         }
 
-        private QueryResult 
-            ExecuteQuery(string sqlQuery, Dictionary<string, object> parameters = null, int timeoutSeconds = 0)
+        private QueryResult ExecuteQuery(string sqlQuery, Dictionary<string, object> parameters = null, int timeoutSeconds = 0)
         {
             QueryResult result = new QueryResult
             {
@@ -227,9 +226,6 @@ namespace BH.Adapter.SQLite
             }
         }
 
-        /// <summary>
-        /// Converts SQLite exceptions to user-friendly error messages
-        /// </summary>
         private string GetUserFriendlySqliteErrorMessage(Microsoft.Data.Sqlite.SqliteException sqlEx, string originalSqlQuery)
         {
             string message = sqlEx.Message.ToLower();
@@ -303,9 +299,6 @@ namespace BH.Adapter.SQLite
             return $"SQLite Error: {sqlEx.Message}";
         }
 
-        /// <summary>
-        /// Extracts table name from SQLite error message
-        /// </summary>
         private string ExtractTableNameFromError(string sqlQuery)
         {
             try

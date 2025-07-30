@@ -1,6 +1,6 @@
 /*
  * This file is part of the Buildings and Habitats object Model (BHoM)
- * Copyright (c) 2015 - 2024, the respective contributors. All rights reserved.
+ * Copyright (c) 2015 - 2025, the respective contributors. All rights reserved.
  *
  * Each contributor holds copyright over their respective contributions.
  * The project versioning (Git) records all such contribution source information.
@@ -20,32 +20,54 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Adapters.SQLite;
-using BH.oM.Base;
-using System;
+using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Objects;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public static partial class Convert
+    public static partial class Query
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        // Add methods for converting to BHoM from the specific software types. 
-        // Example:
-        public static BHoMObject FromSQLite(this ExampleObject node)
+        [Description("Gets a list of required columns (non-nullable) that are missing from data rows.")]
+        [Input("tableData", "The TableData object to analyse.")]
+        [Output("columns", "List of required column names missing from data.")]
+        public static List<string> GetMissingDataColumns(Table tableData)
         {
-            //Insert code for convertion
-            throw new NotImplementedException();
+            if (tableData == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot analyse missing data columns: tableData is null.");
+                return new List<string>();
+            }
+
+            if (tableData.Schema?.Columns == null || !tableData.Schema.Columns.Any())
+                return new List<string>();
+
+            if (tableData.Rows == null || !tableData.Rows.Any())
+                return tableData.Schema.Columns.Where(c => !c.AllowNull).Select(c => c.Name).ToList();
+
+            HashSet<string> requiredColumns = tableData.Schema.Columns
+                .Where(c => !c.AllowNull && string.IsNullOrEmpty(c.DefaultValue))
+                .Select(c => c.Name)
+                .ToHashSet();
+
+            HashSet<string> dataColumns = new HashSet<string>();
+            foreach (var row in tableData.Rows)
+            {
+                foreach (string key in row.Keys)
+                {
+                    dataColumns.Add(key);
+                }
+            }
+
+            return requiredColumns.Where(col => !dataColumns.Contains(col)).ToList();
         }
 
         /***************************************************/
     }
-}
-
-
+} 

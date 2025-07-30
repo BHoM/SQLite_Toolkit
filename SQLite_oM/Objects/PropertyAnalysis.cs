@@ -22,45 +22,56 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Reflection;
 
-namespace BH.oM.SQLite.Configs
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Configuration settings for SQLite table operations and schema management.")]
-    public class TableConfig : BHoMObject
+    [Description("Analysis of an individual property within a BHoM object type including its data characteristics and relationships.")]
+    public class PropertyAnalysis : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to operate on.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("The PropertyInfo object representing the property being analysed.")]
+        public virtual PropertyInfo PropertyInfo { get; set; }
 
-        [Description("Conflict resolution strategy for handling data conflicts during Insert or Update operations.")]
-        public virtual ConflictResolution ConflictResolution { get; set; } = ConflictResolution.Ignore;
+        [Description("The name of the property.")]
+        public virtual string PropertyName { get; set; }
 
-        [Description("Whether to include the BHoM_Guid column for object identification.")]
-        public virtual bool IncludeBHoMGuid { get; set; } = true;
+        [Description("The .NET type of the property.")]
+        public virtual Type PropertyType { get; set; }
 
-        [Description("Whether to include timestamp columns for creation and modification tracking.")]
-        public virtual bool IncludeTimestamps { get; set; } = true;
+        [Description("The corresponding SQLite data type for this property.")]
+        public virtual SqliteDataType SqliteDataType { get; set; }
 
-        [Description("Custom column mappings from property names to column names.")]
-        public virtual Dictionary<string, string> ColumnMappings { get; set; } = new Dictionary<string, string>();
+        [Description("The type of relationship this property represents.")]
+        public virtual RelationshipType RelationshipType { get; set; }
 
-        [Description("Properties to exclude from table schema when auto-creating tables.")]
-        public virtual List<string> ExcludedProperties { get; set; } = new List<string>();
+        [Description("Whether this property contains a BHoM object.")]
+        public virtual bool IsBHoMObject { get; set; } = false;
 
-        [Description("Whether to create indexes automatically on commonly queried columns.")]
-        public virtual bool AutoCreateIndexes { get; set; } = true;
+        [Description("Whether this property contains a collection of BHoM objects.")]
+        public virtual bool IsBHoMCollection { get; set; } = false;
 
-        [Description("Maximum number of rows to process in a single batch operation.")]
-        public virtual int BatchSize { get; set; } = 1000;
+        [Description("The element type if this property is a collection.")]
+        public virtual Type CollectionElementType { get; set; }
+
+        [Description("Sample values from actual objects to understand data patterns.")]
+        public virtual List<object> SampleValues { get; set; } = new List<object>();
+
+        [Description("Whether null values were found in the sample data.")]
+        public virtual bool HasNullValues { get; set; } = false;
+
+        [Description("Maximum text length found in the sample data for text properties.")]
+        public virtual int MaxTextLength { get; set; } = 0;
 
         /***************************************************/
     }
