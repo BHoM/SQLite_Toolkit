@@ -35,20 +35,20 @@ namespace BH.Adapter.SQLite
         /***************************************************/
 
         // Create method for multiple TableData objects
-        private bool Create(IEnumerable<TableData> tableDatas)
+        private bool Create(IEnumerable<Table> tableDatas)
         {
             if (tableDatas == null)
                 return false;
 
             bool success = true;
-            foreach (TableData tableData in tableDatas)
+            foreach (Table tableData in tableDatas)
             {
                 success &= Create(tableData);
             }
             return success;
         }
 
-        private bool Create(TableData tableData)
+        private bool Create(Table tableData)
         {
             // Create method for TableData objects - creates table and inserts data
             if (tableData == null)
@@ -89,7 +89,7 @@ namespace BH.Adapter.SQLite
         /**** Private Helper Methods                   ****/
         /***************************************************/
 
-        private bool InsertTableDataRows(TableData tableData)
+        private bool InsertTableDataRows(Table tableData)
         {
             if (tableData?.Rows == null || !tableData.Rows.Any())
                 return true;

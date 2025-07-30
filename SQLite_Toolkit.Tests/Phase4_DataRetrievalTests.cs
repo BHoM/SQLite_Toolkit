@@ -471,7 +471,7 @@ namespace SQLite_Toolkit.Tests
             // Create table
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = tableName,
+                Name = tableName,
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -521,7 +521,7 @@ namespace SQLite_Toolkit.Tests
             // Create category table
             TableSchema categorySchema = new TableSchema()
             {
-                TableName = tableName,
+                Name = tableName,
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -572,7 +572,7 @@ namespace SQLite_Toolkit.Tests
             // Create table
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = tableName,
+                Name = tableName,
                 Columns = new List<Column>()
                 {
                     new Column()

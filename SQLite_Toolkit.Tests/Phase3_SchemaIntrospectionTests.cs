@@ -430,7 +430,7 @@ namespace SQLite_Toolkit.Tests
         {
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = tableName,
+                Name = tableName,
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -481,7 +481,7 @@ namespace SQLite_Toolkit.Tests
         {
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = tableName,
+                Name = tableName,
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -542,7 +542,7 @@ namespace SQLite_Toolkit.Tests
         {
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = tableName,
+                Name = tableName,
                 Columns = new List<Column>()
                 {
                     new Column()

@@ -53,6 +53,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Modify\" />
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;$(TargetDir)$(TargetFileName)&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
     <Exec Command="xcopy &quot;$(TargetDir)Microsoft.Data.Sqlite.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />

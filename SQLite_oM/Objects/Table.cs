@@ -33,7 +33,7 @@ namespace BH.oM.SQLite.Objects
     /***************************************************/
 
     [Description("Represents a combination of table schema definition and data rows for atomic table creation and population operations.")]
-    public class TableData : BHoMObject
+    public class Table : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/

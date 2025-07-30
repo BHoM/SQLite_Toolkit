@@ -152,7 +152,7 @@ namespace SQLite_Toolkit.Tests.Base
         {
             var tableSchema = new TableSchema()
             {
-                TableName = tableName,
+                Name = tableName,
                 Columns = columns
             };
 

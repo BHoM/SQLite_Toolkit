@@ -48,7 +48,7 @@ namespace SQLite_Toolkit.Tests
             // Arrange
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = "TestTable",
+                Name = "TestTable",
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -110,7 +110,7 @@ namespace SQLite_Toolkit.Tests
 
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = "ExecutionTestTable",
+                Name = "ExecutionTestTable",
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -166,7 +166,7 @@ namespace SQLite_Toolkit.Tests
             // Arrange
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = "DataTypesTable",
+                Name = "DataTypesTable",
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -223,7 +223,7 @@ namespace SQLite_Toolkit.Tests
             // Arrange
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = "ConstraintsTable",
+                Name = "ConstraintsTable",
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -283,7 +283,7 @@ namespace SQLite_Toolkit.Tests
 
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = "IndexTestTable",
+                Name = "IndexTestTable",
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -365,7 +365,7 @@ namespace SQLite_Toolkit.Tests
             // Test empty table name
             TableSchema emptyNameSchema = new TableSchema()
             {
-                TableName = "",
+                Name = "",
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -383,7 +383,7 @@ namespace SQLite_Toolkit.Tests
             // Test no columns
             TableSchema noColumnsSchema = new TableSchema()
             {
-                TableName = "TestTable",
+                Name = "TestTable",
                 Columns = new List<Column>()
             };
 
@@ -393,7 +393,7 @@ namespace SQLite_Toolkit.Tests
             // Test null columns
             TableSchema nullColumnsSchema = new TableSchema()
             {
-                TableName = "TestTable",
+                Name = "TestTable",
                 Columns = null
             };
 
@@ -412,7 +412,7 @@ namespace SQLite_Toolkit.Tests
 
             TableSchema tableSchema = new TableSchema()
             {
-                TableName = "IfNotExistsTable",
+                Name = "IfNotExistsTable",
                 Columns = new List<Column>()
                 {
                     new Column()
@@ -468,7 +468,7 @@ namespace SQLite_Toolkit.Tests
 
             TableSchema complexTableSchema = new TableSchema()
             {
-                TableName = "ComplexTable",
+                Name = "ComplexTable",
                 Columns = new List<Column>()
                 {
                     new Column()
