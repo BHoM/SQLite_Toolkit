@@ -72,3 +72,8 @@ Review.md
 ####################
 *.code-workspace
 .vscode/
+.cursor/
+
+# Test Data #
+#############
+TestDatabases/
