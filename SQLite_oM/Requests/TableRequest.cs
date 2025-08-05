@@ -39,9 +39,6 @@ namespace BH.oM.SQLite.Requests
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("The name of the table to query.")]
-        public virtual string TableName { get; set; } = "";
-
         [Description("List of column names to include in the result. Empty list returns all columns.")]
         public virtual List<string> Columns { get; set; } = new List<string>();
 

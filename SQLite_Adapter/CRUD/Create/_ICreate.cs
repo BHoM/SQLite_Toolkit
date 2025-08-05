@@ -40,13 +40,13 @@ namespace BH.Adapter.SQLite
         // Specifically, the Create is primarily called by the Push (in the context of the CRUD method, and also by other methods that require it: Update, UpdateProperty).
 
         // The Create should only contain the logic that generates the objects in the external software.
+        // Note: With simplified scope, users manage their own table creation and data insertion.
+        // This adapter focuses on connection management and query execution.
         protected override bool ICreate<T>(IEnumerable<T> objects, ActionConfig actionConfig = null)
         {
-            // The base BHoM adapter handles most of the push logic
-            // This override just ensures connection is available and updates timestamps
             if (m_Connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot push data: no database connection. Please open a connection first.");
+                BH.Engine.Base.Compute.RecordError("Cannot create objects: no database connection. Please open a connection first.");
                 return false;
             }
 
