@@ -259,7 +259,7 @@ namespace SQLite_Toolkit.Tests
 
             TableRequest tableRequest = new TableRequest()
             {
-                TableName = "DataRetrievalTable",
+                Name = "DataRetrievalTable",
                 Columns = new List<string> { "Id", "Name", "Value" },
                 OrderBy = new List<string> { "Id ASC" },
                 Limit = 3
@@ -394,7 +394,7 @@ namespace SQLite_Toolkit.Tests
 
             TableRequest tableRequest = new TableRequest()
             {
-                TableName = "FilterTestTable",
+                Name = "FilterTestTable",
                 Columns = new List<string> { "Id", "Name", "Value" },
                 WhereConditions = new List<string> { "Id > 3", "Value IS NOT NULL" },
                 OrderBy = new List<string> { "Id DESC" },

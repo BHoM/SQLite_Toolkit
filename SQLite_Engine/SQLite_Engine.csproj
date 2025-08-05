@@ -51,6 +51,11 @@
       <Private>false</Private>
       <SpecificVersion>false</SpecificVersion>
     </Reference>
+    <Reference Include="Adapter_oM">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Adapter_oM.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

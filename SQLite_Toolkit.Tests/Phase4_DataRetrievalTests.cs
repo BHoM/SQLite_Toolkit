@@ -197,7 +197,7 @@ namespace SQLite_Toolkit.Tests
 
             TableRequest tableRequest = new TableRequest()
             {
-                TableName = "AdvancedFilterTable",
+                Name = "AdvancedFilterTable",
                 Columns = new List<string> { "Id", "Name", "Value" },
                 WhereConditions = new List<string> 
                 { 
@@ -262,7 +262,7 @@ namespace SQLite_Toolkit.Tests
 
             TableRequest tableRequest = new TableRequest()
             {
-                TableName = "PaginationTestTable",
+                Name = "PaginationTestTable",
                 Columns = new List<string> { "Name", "Value" },
                 Distinct = true,
                 OrderBy = new List<string> { "Value ASC" },
@@ -338,7 +338,7 @@ namespace SQLite_Toolkit.Tests
 
             TableRequest tableRequest = new TableRequest()
             {
-                TableName = "EmptyResultsTable",
+                Name = "EmptyResultsTable",
                 Columns = new List<string> { "Id", "Name", "Value" },
                 WhereConditions = new List<string> { "Value > 1000.0" }, // No data should match
                 OrderBy = new List<string> { "Id ASC" }
@@ -432,7 +432,7 @@ namespace SQLite_Toolkit.Tests
 
             TableRequest tableRequest = new TableRequest()
             {
-                TableName = "ColumnSelectionTable",
+                Name = "ColumnSelectionTable",
                 Columns = new List<string> { "Id", "Name" }, // Only select specific columns
                 WhereConditions = new List<string> { "Id <= 5" },
                 OrderBy = new List<string> { "Id ASC" }

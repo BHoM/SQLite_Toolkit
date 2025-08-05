@@ -306,7 +306,7 @@ namespace SQLite_Toolkit.Tests
 
             TableRequest invalidTableRequest = new TableRequest()
             {
-                TableName = "TableRequestErrorTable",
+                Name = "TableRequestErrorTable",
                 Columns = new List<string> { "NonExistentColumn" }, // Invalid column
                 WhereConditions = new List<string> { "AnotherNonExistentColumn = 'test'" }, // Invalid condition
                 OrderBy = new List<string> { "YetAnotherNonExistentColumn ASC" } // Invalid order by
