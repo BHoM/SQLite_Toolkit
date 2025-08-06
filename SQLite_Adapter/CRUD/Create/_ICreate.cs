@@ -24,6 +24,9 @@ using BH.oM.Adapter;
 using BH.oM.Base;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite;
+using BH.oM.SQLite.Configs;
+using BH.Engine.SQLite;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,11 +74,142 @@ namespace BH.Adapter.SQLite
 
         /***************************************************/
 
-        // Fallback case. If no specific Create is found, here we should handle what happens then.
+        // Fallback case. If no specific Create is found, use the intelligent object push logic.
         protected bool Create(IBHoMObject obj)
         {
-            BH.Engine.Base.Compute.RecordError($"No specific Create method found for {obj.GetType().Name}.");
-            return false;
+            if (obj == null)
+            {
+                BH.Engine.Base.Compute.RecordWarning("Cannot create object: object is null.");
+                return false;
+            }
+
+            if (m_Connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot create object: no database connection.");
+                return false;
+            }
+
+            Type objectType = obj.GetType();
+            PushConfig config = new PushConfig(); // Use default config for CRUD operations
+
+            try
+            {
+                // Step 1: Ensure __Types table exists
+                m_Connection.EnsureTypesTableExists();
+
+                // Step 2: Get or register table name for this type
+                string tableName = m_Connection.GetTableName(objectType.FullName);
+                if (string.IsNullOrEmpty(tableName))
+                {
+                    TypeRegistration registration = m_Connection.RegisterType(objectType);
+                    if (registration == null)
+                    {
+                        BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
+                        return false;
+                    }
+                    tableName = registration.TableName;
+                    if (string.IsNullOrEmpty(tableName))
+                    {
+                        BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
+                        return false;
+                    }
+                }
+
+                // Step 3: Ensure table exists (create if it doesn't)
+                if (!m_Connection.TableExists(tableName))
+                {
+                    bool tableCreated = BH.Engine.SQLite.Compute.CreateTableForObjectType(m_Connection, objectType, config);
+                    if (!tableCreated)
+                    {
+                        BH.Engine.Base.Compute.RecordError($"Failed to create table '{tableName}' for type {objectType.Name}.");
+                        return false;
+                    }
+                    BH.Engine.Base.Compute.RecordNote($"Created table '{tableName}' for type {objectType.Name}.");
+                }
+
+                // Step 4: Insert the object data
+                return InsertSingleObject(obj, tableName, objectType, config);
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Failed to create object of type {objectType.Name}: {ex.Message}");
+                return false;
+            }
+        }
+
+        /***************************************************/
+
+        private bool InsertSingleObject(IBHoMObject obj, string tableName, Type objectType, PushConfig config)
+        {
+            if (obj == null || string.IsNullOrEmpty(tableName))
+                return false;
+
+            try
+            {
+                // Resolve the column schema for this object type
+                Dictionary<string, PropertyColumnInfo> columnSchema = objectType.ResolveColumnSchema(config);
+                if (columnSchema == null || !columnSchema.Any())
+                {
+                    BH.Engine.Base.Compute.RecordWarning($"No column mappings found for type {objectType.Name}. Cannot insert data.");
+                    return false;
+                }
+
+                // Extract column values from the object
+                Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
+
+                // Include BHoMGuid if it's not already mapped
+                if (!columnValues.ContainsKey("BHoMGuid") && obj.BHoM_Guid != Guid.Empty)
+                {
+                    columnValues["BHoMGuid"] = obj.BHoM_Guid.ToString();
+                }
+                else if (!columnValues.ContainsKey("BHoMGuid"))
+                {
+                    columnValues["BHoMGuid"] = Guid.NewGuid().ToString();
+                }
+
+                // Build and execute INSERT statement
+                return ExecuteSingleInsert(tableName, columnValues);
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Failed to insert object into table '{tableName}': {ex.Message}");
+                return false;
+            }
+        }
+
+        /***************************************************/
+
+        private bool ExecuteSingleInsert(string tableName, Dictionary<string, object> columnValues)
+        {
+            if (columnValues == null || !columnValues.Any())
+                return false;
+
+            try
+            {
+                List<string> columnNames = columnValues.Keys.ToList();
+                string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
+                string placeholders = string.Join(", ", columnNames.Select(col => $"@{col}"));
+                
+                string insertSql = $"INSERT OR REPLACE INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
+
+                using (SqliteCommand command = new SqliteCommand(insertSql, m_Connection))
+                {
+                    // Add parameters
+                    foreach (KeyValuePair<string, object> columnValue in columnValues)
+                    {
+                        object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(columnValue.Value);
+                        command.Parameters.AddWithValue($"@{columnValue.Key}", sqliteValue);
+                    }
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Failed to execute INSERT statement for table '{tableName}': {ex.Message}");
+                return false;
+            }
         }
 
         /***************************************************/

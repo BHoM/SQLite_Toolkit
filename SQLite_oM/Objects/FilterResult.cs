@@ -22,43 +22,38 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.Data.Requests;
-using BH.oM.SQLite;
-using BH.oM.SQLite.Objects;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.oM.SQLite.Requests
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Request for filtering database records based on value ranges for numeric and DateTime columns.")]
-    public class RangeFilterRequest : BHoMObject, IRequest
+    [Description("Contains the result of processing a filter request into SQL components. \n" +
+        "Includes the generated WHERE clause and associated parameters for safe query execution.")]
+    public class FilterResult : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("Column range filters where each column has minimum and maximum values defined by GeneralDomain objects. \n" +
-            "Key is the column name, value is a GeneralDomain with Min and Max values. \n" +
-            "Supports numeric types (int, double, decimal) and DateTime. \n" +
-            "Example: {'Price': new GeneralDomain(100.0, 500.0), 'DateCreated': new GeneralDomain(DateTime(2023,1,1), DateTime(2023,12,31))}")]
-        public virtual Dictionary<string, GeneralDomain> ColumnRanges { get; set; } = new Dictionary<string, GeneralDomain>();
+        [Description("The SQL WHERE clause generated from the filter, without the 'WHERE' keyword.")]
+        public virtual string WhereClause { get; set; } = "";
 
-        [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
+        [Description("Dictionary of parameter names and values for safe parameterized query execution. \n" +
+            "Keys are parameter names (including @ prefix), values are the parameter values.")]
+        public virtual Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
+
+        [Description("The type of filter that generated this result (e.g., 'Equality', 'Range', 'Combined').")]
+        public virtual string FilterType { get; set; } = "";
+
+        [Description("Optional limit on the number of results to return. Zero means no limit.")]
+        public virtual int Limit { get; set; } = 0;
+
+        [Description("Optional table name the filter is intended for. Can be used for validation.")]
         public virtual string TableName { get; set; } = "";
-
-        [Description("Whether range bounds are inclusive (default) or exclusive. \n" +
-            "If true: Min <= value <= Max. If false: Min < value < Max.")]
-        public virtual bool InclusiveBounds { get; set; } = true;
-
-        [Description("Logical operator to combine multiple column filters. Default is AND.")]
-        public virtual LogicalOperator Logic { get; set; } = LogicalOperator.And;
-
-        [Description("Maximum number of results to return. If 0, returns all matching records.")]
-        public virtual int MaxResults { get; set; } = 0;
 
         /***************************************************/
     }

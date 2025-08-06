@@ -20,42 +20,48 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.Data.Requests;
-using BH.oM.SQLite;
-using System.Collections.Generic;
+using BH.oM.SQLite.Objects;
 using System.ComponentModel;
+using System.Text;
 
-namespace BH.oM.SQLite.Requests
+namespace BH.Engine.SQLite
 {
-    /***************************************************/
-    /****               Public Classes              ****/
-    /***************************************************/
-
-    [Description("Request for filtering database records based on exact column value matches with support for multiple values per column (IN clause).")]
-    public class EqualityFilterRequest : BHoMObject, IRequest
+    public static partial class Create
     {
         /***************************************************/
-        /**** Properties                              ****/
+        /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Column-value pairs where each column can have multiple values for IN clause filtering. \n" +
-            "Key is the column name, value is a list of objects to match against. \n" +
-            "Example: {'Status': ['Active', 'Pending'], 'Category': ['A', 'B', 'C']}")]
-        public virtual Dictionary<string, List<object>> ColumnValues { get; set; } = new Dictionary<string, List<object>>();
+        [Description("Builds a parameterized DELETE query from a FilterResult and table information.")]
+        [Input("tableName", "The name of the table to delete from.")]
+        [Input("filterResult", "The filter result containing WHERE clause and parameters. Required for safety.")]
+        [Output("sql", "Complete SQL DELETE statement, or null if construction failed.")]
+        public static string DeleteQuery(string tableName, FilterResult filterResult)
+        {
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: table name is null or empty.");
+                return null;
+            }
 
-        [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
-        public virtual string TableName { get; set; } = "";
+            if (filterResult == null || string.IsNullOrWhiteSpace(filterResult.WhereClause))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: filter result with WHERE clause is required for safety.");
+                return null;
+            }
 
-        [Description("Logical operator to combine multiple column filters. Default is AND.")]
-        public virtual LogicalOperator Logic { get; set; } = LogicalOperator.And;
+            StringBuilder sql = new StringBuilder();
 
-        [Description("Maximum number of results to return. If 0, returns all matching records.")]
-        public virtual int MaxResults { get; set; } = 0;
+            // DELETE FROM clause
+            sql.Append($"DELETE FROM \"{tableName}\"");
+
+            // WHERE clause (required)
+            sql.Append($" WHERE {filterResult.WhereClause}");
+
+            return sql.ToString();
+        }
 
         /***************************************************/
     }
-
-    /***************************************************/
 }

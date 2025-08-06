@@ -24,6 +24,7 @@ using BH.Engine.Base;
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite;
+using BH.oM.SQLite.Configs;
 using BH.oM.SQLite.Objects;
 using System;
 using System.Collections.Generic;

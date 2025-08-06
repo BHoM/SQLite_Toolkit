@@ -26,7 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.oM.SQLite
+namespace BH.oM.SQLite.Configs
 {
     /***************************************************/
     /****               Public Classes               ****/

@@ -20,41 +20,25 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
-using BH.oM.Base.Attributes;
-using BH.oM.Data.Requests;
-using BH.oM.SQLite;
-using System.Collections.Generic;
 using System.ComponentModel;
+using BH.oM.Base.Attributes;
 
-namespace BH.oM.SQLite.Requests
+namespace BH.oM.SQLite
 {
     /***************************************************/
-    /****               Public Classes              ****/
+    /****               Public Enums               ****/
     /***************************************************/
 
-    [Description("Request for filtering database records based on exact column value matches with support for multiple values per column (IN clause).")]
-    public class EqualityFilterRequest : BHoMObject, IRequest
+    [Description("Defines logical operators for combining multiple filter conditions in SQL queries.")]
+    public enum LogicalOperator
     {
-        /***************************************************/
-        /**** Properties                              ****/
-        /***************************************************/
+        [Description("Combine conditions using AND logic - all conditions must be true.")]
+        [DisplayText("AND")]
+        And,
 
-        [Description("Column-value pairs where each column can have multiple values for IN clause filtering. \n" +
-            "Key is the column name, value is a list of objects to match against. \n" +
-            "Example: {'Status': ['Active', 'Pending'], 'Category': ['A', 'B', 'C']}")]
-        public virtual Dictionary<string, List<object>> ColumnValues { get; set; } = new Dictionary<string, List<object>>();
-
-        [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
-        public virtual string TableName { get; set; } = "";
-
-        [Description("Logical operator to combine multiple column filters. Default is AND.")]
-        public virtual LogicalOperator Logic { get; set; } = LogicalOperator.And;
-
-        [Description("Maximum number of results to return. If 0, returns all matching records.")]
-        public virtual int MaxResults { get; set; } = 0;
-
-        /***************************************************/
+        [Description("Combine conditions using OR logic - at least one condition must be true.")]
+        [DisplayText("OR")]
+        Or
     }
 
     /***************************************************/

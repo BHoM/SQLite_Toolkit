@@ -20,42 +20,30 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.Data.Requests;
-using BH.oM.SQLite;
-using System.Collections.Generic;
+using BH.oM.SQLite.Objects;
+using Microsoft.Data.Sqlite;
+using System;
 using System.ComponentModel;
 
-namespace BH.oM.SQLite.Requests
+namespace BH.Engine.SQLite
 {
-    /***************************************************/
-    /****               Public Classes              ****/
-    /***************************************************/
-
-    [Description("Request for filtering database records based on exact column value matches with support for multiple values per column (IN clause).")]
-    public class EqualityFilterRequest : BHoMObject, IRequest
+    public static partial class Query
     {
         /***************************************************/
-        /**** Properties                              ****/
+        /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Column-value pairs where each column can have multiple values for IN clause filtering. \n" +
-            "Key is the column name, value is a list of objects to match against. \n" +
-            "Example: {'Status': ['Active', 'Pending'], 'Category': ['A', 'B', 'C']}")]
-        public virtual Dictionary<string, List<object>> ColumnValues { get; set; } = new Dictionary<string, List<object>>();
-
-        [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
-        public virtual string TableName { get; set; } = "";
-
-        [Description("Logical operator to combine multiple column filters. Default is AND.")]
-        public virtual LogicalOperator Logic { get; set; } = LogicalOperator.And;
-
-        [Description("Maximum number of results to return. If 0, returns all matching records.")]
-        public virtual int MaxResults { get; set; } = 0;
+        [Description("Checks if a type is already registered in the database.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Input("type", "The .NET Type to check.")]
+        [Output("isRegistered", "True if the type is registered, false otherwise.")]
+        public static bool IsTypeRegistered(this SqliteConnection connection, Type type)
+        {
+            TypeRegistration registration = connection.LookupTypeRegistration(type);
+            return registration != null;
+        }
 
         /***************************************************/
     }
-
-    /***************************************************/
 }
