@@ -153,7 +153,7 @@ namespace BH.Adapter.SQLite
                 // Validate the provided table name
                 if (!BH.Engine.SQLite.Query.ValidateTableName(config.Table))
                 {
-                    BH.Engine.Base.Compute.RecordError($"Invalid table name provided in config: '{config.Table}'");
+                    BH.Engine.Base.Compute.RecordError($"Invalid table name provided in config: '{config.Table}'.");
                     return null;
                 }
 
@@ -175,15 +175,15 @@ namespace BH.Adapter.SQLite
                 return tableName;
             }
 
-                            // Register new type and get table name
-                TypeRegistration registration = m_Connection.RegisterType(objectType);
-                if (registration == null)
-                {
-                    BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
-                    return null;
-                }
-                tableName = registration.TableName;
-                if (string.IsNullOrEmpty(tableName))
+            // Register new type and get table name
+            TypeRegistration registration = m_Connection.RegisterType(objectType);
+            if (registration == null)
+            {
+                BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
+                return null;
+            }
+            tableName = registration.TableName;
+            if (string.IsNullOrEmpty(tableName))
             {
                 BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
                 return null;
@@ -253,7 +253,7 @@ namespace BH.Adapter.SQLite
             {
                 // Extract all column names from the schema
                 List<string> columnNames = columnSchema.Keys.ToList();
-                
+
                 // Add BHoMGuid column if not already present in schema
                 if (!columnNames.Contains("BHoMGuid"))
                 {
@@ -263,7 +263,7 @@ namespace BH.Adapter.SQLite
                 // Build INSERT statement
                 string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
                 string placeholders = string.Join(", ", columnNames.Select((col, index) => $"@param{index}"));
-                
+
                 string insertSql = $"INSERT OR REPLACE INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
 
                 using (SqliteCommand command = new SqliteCommand(insertSql, m_Connection))
@@ -279,7 +279,7 @@ namespace BH.Adapter.SQLite
                     {
                         // Extract column values for this object
                         Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
-                        
+
                         // Add BHoMGuid if not already extracted
                         if (!columnValues.ContainsKey("BHoMGuid"))
                         {
@@ -291,7 +291,7 @@ namespace BH.Adapter.SQLite
                         {
                             string columnName = columnNames[i];
                             object value = columnValues.ContainsKey(columnName) ? columnValues[columnName] : null;
-                            
+
                             // Convert to SQLite-compatible value
                             object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(value);
                             command.Parameters[$"@param{i}"].Value = sqliteValue;

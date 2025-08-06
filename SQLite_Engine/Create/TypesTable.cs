@@ -58,7 +58,6 @@ namespace BH.Engine.SQLite
                 using (SqliteCommand command = new SqliteCommand(createTableSql, connection))
                 {
                     command.ExecuteNonQuery();
-                    // Note: Using CREATE TABLE IF NOT EXISTS, so this message only shows when table is actually created
                     return true;
                 }
             }

@@ -49,16 +49,20 @@ namespace BH.Adapter.SQLite
         [Output("adapter", "The created SQLite adapter.")]
         public SQLiteAdapter(string filepath = "", SQLiteSettings settings = null, bool active = false)
         {
-            // Set the SQLite-specific settings
-            if (settings != null)
-                m_sqliteSettings = settings;
-            
-            // Store the file path and active state
-            m_FilePath = filepath;
-            m_Active = active;
-            m_AdapterSettings.UseAdapterId = false;
+            if (active)
+            {
+                // Set the SQLite-specific settings
+                if (settings != null)
+                    m_sqliteSettings = settings;
 
-            ExecuteCommand(new oM.Adapter.Commands.Open() { FileName = m_FilePath });
+                // Store the file path and active state
+                m_FilePath = filepath;
+                m_Active = active;
+                m_AdapterSettings.UseAdapterId = false;
+
+                ExecuteCommand(new oM.Adapter.Commands.Open() { FileName = m_FilePath });
+            }
+
         }
 
         /***************************************************/

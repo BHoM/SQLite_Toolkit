@@ -53,7 +53,7 @@ namespace BH.Engine.SQLite
                 using (var command = new SqliteCommand(checkSql, connection))
                 {
                     command.Parameters.AddWithValue("@TableName", tableName);
-                    long count = (long)command.ExecuteScalar();
+                    int count = (int)command.ExecuteScalar();
                     return count > 0;
                 }
             }

@@ -70,13 +70,13 @@ namespace BH.Adapter.SQLite
                 string filePath = !string.IsNullOrEmpty(command.FileName) ? command.FileName : m_FilePath;
 
                 m_Connection = ConnectToDatabase(filePath, settings);
-                
+
                 if (m_Connection != null)
                 {
                     m_ConnectionState = System.Data.ConnectionState.Open;
                     m_ConnectedAt = DateTime.Now;
                     m_LastUsed = DateTime.Now;
-                    
+
                     BH.Engine.Base.Compute.RecordNote($"Successfully opened SQLite database connection: {(string.IsNullOrEmpty(filePath) ? "in-memory" : filePath)}");
                     output.Item2 = true;
                 }
@@ -89,7 +89,7 @@ namespace BH.Adapter.SQLite
             }
             catch (Exception ex)
             {
-                                        m_ConnectionState = System.Data.ConnectionState.Broken;
+                m_ConnectionState = System.Data.ConnectionState.Broken;
                 BH.Engine.Base.Compute.RecordError($"Failed to open SQLite database connection: {ex.Message}");
                 output.Item2 = false;
             }
@@ -114,10 +114,10 @@ namespace BH.Adapter.SQLite
 
                 bool optimiseOnClose = false; // Default behaviour, could be enhanced with settings
                 bool success = CloseConnection(optimiseOnClose);
-                
+
                 if (success)
                 {
-                                            m_ConnectionState = System.Data.ConnectionState.Closed;
+                    m_ConnectionState = System.Data.ConnectionState.Closed;
                     BH.Engine.Base.Compute.RecordNote("SQLite database connection closed successfully.");
                     output.Item2 = true;
                 }
@@ -130,7 +130,7 @@ namespace BH.Adapter.SQLite
             }
             catch (Exception ex)
             {
-                                        m_ConnectionState = System.Data.ConnectionState.Broken;
+                m_ConnectionState = System.Data.ConnectionState.Broken;
                 BH.Engine.Base.Compute.RecordError($"Failed to close SQLite database connection: {ex.Message}");
                 output.Item2 = false;
             }
@@ -143,9 +143,9 @@ namespace BH.Adapter.SQLite
         public Output<List<object>, bool> ExecuteCommand(IExecuteCommand command, ActionConfig actionConfig = null)
         {
             Output<List<object>, bool> output = new Output<List<object>, bool>() { Item1 = null, Item2 = false };
-            
+
             BH.Engine.Base.Compute.RecordWarning($"The command {command.GetType().Name} is not supported by this Adapter.");
-            
+
             return output;
         }
 
@@ -178,7 +178,7 @@ namespace BH.Adapter.SQLite
                         else
                         {
                             builder.DataSource = filePath;
-                            
+
                             // Create directory if it doesn't exist
                             string directory = Path.GetDirectoryName(filePath);
                             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -216,7 +216,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 SqliteConnection connection = new SqliteConnection(builder.ConnectionString);
-                
+
                 try
                 {
                     connection.Open();
@@ -248,72 +248,65 @@ namespace BH.Adapter.SQLite
 
         private void ConfigureConnection(SqliteConnection connection, SQLiteSettings settings)
         {
-            try
+            // Enable WAL mode if requested
+            if (settings.EnableWalMode)
             {
-                // Enable WAL mode if requested
-                if (settings.EnableWalMode)
-                {
-                    try
-                    {
-                        using (SqliteCommand command = connection.CreateCommand())
-                        {
-                            command.CommandText = "PRAGMA journal_mode = WAL;";
-                            command.ExecuteNonQuery();
-                            m_WalModeEnabled = true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        BH.Engine.Base.Compute.RecordWarning($"Failed to enable WAL mode: {ex.Message}");
-                    }
-                }
-
-                // Enable foreign keys if requested
-                if (settings.EnableForeignKeys)
-                {
-                    try
-                    {
-                        using (SqliteCommand command = connection.CreateCommand())
-                        {
-                            command.CommandText = "PRAGMA foreign_keys = ON;";
-                            command.ExecuteNonQuery();
-                            m_ForeignKeysEnabled = true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        BH.Engine.Base.Compute.RecordWarning($"Failed to enable foreign keys: {ex.Message}");
-                    }
-                }
-
-                // Set cache size
                 try
                 {
                     using (SqliteCommand command = connection.CreateCommand())
                     {
-                        command.CommandText = $"PRAGMA cache_size = {settings.CacheSize};";
+                        command.CommandText = "PRAGMA journal_mode = WAL;";
                         command.ExecuteNonQuery();
-                        m_CacheSize = settings.CacheSize;
+                        m_WalModeEnabled = true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    BH.Engine.Base.Compute.RecordWarning($"Failed to set cache size: {ex.Message}");
+                    BH.Engine.Base.Compute.RecordWarning($"Failed to enable WAL mode: {ex.Message}");
                 }
+            }
 
-                // Set optimisation-specific pragmas
+            // Enable foreign keys if requested
+            if (settings.EnableForeignKeys)
+            {
                 try
                 {
-                    ApplyOptimisationSettings(connection, settings.OptimisationMode);
+                    using (SqliteCommand command = connection.CreateCommand())
+                    {
+                        command.CommandText = "PRAGMA foreign_keys = ON;";
+                        command.ExecuteNonQuery();
+                        m_ForeignKeysEnabled = true;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    BH.Engine.Base.Compute.RecordWarning($"Failed to apply optimisation settings: {ex.Message}");
+                    BH.Engine.Base.Compute.RecordWarning($"Failed to enable foreign keys: {ex.Message}");
+                }
+            }
+
+            // Set cache size
+            try
+            {
+                using (SqliteCommand command = connection.CreateCommand())
+                {
+                    command.CommandText = $"PRAGMA cache_size = {settings.CacheSize};";
+                    command.ExecuteNonQuery();
+                    m_CacheSize = settings.CacheSize;
                 }
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordWarning($"Failed to apply some connection settings: {ex.Message}");
+                BH.Engine.Base.Compute.RecordWarning($"Failed to set cache size: {ex.Message}");
+            }
+
+            // Set optimisation-specific pragmas
+            try
+            {
+                ApplyOptimisationSettings(connection, settings.OptimisationMode);
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to apply optimisation settings: {ex.Message}");
             }
         }
 
@@ -443,28 +436,24 @@ namespace BH.Adapter.SQLite
 
         /***************************************************/
 
-        private void InitializeSystemTables(SqliteConnection connection)
+        private void InitialiseSystemTables(SqliteConnection connection)
         {
             try
             {
                 // Initialize the complete toolkit system including all system tables
-                bool systemInitialized = connection.InitializeToolkitSystem();
-                
-                if (systemInitialized)
-                {
-                    BH.Engine.Base.Compute.RecordNote("System tables initialized successfully.");
-                }
+                bool systemInitialised = connection.InitializeToolkitSystem();
+
+                if (systemInitialised)
+                    BH.Engine.Base.Compute.RecordNote("System tables initialised successfully.");
                 else
-                {
-                    BH.Engine.Base.Compute.RecordWarning("Failed to initialize system tables. Some features may not work properly.");
-                }
+                    BH.Engine.Base.Compute.RecordWarning("Failed to initialise system tables. Some features may not work properly.");
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordWarning($"Error during system table initialization: {ex.Message}");
+                BH.Engine.Base.Compute.RecordWarning($"Error during system table initialisation: {ex.Message}");
             }
         }
 
         /***************************************************/
     }
-} 
+}

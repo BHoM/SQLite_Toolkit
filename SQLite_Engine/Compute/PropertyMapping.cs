@@ -90,12 +90,12 @@ namespace BH.Engine.SQLite
         /***************************************************/
 
         [Description("Resolves the complete column schema for an object type using the three-tier mapping strategy.")]
-        [Input("objectType", "The object Type to analyze.")]
+        [Input("objectType", "The object Type to analyse.")]
         [Input("config", "Optional PushConfig with custom property mappings and exclusions.")]
         [Output("columnSchema", "Dictionary of column names and their corresponding property information.")]
         public static Dictionary<string, PropertyColumnInfo> ResolveColumnSchema(this Type objectType, PushConfig config = null)
         {
-            var columnSchema = new Dictionary<string, PropertyColumnInfo>();
+            Dictionary<string,PropertyColumnInfo> columnSchema = new Dictionary<string, PropertyColumnInfo>();
 
             if (objectType == null)
                 return columnSchema;
@@ -105,7 +105,7 @@ namespace BH.Engine.SQLite
             {
                 Engine.Base.Compute.RecordNote($"Type '{objectType.Name}' implements IRecord. Using all properties for schema.");
                 
-                // Validate IRecord properties first
+                // Validate IRecord properties first, this should never be hit as an IRecord should only contain primitives 
                 if (!objectType.ValidateIRecordProperties())
                 {
                     Engine.Base.Compute.RecordError($"IRecord type '{objectType.Name}' contains non-primitive properties. Schema resolution failed.");

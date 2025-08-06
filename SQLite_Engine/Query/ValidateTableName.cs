@@ -48,7 +48,7 @@ namespace BH.Engine.SQLite
             {
                 if (lowerName.Contains(keyword))
                 {
-                    BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' contains forbidden keyword: {keyword}");
+                    BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' contains forbidden keyword: {keyword}.");
                     return false;
                 }
             }
