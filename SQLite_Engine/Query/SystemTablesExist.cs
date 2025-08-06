@@ -1,6 +1,6 @@
 /*
  * This file is part of the Buildings and Habitats object Model (BHoM)
- * Copyright (c) 2015 - 2024, the respective contributors. All rights reserved.
+ * Copyright (c) 2015 - 2025, the respective contributors. All rights reserved.
  *
  * Each contributor holds copyright over their respective contributions.
  * The project versioning (Git) records all such contribution source information.
@@ -20,46 +20,51 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Adapter;
-using BH.oM.Base;
+using BH.oM.Base.Attributes;
+using Microsoft.Data.Sqlite;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter : BHoMAdapter
+    public static partial class Query
     {
         /***************************************************/
-        /**** Adapter overload method                   ****/
+        /**** Public Methods                            ****/
         /***************************************************/
 
-        // This method gets called when appropriate by the Pull method contained in the base Adapter class.
-        // It gets called once per each Type.
-        protected override IEnumerable<IBHoMObject> IRead(Type type, IList ids, ActionConfig actionConfig = null)
+        [Description("Checks if all required system tables exist in the database.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Output("exists", "True if all system tables exist, false otherwise.")]
+        public static bool SystemTablesExist(this SqliteConnection connection)
         {
-            // Basic implementation - can be enhanced later to use the new filter system
-            // For now, follows the existing pattern and returns empty list
-            
-            // Preferrably, different Read logic for different object types should go in separate methods.
-            // We achieve this by using the IRead method to only dynamically dispatch to *type-specific Read implementations*
-            // In other words:
-            // if (type == typeof(SomeType1))
-            //     return ReadSomeType1(ids as dynamic);
-            // else if (type == typeof(SomeType2))
-            //     return ReadSomeType2(ids as dynamic);
-            // else if (type == typeof(SomeType3))
-            //     return ReadSomeType3(ids as dynamic);
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check system tables: connection is null.");
+                return false;
+            }
 
-            return new List<IBHoMObject>();
+            try
+            {
+                string[] systemTables = { "__Types", "__Schema" };
+                
+                foreach (string tableName in systemTables)
+                {
+                    if (!connection.TableExists(tableName))
+                    {
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Error checking system tables: {ex.Message}");
+                return false;
+            }
         }
 
         /***************************************************/
-
     }
 }
-
-

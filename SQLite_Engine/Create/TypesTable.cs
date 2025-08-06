@@ -20,67 +20,55 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base.Attributes;
+using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using BH.oM.Data.Requests;
-using BH.oM.Adapter;
-using BH.oM.SQLite.Requests;
+using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Create
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        public override IEnumerable<object> Pull(IRequest query, PullType pullType = PullType.AdapterDefault, ActionConfig actionConfig = null)
+        [Description("Creates the __Types system table for storing type-to-table mappings.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Output("success", "True if the table was created successfully, false otherwise.")]
+        public static bool TypesTable(SqliteConnection connection)
         {
-            List<object> result = new List<object>();
-
-            if (query == null)
+            if (connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: query is null.");
-                return result;
+                BH.Engine.Base.Compute.RecordError("Cannot create __Types table: connection is null.");
+                return false;
             }
 
-            if (m_Connection == null)
+            try
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: no database connection. Please open a connection first.");
-                return result;
-            }
+                string createTableSql = @"
+                    CREATE TABLE IF NOT EXISTS __Types (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        FullTypeName TEXT NOT NULL UNIQUE,
+                        TableName TEXT NOT NULL,
+                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        LastModified DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )";
 
-            m_LastUsed = DateTime.Now;
-
-            // Handle different request types
-            if (query is EqualityFilterRequest equalityRequest)
-            {
-                return EqualityFilterRequest(equalityRequest);
+                using (SqliteCommand command = new SqliteCommand(createTableSql, connection))
+                {
+                    command.ExecuteNonQuery();
+                    BH.Engine.Base.Compute.RecordNote("Successfully created __Types system table.");
+                    return true;
+                }
             }
-            else if (query is RangeFilterRequest rangeRequest)
+            catch (Exception ex)
             {
-                return RangeFilterRequest(rangeRequest);
-            }
-            else if (query is CustomSqlRequest customRequest)
-            {
-                return ReadCustomSqlRequest(customRequest);
-            }
-            else if (query is SchemaRequest schemaRequest)
-            {
-                return ReadSchemaRequest(schemaRequest);
-            }
-            else if (query is TableRequest tableRequest)
-            {
-                return ReadTableRequest(tableRequest);
-            }
-            else
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Request type {query.GetType().Name} is not supported by this adapter.");
-                return result;
+                BH.Engine.Base.Compute.RecordError($"Error creating __Types table: {ex.Message}");
+                return false;
             }
         }
 
         /***************************************************/
     }
-} 
+}

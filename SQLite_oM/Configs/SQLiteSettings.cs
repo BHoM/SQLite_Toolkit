@@ -61,6 +61,9 @@ namespace BH.oM.SQLite.Configs
         [Description("Whether to create tables automatically when they do not exist during data operations.")]
         public virtual bool AutoCreateTables { get; set; } = true;
 
+        [Description("Whether to automatically initialize system tables (__Types, __Schema) on database connection.")]
+        public virtual bool InitializeSystemTables { get; set; } = true;
+
         /***************************************************/
     }
 

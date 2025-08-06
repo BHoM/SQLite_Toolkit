@@ -20,67 +20,42 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using BH.oM.Data.Requests;
-using BH.oM.Adapter;
+using BH.oM.SQLite.Objects;
 using BH.oM.SQLite.Requests;
+using BH.Engine.SQLite;
+using System.Collections.Generic;
 
 namespace BH.Adapter.SQLite
 {
     public partial class SQLiteAdapter
     {
         /***************************************************/
-        /**** Public Methods                            ****/
+        /**** Private Methods                           ****/
         /***************************************************/
 
-        public override IEnumerable<object> Pull(IRequest query, PullType pullType = PullType.AdapterDefault, ActionConfig actionConfig = null)
+        private IEnumerable<object> EqualityFilterRequest(EqualityFilterRequest equalityRequest)
         {
             List<object> result = new List<object>();
 
-            if (query == null)
+            // Convert filter to SQL
+            FilterResult filterResult = BH.Engine.SQLite.Compute.EqualityFilter(equalityRequest);
+            if (filterResult == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: query is null.");
+                BH.Engine.Base.Compute.RecordWarning("Failed to process equality filter request.");
                 return result;
             }
 
-            if (m_Connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: no database connection. Please open a connection first.");
-                return result;
-            }
+            // Set limit if specified
+            if (equalityRequest.MaxResults > 0)
+                filterResult.Limit = equalityRequest.MaxResults;
 
-            m_LastUsed = DateTime.Now;
-
-            // Handle different request types
-            if (query is EqualityFilterRequest equalityRequest)
-            {
-                return EqualityFilterRequest(equalityRequest);
-            }
-            else if (query is RangeFilterRequest rangeRequest)
-            {
-                return RangeFilterRequest(rangeRequest);
-            }
-            else if (query is CustomSqlRequest customRequest)
-            {
-                return ReadCustomSqlRequest(customRequest);
-            }
-            else if (query is SchemaRequest schemaRequest)
-            {
-                return ReadSchemaRequest(schemaRequest);
-            }
-            else if (query is TableRequest tableRequest)
-            {
-                return ReadTableRequest(tableRequest);
-            }
-            else
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Request type {query.GetType().Name} is not supported by this adapter.");
-                return result;
-            }
+            // Execute filtered query
+            QueryResult queryResult = ExecuteFilteredQuery(equalityRequest.TableName, filterResult);
+            result.Add(queryResult);
+            
+            return result;
         }
 
         /***************************************************/
     }
-} 
+}

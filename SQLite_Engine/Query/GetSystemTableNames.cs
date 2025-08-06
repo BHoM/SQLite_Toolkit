@@ -20,67 +20,60 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base.Attributes;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using BH.oM.Data.Requests;
-using BH.oM.Adapter;
-using BH.oM.SQLite.Requests;
+using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Query
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        public override IEnumerable<object> Pull(IRequest query, PullType pullType = PullType.AdapterDefault, ActionConfig actionConfig = null)
+        [Description("Gets a list of all system table names.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Output("tableNames", "List of system table names, or empty list if query fails.")]
+        public static List<string> GetSystemTableNames(this SqliteConnection connection)
         {
-            List<object> result = new List<object>();
+            List<string> tableNames = new List<string>();
 
-            if (query == null)
+            if (connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: query is null.");
-                return result;
-            }
-
-            if (m_Connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: no database connection. Please open a connection first.");
-                return result;
+                BH.Engine.Base.Compute.RecordError("Cannot get system table names: connection is null.");
+                return tableNames;
             }
 
-            m_LastUsed = DateTime.Now;
+            try
+            {
+                string sql = @"
+                    SELECT name FROM sqlite_master 
+                    WHERE type='table' AND name LIKE '__%%'
+                    ORDER BY name";
 
-            // Handle different request types
-            if (query is EqualityFilterRequest equalityRequest)
-            {
-                return EqualityFilterRequest(equalityRequest);
+                using (SqliteCommand command = new SqliteCommand(sql, connection))
+                {
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string tableName = reader.GetString(0);
+                            tableNames.Add(tableName);
+                        }
+                    }
+                }
             }
-            else if (query is RangeFilterRequest rangeRequest)
+            catch (Exception ex)
             {
-                return RangeFilterRequest(rangeRequest);
+                BH.Engine.Base.Compute.RecordError($"Error getting system table names: {ex.Message}");
             }
-            else if (query is CustomSqlRequest customRequest)
-            {
-                return ReadCustomSqlRequest(customRequest);
-            }
-            else if (query is SchemaRequest schemaRequest)
-            {
-                return ReadSchemaRequest(schemaRequest);
-            }
-            else if (query is TableRequest tableRequest)
-            {
-                return ReadTableRequest(tableRequest);
-            }
-            else
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Request type {query.GetType().Name} is not supported by this adapter.");
-                return result;
-            }
+
+            return tableNames;
         }
 
         /***************************************************/
     }
-} 
+}

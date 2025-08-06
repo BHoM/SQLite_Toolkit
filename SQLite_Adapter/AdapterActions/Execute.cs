@@ -28,6 +28,7 @@ using BH.oM.Base;
 using BH.oM.Adapter.Commands;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Configs;
+using BH.Engine.SQLite;
 using Microsoft.Data.Sqlite;
 
 namespace BH.Adapter.SQLite
@@ -72,7 +73,7 @@ namespace BH.Adapter.SQLite
                 
                 if (m_Connection != null)
                 {
-                    m_ConnectionState = ConnectionState.Open;
+                    m_ConnectionState = System.Data.ConnectionState.Open;
                     m_ConnectedAt = DateTime.Now;
                     m_LastUsed = DateTime.Now;
                     
@@ -81,14 +82,14 @@ namespace BH.Adapter.SQLite
                 }
                 else
                 {
-                    m_ConnectionState = ConnectionState.Faulted;
+                    m_ConnectionState = System.Data.ConnectionState.Broken;
                     BH.Engine.Base.Compute.RecordError("Failed to open SQLite database connection.");
                     output.Item2 = false;
                 }
             }
             catch (Exception ex)
             {
-                m_ConnectionState = ConnectionState.Faulted;
+                                        m_ConnectionState = System.Data.ConnectionState.Broken;
                 BH.Engine.Base.Compute.RecordError($"Failed to open SQLite database connection: {ex.Message}");
                 output.Item2 = false;
             }
@@ -116,20 +117,20 @@ namespace BH.Adapter.SQLite
                 
                 if (success)
                 {
-                    m_ConnectionState = ConnectionState.Closed;
+                                            m_ConnectionState = System.Data.ConnectionState.Closed;
                     BH.Engine.Base.Compute.RecordNote("SQLite database connection closed successfully.");
                     output.Item2 = true;
                 }
                 else
                 {
-                    m_ConnectionState = ConnectionState.Faulted;
+                    m_ConnectionState = System.Data.ConnectionState.Broken;
                     BH.Engine.Base.Compute.RecordError("Failed to close SQLite database connection properly.");
                     output.Item2 = false;
                 }
             }
             catch (Exception ex)
             {
-                m_ConnectionState = ConnectionState.Faulted;
+                                        m_ConnectionState = System.Data.ConnectionState.Broken;
                 BH.Engine.Base.Compute.RecordError($"Failed to close SQLite database connection: {ex.Message}");
                 output.Item2 = false;
             }
@@ -229,6 +230,12 @@ namespace BH.Adapter.SQLite
 
                 // Configure the connection based on settings
                 ConfigureConnection(connection, settings);
+
+                // Initialize system tables if enabled in settings
+                if (settings.InitializeSystemTables)
+                {
+                    InitializeSystemTables(connection);
+                }
 
                 return connection;
             }
@@ -431,6 +438,30 @@ namespace BH.Adapter.SQLite
             catch (Exception ex)
             {
                 BH.Engine.Base.Compute.RecordWarning($"Database optimisation failed but connection will still close: {ex.Message}");
+            }
+        }
+
+        /***************************************************/
+
+        private void InitializeSystemTables(SqliteConnection connection)
+        {
+            try
+            {
+                // Initialize the complete toolkit system including all system tables
+                bool systemInitialized = connection.InitializeToolkitSystem();
+                
+                if (systemInitialized)
+                {
+                    BH.Engine.Base.Compute.RecordNote("System tables initialized successfully.");
+                }
+                else
+                {
+                    BH.Engine.Base.Compute.RecordWarning("Failed to initialize system tables. Some features may not work properly.");
+                }
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Error during system table initialization: {ex.Message}");
             }
         }
 

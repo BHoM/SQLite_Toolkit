@@ -24,6 +24,7 @@ using BH.Adapter;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Configs;
+using BH.Engine.SQLite;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -69,7 +70,7 @@ namespace BH.Adapter.SQLite
         private SqliteConnection m_Connection = null;
 
         // Connection state and diagnostics
-        private ConnectionState m_ConnectionState = ConnectionState.Closed;
+        private System.Data.ConnectionState m_ConnectionState = System.Data.ConnectionState.Closed;
         private string m_ConnectionString = "";
         private string m_SqliteVersion = "";
         private DateTime m_ConnectedAt = DateTime.MinValue;
@@ -81,6 +82,8 @@ namespace BH.Adapter.SQLite
         private bool m_ForeignKeysEnabled = false;
         private int m_PageSize = 4096;
         private int m_CacheSize = -2000;
+
+
 
         /***************************************************/
     }

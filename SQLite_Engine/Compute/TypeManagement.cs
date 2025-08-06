@@ -106,27 +106,8 @@ namespace BH.Engine.SQLite
                 return false;
             }
 
-            try
-            {
-                string createTableSql = @"
-                    CREATE TABLE IF NOT EXISTS __Types (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        FullTypeName TEXT NOT NULL UNIQUE,
-                        TableName TEXT NOT NULL,
-                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP
-                    )";
-
-                using (var command = new SqliteCommand(createTableSql, connection))
-                {
-                    command.ExecuteNonQuery();
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Engine.Base.Compute.RecordError($"Error creating __Types table: {ex.Message}");
-                return false;
-            }
+            // Use the centralized system table creation method
+            return BH.Engine.SQLite.Create.TypesTable(connection);
         }
 
         /***************************************************/

@@ -20,67 +20,60 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base.Attributes;
+using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using BH.oM.Data.Requests;
-using BH.oM.Adapter;
-using BH.oM.SQLite.Requests;
+using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        public override IEnumerable<object> Pull(IRequest query, PullType pullType = PullType.AdapterDefault, ActionConfig actionConfig = null)
+        [Description("Initializes the complete SQLite Toolkit system including all system tables.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Output("success", "True if the system was initialized successfully, false otherwise.")]
+        public static bool InitializeToolkitSystem(this SqliteConnection connection)
         {
-            List<object> result = new List<object>();
-
-            if (query == null)
+            if (connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: query is null.");
-                return result;
+                BH.Engine.Base.Compute.RecordError("Cannot initialize toolkit system: connection is null.");
+                return false;
             }
 
-            if (m_Connection == null)
+            try
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: no database connection. Please open a connection first.");
-                return result;
-            }
+                BH.Engine.Base.Compute.RecordNote("Initializing SQLite Toolkit system...");
 
-            m_LastUsed = DateTime.Now;
+                // Create all system tables
+                bool systemTablesCreated = BH.Engine.SQLite.Create.AllSystemTables(connection);
+                if (!systemTablesCreated)
+                {
+                    BH.Engine.Base.Compute.RecordError("Failed to create system tables.");
+                    return false;
+                }
 
-            // Handle different request types
-            if (query is EqualityFilterRequest equalityRequest)
-            {
-                return EqualityFilterRequest(equalityRequest);
+                // Verify system integrity
+                bool systemValid = VerifySystemIntegrity(connection);
+                if (!systemValid)
+                {
+                    BH.Engine.Base.Compute.RecordError("System integrity check failed.");
+                    return false;
+                }
+
+                BH.Engine.Base.Compute.RecordNote("SQLite Toolkit system initialized successfully.");
+                return true;
             }
-            else if (query is RangeFilterRequest rangeRequest)
+            catch (Exception ex)
             {
-                return RangeFilterRequest(rangeRequest);
-            }
-            else if (query is CustomSqlRequest customRequest)
-            {
-                return ReadCustomSqlRequest(customRequest);
-            }
-            else if (query is SchemaRequest schemaRequest)
-            {
-                return ReadSchemaRequest(schemaRequest);
-            }
-            else if (query is TableRequest tableRequest)
-            {
-                return ReadTableRequest(tableRequest);
-            }
-            else
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Request type {query.GetType().Name} is not supported by this adapter.");
-                return result;
+                BH.Engine.Base.Compute.RecordError($"Error initializing toolkit system: {ex.Message}");
+                return false;
             }
         }
 
         /***************************************************/
     }
-} 
+}

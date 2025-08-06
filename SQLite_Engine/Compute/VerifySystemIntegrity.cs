@@ -20,67 +20,49 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base.Attributes;
+using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using BH.oM.Data.Requests;
-using BH.oM.Adapter;
-using BH.oM.SQLite.Requests;
+using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        public override IEnumerable<object> Pull(IRequest query, PullType pullType = PullType.AdapterDefault, ActionConfig actionConfig = null)
+        [Description("Verifies the integrity of the SQLite Toolkit system tables and configuration.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Output("valid", "True if the system is valid and complete, false otherwise.")]
+        public static bool VerifySystemIntegrity(this SqliteConnection connection)
         {
-            List<object> result = new List<object>();
-
-            if (query == null)
+            if (connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: query is null.");
-                return result;
+                BH.Engine.Base.Compute.RecordError("Cannot verify system integrity: connection is null.");
+                return false;
             }
 
-            if (m_Connection == null)
+            try
             {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: no database connection. Please open a connection first.");
-                return result;
-            }
+                // Check if all system tables exist
+                if (!connection.SystemTablesExist())
+                {
+                    BH.Engine.Base.Compute.RecordWarning("One or more system tables are missing.");
+                    return false;
+                }
 
-            m_LastUsed = DateTime.Now;
-
-            // Handle different request types
-            if (query is EqualityFilterRequest equalityRequest)
-            {
-                return EqualityFilterRequest(equalityRequest);
+                BH.Engine.Base.Compute.RecordNote("System integrity verification passed.");
+                return true;
             }
-            else if (query is RangeFilterRequest rangeRequest)
+            catch (Exception ex)
             {
-                return RangeFilterRequest(rangeRequest);
-            }
-            else if (query is CustomSqlRequest customRequest)
-            {
-                return ReadCustomSqlRequest(customRequest);
-            }
-            else if (query is SchemaRequest schemaRequest)
-            {
-                return ReadSchemaRequest(schemaRequest);
-            }
-            else if (query is TableRequest tableRequest)
-            {
-                return ReadTableRequest(tableRequest);
-            }
-            else
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Request type {query.GetType().Name} is not supported by this adapter.");
-                return result;
+                BH.Engine.Base.Compute.RecordError($"Error verifying system integrity: {ex.Message}");
+                return false;
             }
         }
 
         /***************************************************/
     }
-} 
+}
