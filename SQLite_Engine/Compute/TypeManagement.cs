@@ -106,8 +106,17 @@ namespace BH.Engine.SQLite
                 return false;
             }
 
-            // Use the centralized system table creation method
-            return BH.Engine.SQLite.Create.TypesTable(connection);
+            // Check if table already exists to avoid duplicate messages
+            bool tableExists = connection.TableExists("__Types");
+            bool success = BH.Engine.SQLite.Create.TypesTable(connection);
+            
+            // Only show success message if table was actually created (didn't exist before)
+            if (success && !tableExists)
+            {
+                BH.Engine.Base.Compute.RecordNote("Successfully created __Types system table.");
+            }
+            
+            return success;
         }
 
         /***************************************************/

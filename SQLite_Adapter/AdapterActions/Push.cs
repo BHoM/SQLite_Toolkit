@@ -254,7 +254,7 @@ namespace BH.Adapter.SQLite
                 // Extract all column names from the schema
                 List<string> columnNames = columnSchema.Keys.ToList();
                 
-                // Add BHoMGuid column if not already present
+                // Add BHoMGuid column if not already present in schema
                 if (!columnNames.Contains("BHoMGuid"))
                 {
                     columnNames.Add("BHoMGuid");

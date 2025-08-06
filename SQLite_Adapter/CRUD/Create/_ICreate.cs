@@ -157,14 +157,10 @@ namespace BH.Adapter.SQLite
                 // Extract column values from the object
                 Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
 
-                // Include BHoMGuid if it's not already mapped
-                if (!columnValues.ContainsKey("BHoMGuid") && obj.BHoM_Guid != Guid.Empty)
+                // Include BHoMGuid if it's not already mapped and we expect a BHoMGuid column
+                if (!columnValues.ContainsKey("BHoMGuid"))
                 {
-                    columnValues["BHoMGuid"] = obj.BHoM_Guid.ToString();
-                }
-                else if (!columnValues.ContainsKey("BHoMGuid"))
-                {
-                    columnValues["BHoMGuid"] = Guid.NewGuid().ToString();
+                    columnValues["BHoMGuid"] = obj.BHoM_Guid != Guid.Empty ? obj.BHoM_Guid.ToString() : Guid.NewGuid().ToString();
                 }
 
                 // Build and execute INSERT statement

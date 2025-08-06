@@ -44,9 +44,23 @@ namespace BH.Engine.SQLite
             // Handle nullable types
             Type actualType = Nullable.GetUnderlyingType(type) ?? type;
 
-            // Use BHoM's IsNumeric method for numeric types
-            if (actualType.IsNumeric())
+            // Check explicit numeric types first (fallback if BHoM IsNumeric fails)
+            if (actualType == typeof(double) || actualType == typeof(float) || 
+                actualType == typeof(int) || actualType == typeof(long) || 
+                actualType == typeof(short) || actualType == typeof(byte) ||
+                actualType == typeof(decimal))
                 return true;
+
+            // Use BHoM's IsNumeric method for additional numeric types (if available)
+            try
+            {
+                if (actualType.IsNumeric())
+                    return true;
+            }
+            catch
+            {
+                // If BHoM IsNumeric fails, continue with other checks
+            }
 
             // Additional types that map well to database columns
             return actualType == typeof(string) ||

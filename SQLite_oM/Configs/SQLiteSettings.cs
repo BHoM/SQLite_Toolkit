@@ -40,9 +40,6 @@ namespace BH.oM.SQLite.Configs
         [Description("The database mode determining how the SQLite database is created and accessed.")]
         public virtual DatabaseMode DatabaseMode { get; set; } = DatabaseMode.FileDatabase;
 
-        [Description("The file path for file-based databases. Ignored for in-memory and temporary databases.")]
-        public virtual string FilePath { get; set; } = "";
-
         [Description("The connection timeout in seconds for database operations.")]
         public virtual int ConnectionTimeoutSeconds { get; set; } = 30;
 

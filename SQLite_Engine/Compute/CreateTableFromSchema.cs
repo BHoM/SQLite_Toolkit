@@ -87,6 +87,13 @@ namespace BH.Engine.SQLite
                     command.ExecuteNonQuery();
                 }
 
+                // Populate the __Schema system table with column information
+                bool schemaPopulated = connection.PopulateSchemaTable(schema);
+                if (!schemaPopulated)
+                {
+                    BH.Engine.Base.Compute.RecordWarning($"Failed to populate __Schema table for '{schema.Name}', but table was created successfully.");
+                }
+
                 BH.Engine.Base.Compute.RecordNote($"Successfully created table '{schema.Name}' with {schema.Columns.Count} columns.");
                 return true;
             }

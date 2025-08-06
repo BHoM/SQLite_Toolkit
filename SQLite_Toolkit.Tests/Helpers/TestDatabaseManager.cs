@@ -75,7 +75,6 @@ namespace SQLite_Toolkit.Tests.Helpers
             return new SQLiteSettings()
             {
                 DatabaseMode = mode,
-                FilePath = filePath,
                 ConnectionTimeoutSeconds = 30,
                 OptimisationMode = OptimisationMode.Default,
                 EnableWalMode = false, // Disable WAL for test simplicity
