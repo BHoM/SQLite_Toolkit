@@ -22,36 +22,27 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.Data.Requests;
-using BH.oM.SQLite;
-using BH.oM.SQLite.Objects;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.oM.SQLite.Requests
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Request for filtering database records based on exact column value matches with support for multiple values per column (IN clause).")]
-    public class EqualityFilterRequest : BHoMObject, IRequest
+    [Description("Represents a filter condition for a specific database column with support for multiple values (IN clause).")]
+    public class ColumnFilter : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("List of column filter conditions. Each filter can specify multiple values for IN clause filtering.")]
-        public virtual List<ColumnFilter> ColumnFilters { get; set; } = new List<ColumnFilter>();
+        [Description("Name of the database column to filter on.")]
+        public virtual string ColumnName { get; set; } = "";
 
-        [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
-        public virtual string TableName { get; set; } = "";
-
-        [Description("Logical operator to combine multiple column filters. Default is AND.")]
-        public virtual LogicalOperator Logic { get; set; } = LogicalOperator.And;
-
-        [Description("Maximum number of results to return. If 0, returns all matching records.")]
-        public virtual int MaxResults { get; set; } = 0;
+        [Description("List of values to match against for this column. Multiple values create an IN clause condition.")]
+        public virtual List<object> Values { get; set; } = new List<object>();
 
         /***************************************************/
     }

@@ -42,9 +42,9 @@ namespace BH.Engine.SQLite
         [Output("result", "FilterResult containing the SQL WHERE clause and parameters, or null if conversion failed.")]
         public static FilterResult EqualityFilter(EqualityFilterRequest filter, string parameterPrefix = "eq")
         {
-            if (filter == null || filter.ColumnValues == null || !filter.ColumnValues.Any())
+            if (filter == null || filter.ColumnFilters == null || !filter.ColumnFilters.Any())
             {
-                BH.Engine.Base.Compute.RecordWarning("Cannot process equality filter: filter is null or has no column values.");
+                BH.Engine.Base.Compute.RecordWarning("Cannot process equality filter: filter is null or has no column filters.");
                 return null;
             }
 
@@ -52,13 +52,14 @@ namespace BH.Engine.SQLite
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             int paramIndex = 0;
 
-            foreach (KeyValuePair<string, List<object>> columnFilter in filter.ColumnValues)
+            foreach (ColumnFilter columnFilter in filter.ColumnFilters)
             {
-                string columnName = columnFilter.Key;
-                List<object> values = columnFilter.Value;
-
-                if (string.IsNullOrWhiteSpace(columnName) || values == null || !values.Any())
+                if (columnFilter == null || string.IsNullOrWhiteSpace(columnFilter.ColumnName) || 
+                    columnFilter.Values == null || !columnFilter.Values.Any())
                     continue;
+
+                string columnName = columnFilter.ColumnName;
+                List<object> values = columnFilter.Values;
 
                 // Handle single value vs multiple values
                 if (values.Count == 1)
