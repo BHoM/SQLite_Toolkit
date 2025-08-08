@@ -97,7 +97,7 @@ namespace BH.Engine.SQLite
                 }
 
                 // Generate table schema using smart creation
-                TableSchema schema = BH.Engine.SQLite.Create.TableSchema(objectType, tableName, config, true);
+                TableSchema schema = BH.Engine.SQLite.Create.TableSchema(objectType, tableName, config);
                 if (schema == null)
                 {
                     BH.Engine.Base.Compute.RecordError($"Failed to generate table schema for type {objectType.FullName}.");

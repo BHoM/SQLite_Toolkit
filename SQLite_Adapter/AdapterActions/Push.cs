@@ -263,13 +263,8 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Extract all column names from the schema
+                // BHoM_Guid is automatically included via primitive property resolution unless excluded
                 List<string> columnNames = columnSchema.Keys.ToList();
-
-                // Add BHoMGuid column if not already present in schema
-                if (!columnNames.Contains("BHoM_Guid"))
-                {
-                    columnNames.Add("BHoM_Guid");
-                }
 
                 // Build INSERT statement
                 string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
@@ -291,11 +286,8 @@ namespace BH.Adapter.SQLite
                         // Extract column values for this object
                         Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
 
-                        // Add BHoM_Guid if not already extracted
-                        if (!columnValues.ContainsKey("BHoM_Guid"))
-                        {
-                            columnValues["BHoM_Guid"] = obj.BHoM_Guid != Guid.Empty ? obj.BHoM_Guid.ToString() : Guid.NewGuid().ToString();
-                        }
+                        // BHoM_Guid is automatically extracted via ExtractColumnValues if it's in the schema
+                        // No special handling needed as it's a primitive property
 
                         // Set parameter values
                         for (int i = 0; i < columnNames.Count; i++)

@@ -36,9 +36,8 @@ namespace BH.Engine.SQLite
         [Description("Creates a table schema specifically for IRecord objects, using all primitive properties as columns.")]
         [Input("recordType", "The .NET type that implements IRecord interface.")]
         [Input("tableName", "Name for the table. If empty, will be derived from the record type.")]
-        [Input("includeGuidColumn", "Whether to include a BHoMGuid column for object identification. Default is true.")]
         [Output("tableSchema", "Generated TableSchema object optimised for IRecord types, or null if generation failed.")]
-        public static TableSchema IRecordTableSchema(Type recordType, string tableName = "", bool includeGuidColumn = true)
+        public static TableSchema IRecordTableSchema(Type recordType, string tableName = "")
         {
             if (recordType == null)
             {
@@ -59,7 +58,7 @@ namespace BH.Engine.SQLite
                 return null;
             }
 
-            return TableSchema(recordType, tableName, null, includeGuidColumn);
+            return TableSchema(recordType, tableName, null);
         }
 
         /***************************************************/

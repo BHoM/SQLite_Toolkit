@@ -46,11 +46,15 @@ namespace BH.Engine.SQLite
 
             try
             {
-                // Check if all system tables exist
-                if (!connection.SystemTablesExist())
+                // Check if all required system tables exist
+                string[] systemTables = { "__Types", "__Schema" };
+                foreach (string tableName in systemTables)
                 {
-                    BH.Engine.Base.Compute.RecordWarning("One or more system tables are missing.");
-                    return false;
+                    if (!connection.TableExists(tableName))
+                    {
+                        BH.Engine.Base.Compute.RecordWarning($"System table '{tableName}' is missing.");
+                        return false;
+                    }
                 }
 
                 BH.Engine.Base.Compute.RecordNote("System integrity verification passed.");

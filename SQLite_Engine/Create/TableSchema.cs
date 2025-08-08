@@ -44,9 +44,8 @@ namespace BH.Engine.SQLite
         [Input("objectType", "The .NET type of objects that will be stored in this table.")]
         [Input("tableName", "Name for the table. If empty, will be derived from the object type.")]
         [Input("config", "Optional PushConfig for property mappings and exclusions. If null, falls back to primitive properties.")]
-        [Input("includeGuidColumn", "Whether to include a BHoMGuid column for object identification. Default is true.")]
         [Output("tableSchema", "Generated TableSchema object ready for table creation, or null if generation failed.")]
-        public static TableSchema TableSchema(Type objectType, string tableName = "", PushConfig config = null, bool includeGuidColumn = true)
+        public static TableSchema TableSchema(Type objectType, string tableName = "", PushConfig config = null)
         {
             if (objectType == null)
             {
@@ -78,22 +77,11 @@ namespace BH.Engine.SQLite
                     return null;
                 }
 
-                // Add BHoMGuid column if requested
-                if (includeGuidColumn)
-                {
-                    Column guidColumn = new Column()
-                    {
-                        Name = "BHoM_Guid",
-                        DataType = SqliteDataType.TEXT,
-                        AllowNull = false,
-                        IsUnique = true,
-                        Position = 0
-                    };
-                    tableSchema.Columns.Add(guidColumn);
-                }
+                // BHoM_Guid is handled automatically through primitive property resolution
+                // No need to manually add it here as it's a primitive property of BHoMObject
 
                 // Convert property mappings to column definitions
-                int position = includeGuidColumn ? 1 : 0;
+                int position = 0;
                 foreach (PropertyColumnInfo mapping in columnMappings)
                 {
                     Column column = CreateColumnFromPropertyMapping(mapping, position);
@@ -104,13 +92,15 @@ namespace BH.Engine.SQLite
                     }
                 }
 
-                // Add primary key if no existing primary key and we have a GUID column
-                if (includeGuidColumn && !tableSchema.Columns.Any(c => c.IsPrimaryKey))
+                // Set BHoM_Guid as primary key if no existing primary key and BHoM_Guid column exists
+                if (!tableSchema.Columns.Any(c => c.IsPrimaryKey))
                 {
-                    Column guidColumn = tableSchema.Columns.FirstOrDefault(c => c.Name == "BHoM_Guid");
+                    Column guidColumn = tableSchema.Columns.FirstOrDefault(c => string.Equals(c.Name, "BHoM_Guid", StringComparison.OrdinalIgnoreCase));
                     if (guidColumn != null)
                     {
                         guidColumn.IsPrimaryKey = true;
+                        guidColumn.IsUnique = true;
+                        guidColumn.AllowNull = false;
                     }
                 }
 
