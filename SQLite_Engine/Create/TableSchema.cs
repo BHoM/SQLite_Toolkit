@@ -83,7 +83,7 @@ namespace BH.Engine.SQLite
                 {
                     Column guidColumn = new Column()
                     {
-                        Name = "BHoMGuid",
+                        Name = "BHoM_Guid",
                         DataType = SqliteDataType.TEXT,
                         AllowNull = false,
                         IsUnique = true,
@@ -107,7 +107,7 @@ namespace BH.Engine.SQLite
                 // Add primary key if no existing primary key and we have a GUID column
                 if (includeGuidColumn && !tableSchema.Columns.Any(c => c.IsPrimaryKey))
                 {
-                    Column guidColumn = tableSchema.Columns.FirstOrDefault(c => c.Name == "BHoMGuid");
+                    Column guidColumn = tableSchema.Columns.FirstOrDefault(c => c.Name == "BHoM_Guid");
                     if (guidColumn != null)
                     {
                         guidColumn.IsPrimaryKey = true;

@@ -157,7 +157,7 @@ namespace BH.Adapter.SQLite
                 // Extract column values from the object
                 Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
 
-                // Include BHoMGuid if it's not already mapped and we expect a BHoMGuid column
+                // Include BHoM_Guid if it's not already mapped and we expect a BHoMGuid column
                 if (!columnValues.ContainsKey("BHoM_Guid"))
                 {
                     columnValues["BHoM_Guid"] = obj.BHoM_Guid != Guid.Empty ? obj.BHoM_Guid.ToString() : Guid.NewGuid().ToString();

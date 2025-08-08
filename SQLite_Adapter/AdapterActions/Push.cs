@@ -266,9 +266,9 @@ namespace BH.Adapter.SQLite
                 List<string> columnNames = columnSchema.Keys.ToList();
 
                 // Add BHoMGuid column if not already present in schema
-                if (!columnNames.Contains("BHoMGuid"))
+                if (!columnNames.Contains("BHoM_Guid"))
                 {
-                    columnNames.Add("BHoMGuid");
+                    columnNames.Add("BHoM_Guid");
                 }
 
                 // Build INSERT statement
@@ -291,10 +291,10 @@ namespace BH.Adapter.SQLite
                         // Extract column values for this object
                         Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
 
-                        // Add BHoMGuid if not already extracted
-                        if (!columnValues.ContainsKey("BHoMGuid"))
+                        // Add BHoM_Guid if not already extracted
+                        if (!columnValues.ContainsKey("BHoM_Guid"))
                         {
-                            columnValues["BHoMGuid"] = obj.BHoM_Guid != Guid.Empty ? obj.BHoM_Guid.ToString() : Guid.NewGuid().ToString();
+                            columnValues["BHoM_Guid"] = obj.BHoM_Guid != Guid.Empty ? obj.BHoM_Guid.ToString() : Guid.NewGuid().ToString();
                         }
 
                         // Set parameter values

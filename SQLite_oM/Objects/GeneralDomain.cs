@@ -44,25 +44,6 @@ namespace BH.oM.SQLite.Objects
         [Description("The maximum bound of the domain. Can be numeric (int, double, decimal) or DateTime.")]
         public virtual object Max { get; set; }
 
-        /***************************************************/
-        /**** Constructors                              ****/
-        /***************************************************/
-
-        [Description("Create a GeneralDomain with minimum and maximum values.")]
-        public GeneralDomain()
-        {
-        }
-
-        /***************************************************/
-
-        [Description("Create a GeneralDomain with specified minimum and maximum values.")]
-        public GeneralDomain(object min, object max)
-        {
-            Min = min;
-            Max = max;
-        }
-
-
 
         /***************************************************/
     }
