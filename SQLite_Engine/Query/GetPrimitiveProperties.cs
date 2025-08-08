@@ -37,7 +37,7 @@ namespace BH.Engine.SQLite
         /***************************************************/
 
         [Description("Extracts all primitive properties from an object type that can be mapped to database columns.")]
-        [Input("type", "The object Type to analyze.")]
+        [Input("type", "The object Type to analyse.")]
         [Output("properties", "Dictionary of property names and their types that are suitable for database storage.")]
         public static Dictionary<string, Type> GetPrimitiveProperties(this Type type)
         {

@@ -231,10 +231,10 @@ namespace BH.Adapter.SQLite
                 // Configure the connection based on settings
                 ConfigureConnection(connection, settings);
 
-                // Initialize system tables if enabled in settings
-                if (settings.InitializeSystemTables)
+                // Initialise system tables if enabled in settings
+                if (settings.InitialiseSystemTables)
                 {
-                    InitializeSystemTables(connection);
+                    InitialiseSystemTables(connection);
                 }
 
                 return connection;
@@ -440,8 +440,8 @@ namespace BH.Adapter.SQLite
         {
             try
             {
-                // Initialize the complete toolkit system including all system tables
-                bool systemInitialised = connection.InitializeToolkitSystem();
+                // Initialise the complete toolkit system including all system tables
+                bool systemInitialised = connection.InitialiseToolkitSystem();
 
                 if (systemInitialised)
                     BH.Engine.Base.Compute.RecordNote("System tables initialised successfully.");

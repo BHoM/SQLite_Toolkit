@@ -33,10 +33,10 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Initializes the complete SQLite Toolkit system including all system tables.")]
+        [Description("Initialises the complete SQLite Toolkit system including all system tables.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Output("success", "True if the system was initialized successfully, false otherwise.")]
-        public static bool InitializeToolkitSystem(this SqliteConnection connection)
+        [Output("success", "True if the system was initialised successfully, false otherwise.")]
+        public static bool InitialiseToolkitSystem(this SqliteConnection connection)
         {
             if (connection == null)
             {

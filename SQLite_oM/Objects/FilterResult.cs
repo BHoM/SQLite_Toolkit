@@ -42,7 +42,7 @@ namespace BH.oM.SQLite.Objects
         [Description("The SQL WHERE clause generated from the filter, without the 'WHERE' keyword.")]
         public virtual string WhereClause { get; set; } = "";
 
-        [Description("Dictionary of parameter names and values for safe parameterized query execution. \n" +
+        [Description("Dictionary of parameter names and values for safe parameterised query execution. \n" +
             "Keys are parameter names (including @ prefix), values are the parameter values.")]
         public virtual Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
 

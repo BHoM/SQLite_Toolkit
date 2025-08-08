@@ -33,7 +33,7 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates an optimized table for IRecord objects with all primitive properties as columns.")]
+        [Description("Creates an optimised table for IRecord objects with all primitive properties as columns.")]
         [Input("connection", "Active SQLite database connection.")]
         [Input("recordType", "The .NET type that implements IRecord interface.")]
         [Input("dropIfExists", "Whether to drop the table first if it already exists. Default is false.")]

@@ -37,7 +37,7 @@ namespace BH.Engine.SQLite
         /***************************************************/
 
         [Description("Gets all available primitive property paths from a BHoM object using BHoM's GetAllPropertyFullNames method.")]
-        [Input("obj", "The BHoM object to analyze.")]
+        [Input("obj", "The BHoM object to analyse.")]
         [Input("maxDepth", "Maximum property nesting level to explore. Default is 3 for performance.")]
         [Output("propertyPaths", "List of primitive property paths available on the object.")]
         public static List<string> GetBHoMPropertyPaths(this IBHoMObject obj, int maxDepth = 3)

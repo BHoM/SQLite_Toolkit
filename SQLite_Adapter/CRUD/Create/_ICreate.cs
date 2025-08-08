@@ -158,9 +158,9 @@ namespace BH.Adapter.SQLite
                 Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
 
                 // Include BHoMGuid if it's not already mapped and we expect a BHoMGuid column
-                if (!columnValues.ContainsKey("BHoMGuid"))
+                if (!columnValues.ContainsKey("BHoM_Guid"))
                 {
-                    columnValues["BHoMGuid"] = obj.BHoM_Guid != Guid.Empty ? obj.BHoM_Guid.ToString() : Guid.NewGuid().ToString();
+                    columnValues["BHoM_Guid"] = obj.BHoM_Guid != Guid.Empty ? obj.BHoM_Guid.ToString() : Guid.NewGuid().ToString();
                 }
 
                 // Build and execute INSERT statement
@@ -180,32 +180,8 @@ namespace BH.Adapter.SQLite
             if (columnValues == null || !columnValues.Any())
                 return false;
 
-            try
-            {
-                List<string> columnNames = columnValues.Keys.ToList();
-                string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
-                string placeholders = string.Join(", ", columnNames.Select(col => $"@{col}"));
-                
-                string insertSql = $"INSERT OR REPLACE INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
-
-                using (SqliteCommand command = new SqliteCommand(insertSql, m_Connection))
-                {
-                    // Add parameters
-                    foreach (KeyValuePair<string, object> columnValue in columnValues)
-                    {
-                        object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(columnValue.Value);
-                        command.Parameters.AddWithValue($"@{columnValue.Key}", sqliteValue);
-                    }
-
-                    int rowsAffected = command.ExecuteNonQuery();
-                    return rowsAffected > 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                BH.Engine.Base.Compute.RecordError($"Failed to execute INSERT statement for table '{tableName}': {ex.Message}");
-                return false;
-            }
+            // Use the shared ExecuteInsert method
+            return BH.Engine.SQLite.Compute.ExecuteInsert(m_Connection, tableName, columnValues, "OR REPLACE");
         }
 
         /***************************************************/

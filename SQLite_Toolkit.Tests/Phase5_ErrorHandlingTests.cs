@@ -225,7 +225,7 @@ namespace SQLite_Toolkit.Tests
         public void Test_5_7_SqlError_InvalidParameterTypes()
         {
             // Test 5.2d: SQL Error Handling - Invalid Parameter Types
-            // Objective: Test parameterized queries with incompatible parameter types
+            // Objective: Test parameterised queries with incompatible parameter types
 
             // Arrange
             OpenTestConnection();
@@ -671,7 +671,7 @@ namespace SQLite_Toolkit.Tests
 
                 for (int i = 0; i < specialNames.Length; i++)
                 {
-                    // Use parameterized insert to handle special characters safely
+                    // Use parameterised insert to handle special characters safely
                     string insertSql = $"INSERT INTO {tableName} (Name) VALUES (@name{i});";
                     CustomSqlRequest insertRequest = new CustomSqlRequest()
                     {

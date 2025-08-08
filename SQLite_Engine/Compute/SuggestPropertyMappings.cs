@@ -36,7 +36,7 @@ namespace BH.Engine.SQLite
         /***************************************************/
 
         [Description("Creates a property mapping suggestion for a BHoM object based on its available primitive properties.")]
-        [Input("obj", "The BHoM object to analyze.")]
+        [Input("obj", "The BHoM object to analyse.")]
         [Input("maxDepth", "Maximum property nesting level to explore. Default is 3 for performance.")]
         [Output("suggestions", "Dictionary of suggested column names and their property paths.")]
         public static Dictionary<string, string> SuggestPropertyMappings(this IBHoMObject obj, int maxDepth = 3)

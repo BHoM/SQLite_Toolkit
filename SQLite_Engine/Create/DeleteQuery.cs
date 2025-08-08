@@ -33,7 +33,7 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Builds a parameterized DELETE query from a FilterResult and table information.")]
+        [Description("Builds a parameterised DELETE query from a FilterResult and table information.")]
         [Input("tableName", "The name of the table to delete from.")]
         [Input("filterResult", "The filter result containing WHERE clause and parameters. Required for safety.")]
         [Output("sql", "Complete SQL DELETE statement, or null if construction failed.")]

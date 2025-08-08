@@ -36,7 +36,7 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Converts a RangeFilterRequest to a parameterized SQL WHERE clause.")]
+        [Description("Converts a RangeFilterRequest to a parameterised SQL WHERE clause.")]
         [Input("filter", "The range filter request to convert.")]
         [Input("parameterPrefix", "Prefix for parameter names to avoid conflicts. Default is 'rng'.")]
         [Output("result", "FilterResult containing the SQL WHERE clause and parameters, or null if conversion failed.")]

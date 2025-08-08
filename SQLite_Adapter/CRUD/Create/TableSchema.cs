@@ -60,14 +60,15 @@ namespace BH.Adapter.SQLite
                     return false;
                 }
 
-                // Execute the SQL
-                using (SqliteCommand command = new SqliteCommand(createSql, m_Connection))
+                // Execute the SQL using the shared method
+                bool success = BH.Engine.SQLite.Compute.ExecuteSql(m_Connection, createSql, null, $"CREATE TABLE {tableSchema.Name}");
+                
+                if (success)
                 {
-                    command.ExecuteNonQuery();
+                    BH.Engine.Base.Compute.RecordNote($"Successfully created table: {tableSchema.Name}");
                 }
 
-                BH.Engine.Base.Compute.RecordNote($"Successfully created table: {tableSchema.Name}");
-                return true;
+                return success;
             }
             catch (Exception ex)
             {

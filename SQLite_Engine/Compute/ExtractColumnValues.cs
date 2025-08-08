@@ -79,7 +79,7 @@ namespace BH.Engine.SQLite
                 return null;
 
             // Handle simple property access
-            if (!propertyPath.Contains('.'))
+            if (!propertyPath.Contains("."))
             {
                 PropertyInfo property = obj.GetType().GetProperty(propertyPath);
                 return property?.GetValue(obj);

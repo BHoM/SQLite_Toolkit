@@ -80,6 +80,17 @@ namespace BH.Adapter.SQLite
 
             Type objectType = objectTypes[0];
 
+            // Special routing for Table and TableSchema objects - use specific Create methods
+            if (typeof(TableSchema).IsAssignableFrom(objectType))
+            {
+                return PushTableSchemas(objects.Cast<TableSchema>());
+            }
+
+            if (typeof(Table).IsAssignableFrom(objectType))
+            {
+                return PushTables(objects.Cast<Table>());
+            }
+
             // Ensure objects are BHoM objects
             if (!typeof(IBHoMObject).IsAssignableFrom(objectType))
             {
@@ -307,6 +318,86 @@ namespace BH.Adapter.SQLite
             {
                 BH.Engine.Base.Compute.RecordError($"Failed to insert batch into table '{tableName}': {ex.Message}");
                 return false;
+            }
+        }
+
+        /***************************************************/
+
+        private List<object> PushTableSchemas(IEnumerable<TableSchema> tableSchemas)
+        {
+            List<object> result = new List<object>();
+
+            if (tableSchemas == null)
+                return result;
+
+            List<TableSchema> schemaList = tableSchemas.ToList();
+            if (!schemaList.Any())
+                return result;
+
+            // Update last used timestamp
+            m_LastUsed = DateTime.Now;
+
+            try
+            {
+                bool success = ICreate(schemaList);
+                if (success)
+                {
+                    result = schemaList.Cast<object>().ToList();
+                    BH.Engine.Base.Compute.RecordNote($"Successfully pushed {schemaList.Count} TableSchema objects.");
+                }
+
+                // Perform WAL checkpoint after push operation if WAL mode is enabled
+                if (m_WalModeEnabled && success)
+                {
+                    BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Failed to push TableSchema objects: {ex.Message}");
+                return result;
+            }
+        }
+
+        /***************************************************/
+
+        private List<object> PushTables(IEnumerable<Table> tables)
+        {
+            List<object> result = new List<object>();
+
+            if (tables == null)
+                return result;
+
+            List<Table> tableList = tables.ToList();
+            if (!tableList.Any())
+                return result;
+
+            // Update last used timestamp
+            m_LastUsed = DateTime.Now;
+
+            try
+            {
+                bool success = ICreate(tableList);
+                if (success)
+                {
+                    result = tableList.Cast<object>().ToList();
+                    BH.Engine.Base.Compute.RecordNote($"Successfully pushed {tableList.Count} Table objects.");
+                }
+
+                // Perform WAL checkpoint after push operation if WAL mode is enabled
+                if (m_WalModeEnabled && success)
+                {
+                    BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Failed to push Table objects: {ex.Message}");
+                return result;
             }
         }
 

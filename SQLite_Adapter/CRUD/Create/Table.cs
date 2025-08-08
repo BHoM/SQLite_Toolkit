@@ -34,53 +34,39 @@ namespace BH.Adapter.SQLite
         /**** Create Methods                            ****/
         /***************************************************/
 
-        // Create method for multiple TableData objects
-        private bool Create(IEnumerable<Table> tableDatas)
+        protected bool Create(Table table)
         {
-            if (tableDatas == null)
-                return false;
-
-            bool success = true;
-            foreach (Table tableData in tableDatas)
+            // Create method for Table objects - creates table and inserts data
+            if (table == null)
             {
-                success &= Create(tableData);
-            }
-            return success;
-        }
-
-        private bool Create(Table tableData)
-        {
-            // Create method for TableData objects - creates table and inserts data
-            if (tableData == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create table data: TableData is null.");
+                BH.Engine.Base.Compute.RecordError("Cannot create table data: Table is null.");
                 return false;
             }
 
             try
             {
                 // Create the table if requested
-                if (tableData.CreateTableIfNotExists)
+                if (table.CreateTableIfNotExists)
                 {
-                    bool tableCreated = Create(tableData.Schema);
+                    bool tableCreated = Create(table.Schema);
                     if (!tableCreated)
                     {
-                        BH.Engine.Base.Compute.RecordError($"Failed to create table for TableData: {tableData.Schema.Name}");
+                        BH.Engine.Base.Compute.RecordError($"Failed to create table for Table: {table.Schema.Name}");
                         return false;
                     }
                 }
 
                 // Insert data if provided
-                if (tableData.Rows != null && tableData.Rows.Any())
+                if (table.Rows != null && table.Rows.Any())
                 {
-                    return InsertTableDataRows(tableData);
+                    return InsertTableDataRows(table);
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Failed to create TableData for {tableData.Schema.Name}: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to create Table for {table.Schema.Name}: {ex.Message}");
                 return false;
             }
         }
@@ -89,60 +75,46 @@ namespace BH.Adapter.SQLite
         /**** Private Helper Methods                   ****/
         /***************************************************/
 
-        private bool InsertTableDataRows(Table tableData)
+        private bool InsertTableDataRows(Table table)
         {
-            if (tableData?.Rows == null || !tableData.Rows.Any())
+            if (table?.Rows == null || !table.Rows.Any())
                 return true;
 
             try
             {
-                string tableName = tableData.Schema.Name;
-                var firstRow = tableData.Rows.First();
-                var columnNames = firstRow.Keys.ToList();
+                string tableName = table.Schema.Name;
+                Dictionary<string, object> firstRow = table.Rows.First();
+                List<string> columnNames = firstRow.Keys.ToList();
 
-                string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
-                string placeholders = string.Join(", ", columnNames.Select(col => $"@{col}"));
+                string conflictClause = GetConflictClause(table.TableConfig.ConflictResolution);
 
-                string conflictClause = GetConflictClause(tableData.TableConfig.ConflictResolution);
-                string insertSql = $"INSERT {conflictClause} INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
+                // Process rows in batches
+                int batchSize = table.TableConfig.BatchSize;
+                List<List<Dictionary<string, object>>> batches = table.Rows
+                    .Select((row, index) => new { row, index })
+                    .GroupBy(x => x.index / batchSize)
+                    .Select(g => g.Select(x => x.row).ToList())
+                    .ToList();
 
-                using (Microsoft.Data.Sqlite.SqliteCommand command = new Microsoft.Data.Sqlite.SqliteCommand(insertSql, m_Connection))
+                foreach (List<Dictionary<string, object>> batch in batches)
                 {
-                    // Add parameters for all columns
-                    foreach (string column in columnNames)
+                    foreach (Dictionary<string, object> row in batch)
                     {
-                        command.Parameters.Add($"@{column}", Microsoft.Data.Sqlite.SqliteType.Text);
-                    }
-
-                    // Process rows in batches
-                    int batchSize = tableData.TableConfig.BatchSize;
-                    var batches = tableData.Rows
-                        .Select((row, index) => new { row, index })
-                        .GroupBy(x => x.index / batchSize)
-                        .Select(g => g.Select(x => x.row));
-
-                    foreach (var batch in batches)
-                    {
-                        foreach (var row in batch)
+                        // Use the shared ExecuteInsert method for each row
+                        bool success = BH.Engine.SQLite.Compute.ExecuteInsert(m_Connection, tableName, row, conflictClause);
+                        if (!success)
                         {
-                            // Set parameter values
-                            foreach (string column in columnNames)
-                            {
-                                object value = row.ContainsKey(column) ? row[column] : DBNull.Value;
-                                command.Parameters[$"@{column}"].Value = value ?? DBNull.Value;
-                            }
-
-                            command.ExecuteNonQuery();
+                            BH.Engine.Base.Compute.RecordWarning($"Failed to insert a row into table '{tableName}'.");
                         }
                     }
                 }
 
-                BH.Engine.Base.Compute.RecordNote($"Successfully inserted {tableData.Rows.Count} rows into table: {tableName}");
+                BH.Engine.Base.Compute.RecordNote($"Successfully processed {table.Rows.Count} rows for table: {tableName}");
                 return true;
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Failed to insert data into {tableData.Schema.Name}: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to insert data into {table.Schema.Name}: {ex.Message}");
                 return false;
             }
         }

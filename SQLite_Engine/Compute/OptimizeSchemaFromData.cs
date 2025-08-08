@@ -37,16 +37,16 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Optimizes column definitions based on actual data analysis from multiple objects. \n" +
+        [Description("Optimises column definitions based on actual data analysis from multiple objects. \n" +
             "Adjusts column constraints, types, and properties based on observed values.")]
-        [Input("schema", "The base table schema to optimize.")]
-        [Input("objects", "Collection of objects to analyze for optimization hints.")]
-        [Output("success", "True if optimization completed successfully, false otherwise.")]
-        public static bool OptimizeSchemaFromData(TableSchema schema, IEnumerable<IBHoMObject> objects)
+        [Input("schema", "The base table schema to optimise.")]
+        [Input("objects", "Collection of objects to analyse for optimisation hints.")]
+        [Output("success", "True if optimisation completed successfully, false otherwise.")]
+        public static bool OptimiseSchemaFromData(TableSchema schema, IEnumerable<IBHoMObject> objects)
         {
             if (schema == null || objects == null || !objects.Any())
             {
-                BH.Engine.Base.Compute.RecordWarning("Cannot optimize schema: schema or objects are null/empty.");
+                BH.Engine.Base.Compute.RecordWarning("Cannot optimise schema: schema or objects are null/empty.");
                 return false;
             }
 
@@ -58,23 +58,23 @@ namespace BH.Engine.SQLite
                 // Collect sample values for each column
                 foreach (Column column in schema.Columns)
                 {
-                    if (column.Name == "BHoMGuid") continue; // Skip GUID column
+                    if (column.Name == "BHoM_Guid") continue; // Skip GUID column
 
                     // Find corresponding property values
                     List<object> columnValues = ExtractColumnValuesFromObjects(column.Name, objects);
                     
                     if (columnValues.Any())
                     {
-                        AnalyzeColumnValues(column, columnValues, objectCount);
+                        AnalyseColumnValues(column, columnValues, objectCount);
                     }
                 }
 
-                BH.Engine.Base.Compute.RecordNote($"Optimized schema for table '{schema.Name}' based on analysis of {objectCount} objects.");
+                BH.Engine.Base.Compute.RecordNote($"Optimised schema for table '{schema.Name}' based on analysis of {objectCount} objects.");
                 return true;
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Failed to optimize schema from data: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to optimise schema from data: {ex.Message}");
                 return false;
             }
         }
@@ -117,7 +117,7 @@ namespace BH.Engine.SQLite
 
         /***************************************************/
 
-        private static void AnalyzeColumnValues(Column column, List<object> values, int totalObjectCount)
+        private static void AnalyseColumnValues(Column column, List<object> values, int totalObjectCount)
         {
             try
             {
@@ -133,7 +133,7 @@ namespace BH.Engine.SQLite
                     column.AllowNull = false;
                 }
 
-                // Analyze string lengths for TEXT columns
+                // Analyse string lengths for TEXT columns
                 if (column.DataType == SqliteDataType.TEXT)
                 {
                     List<string> stringValues = values.OfType<string>().ToList();
@@ -157,7 +157,7 @@ namespace BH.Engine.SQLite
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordWarning($"Failed to analyze values for column '{column.Name}': {ex.Message}");
+                BH.Engine.Base.Compute.RecordWarning($"Failed to analyse values for column '{column.Name}': {ex.Message}");
             }
         }
 

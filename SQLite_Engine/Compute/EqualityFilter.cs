@@ -36,7 +36,7 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Converts an EqualityFilterRequest to a parameterized SQL WHERE clause.")]
+        [Description("Converts an EqualityFilterRequest to a parameterised SQL WHERE clause.")]
         [Input("filter", "The equality filter request to convert.")]
         [Input("parameterPrefix", "Prefix for parameter names to avoid conflicts. Default is 'eq'.")]
         [Output("result", "FilterResult containing the SQL WHERE clause and parameters, or null if conversion failed.")]

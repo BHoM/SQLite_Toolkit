@@ -35,7 +35,7 @@ namespace BH.Engine.SQLite
         /***************************************************/
 
         [Description("Gets the final property type from a property path on a given object type.")]
-        [Input("type", "The object Type to analyze.")]
+        [Input("type", "The object Type to analyse.")]
         [Input("propertyPath", "The property path, supporting dot notation.")]
         [Output("propertyType", "The Type of the final property in the path, or null if path is invalid.")]
         public static Type GetPropertyType(this Type type, string propertyPath)

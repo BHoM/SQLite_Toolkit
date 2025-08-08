@@ -81,7 +81,7 @@ namespace SQLite_Toolkit.Tests
         public void Test_4_2_CustomSqlRequest_WithParameters()
         {
             // Test 4.2: Custom SQL with Parameters
-            // Objective: Test CustomSqlRequest with parameterized queries
+            // Objective: Test CustomSqlRequest with parameterised queries
 
             // Arrange
             OpenTestConnection();
@@ -108,7 +108,7 @@ namespace SQLite_Toolkit.Tests
 
             QueryResult queryResult = results.FirstOrDefault() as QueryResult;
             queryResult.Should().NotBeNull("Should return a QueryResult");
-            queryResult.IsSuccess.Should().BeTrue("Parameterized query should be successful");
+            queryResult.IsSuccess.Should().BeTrue("Parameterised query should be successful");
             queryResult.Data.Should().NotBeEmpty("Should contain filtered data");
 
             // Verify filtering worked

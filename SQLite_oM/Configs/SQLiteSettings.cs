@@ -59,7 +59,7 @@ namespace BH.oM.SQLite.Configs
         public virtual bool AutoCreateTables { get; set; } = true;
 
         [Description("Whether to automatically initialize system tables (__Types, __Schema) on database connection.")]
-        public virtual bool InitializeSystemTables { get; set; } = true;
+        public virtual bool InitialiseSystemTables { get; set; } = true;
 
         /***************************************************/
     }
