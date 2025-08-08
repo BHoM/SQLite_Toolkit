@@ -27,6 +27,7 @@ using BH.oM.SQLite.Objects;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System;
 
 namespace BH.Engine.SQLite
 {
@@ -61,24 +62,53 @@ namespace BH.Engine.SQLite
                 string columnName = columnFilter.ColumnName;
                 List<object> values = columnFilter.Values;
 
+                // Check if all values are numeric - if so, use tolerance-based comparison
+                bool allNumeric = values.All(v => IsNumericValue(v));
+
                 // Handle single value vs multiple values
                 if (values.Count == 1)
                 {
                     string paramName = $"@{parameterPrefix}_{paramIndex++}";
-                    whereConditions.Add($"\"{columnName}\" = {paramName}");
+                    
+                    if (allNumeric)
+                    {
+                        // Use tolerance-based comparison for numeric values
+                        whereConditions.Add(CreateFloatingPointCondition(columnName, paramName));
+                    }
+                    else
+                    {
+                        // Use exact comparison for non-numeric values
+                        whereConditions.Add($"\"{columnName}\" = {paramName}");
+                    }
+                    
                     parameters[paramName] = values[0];
                 }
                 else
                 {
-                    // Multiple values - use IN clause
-                    List<string> paramNames = new List<string>();
-                    foreach (object value in values)
+                    if (allNumeric)
                     {
-                        string paramName = $"@{parameterPrefix}_{paramIndex++}";
-                        paramNames.Add(paramName);
-                        parameters[paramName] = value;
+                        // Multiple numeric values - use OR with tolerance comparisons
+                        List<string> toleranceConditions = new List<string>();
+                        foreach (object value in values)
+                        {
+                            string paramName = $"@{parameterPrefix}_{paramIndex++}";
+                            toleranceConditions.Add(CreateFloatingPointCondition(columnName, paramName));
+                            parameters[paramName] = value;
+                        }
+                        whereConditions.Add($"({string.Join(" OR ", toleranceConditions)})");
                     }
-                    whereConditions.Add($"\"{columnName}\" IN ({string.Join(", ", paramNames)})");
+                    else
+                    {
+                        // Multiple non-numeric values - use IN clause
+                        List<string> paramNames = new List<string>();
+                        foreach (object value in values)
+                        {
+                            string paramName = $"@{parameterPrefix}_{paramIndex++}";
+                            paramNames.Add(paramName);
+                            parameters[paramName] = value;
+                        }
+                        whereConditions.Add($"\"{columnName}\" IN ({string.Join(", ", paramNames)})");
+                    }
                 }
             }
 
@@ -98,6 +128,32 @@ namespace BH.Engine.SQLite
                 Parameters = parameters,
                 FilterType = "Equality"
             };
+        }
+
+        /***************************************************/
+
+        /// <summary>
+        /// Checks if a value can be parsed as a numeric type suitable for floating-point comparison
+        /// </summary>
+        private static bool IsNumericValue(object value)
+        {
+            if (value == null) return false;
+            
+            if (value is double || value is float || value is decimal || 
+                value is int || value is long || value is short || value is byte)
+                return true;
+                
+            if (value is string stringValue)
+            {
+                return double.TryParse(stringValue, out _);
+            }
+            
+            return false;
+        }
+
+        private static string CreateFloatingPointCondition(string columnName, string paramName, double tolerance = 1E-9)
+        {
+            return $"ABS(\"{columnName}\" - {paramName}) < {tolerance}";
         }
 
         /***************************************************/
