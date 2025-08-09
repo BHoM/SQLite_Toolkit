@@ -231,14 +231,16 @@ namespace SQLite_Toolkit.Tests
             queryResult.Should().NotBeNull("Should return a QueryResult");
             queryResult.IsSuccess.Should().BeTrue("Query should succeed on empty database");
             
-            // Empty database should return no user tables (may have system tables)
+            // Empty database should return no user tables (may have SQLite system tables and BHoM system tables)
             if (queryResult.Data != null && queryResult.Data.Any())
             {
                 List<Dictionary<string, object>> userTables = queryResult.Data.Where(row => 
                     row.ContainsKey("ObjectType") && row["ObjectType"]?.ToString() == "table" &&
-                    row.ContainsKey("TableName") && !row["TableName"]?.ToString().StartsWith("sqlite_") == true
+                    row.ContainsKey("TableName") && 
+                    !row["TableName"]?.ToString().StartsWith("sqlite_") == true &&
+                    !row["TableName"]?.ToString().StartsWith("__") == true // Filter out BHoM system tables
                 ).ToList();
-                userTables.Should().BeEmpty("Empty database should have no user tables");
+                userTables.Should().BeEmpty("Empty database should have no user tables (system tables are expected)");
             }
 
             CloseTestConnection();

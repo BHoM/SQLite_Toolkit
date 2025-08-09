@@ -64,6 +64,7 @@ namespace BH.Engine.SQLite
 
             // Additional types that map well to database columns
             return actualType == typeof(string) ||
+                   actualType == typeof(bool) ||
                    actualType == typeof(DateTime) ||
                    actualType == typeof(Guid) ||
                    actualType.IsEnum;

@@ -1,0 +1,362 @@
+/*
+ * This file is part of the Buildings and Habitats object Model (BHoM)
+ * Copyright (c) 2015 - 2025, the respective contributors. All rights reserved.
+ *
+ * Each contributor holds copyright over their respective contributions.
+ * The project versioning (Git) records all such contribution source information.
+ *                                           
+ *                                                                              
+ * The BHoM is free software: you can redistribute it and/or modify         
+ * it under the terms of the GNU Lesser General Public License as published by  
+ * the Free Software Foundation, either version 3.0 of the License, or          
+ * (at your option) any later version.                                          
+ *                                                                              
+ * The BHoM is distributed in the hope that it will be useful,              
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of               
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the                 
+ * GNU Lesser General Public License for more details.                          
+ *                                                                            
+ * You should have received a copy of the GNU Lesser General Public License     
+ * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
+ */
+
+using System;
+using System.Collections.Generic;
+using NUnit.Framework;
+using FluentAssertions;
+using BH.Engine.SQLite;
+using BH.oM.SQLite.Configs;
+using BH.oM.SQLite.Examples;
+
+namespace SQLite_Toolkit.Tests.Unit
+{
+    /// <summary>
+    /// Unit tests for validation methods including property paths and schema validation
+    /// </summary>
+    [TestFixture]
+    public class ValidationTests
+    {
+        [Test]
+        public void Test_ValidateTableName_ValidNames_ReturnsTrue()
+        {
+            // Test valid table names
+            
+            // Arrange & Act & Assert
+            BH.Engine.SQLite.Query.ValidateTableName("Users").Should().BeTrue("Simple name should be valid");
+            BH.Engine.SQLite.Query.ValidateTableName("SensorReadings").Should().BeTrue("CamelCase name should be valid");
+            BH.Engine.SQLite.Query.ValidateTableName("sensor_readings").Should().BeTrue("Snake_case name should be valid");
+            BH.Engine.SQLite.Query.ValidateTableName("Table123").Should().BeTrue("Name with numbers should be valid");
+            BH.Engine.SQLite.Query.ValidateTableName("_Table").Should().BeTrue("Name starting with underscore should be valid");
+        }
+
+        [Test]
+        public void Test_ValidateTableName_InvalidNames_ReturnsFalse()
+        {
+            // Test invalid table names
+            
+            // Arrange & Act & Assert
+            BH.Engine.SQLite.Query.ValidateTableName("").Should().BeFalse("Empty name should be invalid");
+            BH.Engine.SQLite.Query.ValidateTableName(null).Should().BeFalse("Null name should be invalid");
+            BH.Engine.SQLite.Query.ValidateTableName("123Table").Should().BeFalse("Name starting with number should be invalid");
+            BH.Engine.SQLite.Query.ValidateTableName("Table Name").Should().BeFalse("Name with spaces should be invalid");
+            BH.Engine.SQLite.Query.ValidateTableName("Table-Name").Should().BeFalse("Name with hyphens should be invalid");
+            BH.Engine.SQLite.Query.ValidateTableName("Table.Name").Should().BeFalse("Name with dots should be invalid");
+            BH.Engine.SQLite.Query.ValidateTableName("Table;DROP").Should().BeFalse("SQL injection attempt should be invalid");
+        }
+
+        [Test]
+        public void Test_ValidateColumnName_ValidNames_ReturnsTrue()
+        {
+            // Test valid column names
+            
+            // Arrange & Act & Assert
+            BH.Engine.SQLite.Query.ValidateColumnName("Id").Should().BeTrue("Simple name should be valid");
+            BH.Engine.SQLite.Query.ValidateColumnName("FirstName").Should().BeTrue("CamelCase name should be valid");
+            BH.Engine.SQLite.Query.ValidateColumnName("first_name").Should().BeTrue("Snake_case name should be valid");
+            BH.Engine.SQLite.Query.ValidateColumnName("Column123").Should().BeTrue("Name with numbers should be valid");
+            BH.Engine.SQLite.Query.ValidateColumnName("_Column").Should().BeTrue("Name starting with underscore should be valid");
+        }
+
+        [Test]
+        public void Test_ValidateColumnName_InvalidNames_ReturnsFalse()
+        {
+            // Test invalid column names
+            
+            // Arrange & Act & Assert
+            BH.Engine.SQLite.Query.ValidateColumnName("").Should().BeFalse("Empty name should be invalid");
+            BH.Engine.SQLite.Query.ValidateColumnName((string)null).Should().BeFalse("Null name should be invalid");
+            BH.Engine.SQLite.Query.ValidateColumnName("123Column").Should().BeFalse("Name starting with number should be invalid");
+            BH.Engine.SQLite.Query.ValidateColumnName("Column Name").Should().BeFalse("Name with spaces should be invalid");
+            BH.Engine.SQLite.Query.ValidateColumnName("Column-Name").Should().BeFalse("Name with hyphens should be invalid");
+            BH.Engine.SQLite.Query.ValidateColumnName("Column.Name").Should().BeFalse("Name with dots should be invalid");
+        }
+
+        [Test]
+        public void Test_ValidateColumnNames_Collection_ValidatesAll()
+        {
+            // Test validation of column name collection
+            
+            // Arrange
+            List<string> validNames = new List<string> { "Id", "Name", "CreatedDate" };
+            List<string> invalidNames = new List<string> { "Id", "Invalid Name", "CreatedDate" };
+            
+            // Act & Assert
+            BH.Engine.SQLite.Query.ValidateColumnName((IEnumerable<string>)validNames).Should().BeTrue("All valid names should pass validation");
+            BH.Engine.SQLite.Query.ValidateColumnName((IEnumerable<string>)invalidNames).Should().BeFalse("Collection with invalid name should fail validation");
+        }
+
+        [Test]
+        public void Test_IsValidPropertyPath_ValidPaths_ReturnsTrue()
+        {
+            // Test valid property paths
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            
+            // Act & Assert
+            structuralElementType.IsValidPropertyPath("ElementName").Should().BeTrue("Direct property should be valid");
+            structuralElementType.IsValidPropertyPath("StartPosition.X").Should().BeTrue("One-level nested property should be valid");
+            structuralElementType.IsValidPropertyPath("Material.Name").Should().BeTrue("One-level nested property should be valid");
+            structuralElementType.IsValidPropertyPath("Material.Thermal.Conductivity").Should().BeTrue("Two-level nested property should be valid");
+            structuralElementType.IsValidPropertyPath("BHoM_Guid").Should().BeTrue("BHoM base property should be valid");
+        }
+
+        [Test]
+        public void Test_IsValidPropertyPath_InvalidPaths_ReturnsFalse()
+        {
+            // Test invalid property paths
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            
+            // Act & Assert
+            structuralElementType.IsValidPropertyPath("NonExistentProperty").Should().BeFalse("Non-existent property should be invalid");
+            structuralElementType.IsValidPropertyPath("Material.NonExistentProperty").Should().BeFalse("Invalid nested property should be invalid");
+            structuralElementType.IsValidPropertyPath("StartPosition.NonExistentAxis").Should().BeFalse("Invalid position property should be invalid");
+            structuralElementType.IsValidPropertyPath("").Should().BeFalse("Empty path should be invalid");
+            structuralElementType.IsValidPropertyPath(null).Should().BeFalse("Null path should be invalid");
+        }
+
+        [Test]
+        public void Test_GetPropertyType_ValidPaths_ReturnsCorrectTypes()
+        {
+            // Test getting property types from valid paths
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            
+            // Act & Assert
+            structuralElementType.GetPropertyType("ElementName").Should().Be(typeof(string), "String property should return string type");
+            structuralElementType.GetPropertyType("CrossSectionalArea").Should().Be(typeof(double), "Double property should return double type");
+            structuralElementType.GetPropertyType("IsLoadBearing").Should().Be(typeof(bool), "Bool property should return bool type");
+            structuralElementType.GetPropertyType("ElementType").Should().Be(typeof(ElementType), "Enum property should return enum type");
+            structuralElementType.GetPropertyType("StartPosition.X").Should().Be(typeof(double), "Nested double property should return double type");
+            structuralElementType.GetPropertyType("Material.Name").Should().Be(typeof(string), "Nested string property should return string type");
+        }
+
+        [Test]
+        public void Test_GetPropertyType_InvalidPaths_ReturnsNull()
+        {
+            // Test getting property types from invalid paths
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            
+            // Act & Assert
+            structuralElementType.GetPropertyType("NonExistentProperty").Should().BeNull("Invalid property should return null");
+            structuralElementType.GetPropertyType("Material.NonExistentProperty").Should().BeNull("Invalid nested property should return null");
+            structuralElementType.GetPropertyType("").Should().BeNull("Empty path should return null");
+            structuralElementType.GetPropertyType(null).Should().BeNull("Null path should return null");
+        }
+
+        [Test]
+        public void Test_ValidatePropertyMappings_ValidMappings_ReturnsTrue()
+        {
+            // Test validation of valid property mappings
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            PushConfig config = new PushConfig()
+            {
+                PropertyMappings = new Dictionary<string, string>
+                {
+                    { "Name", "ElementName" },
+                    { "StartX", "StartPosition.X" },
+                    { "MaterialName", "Material.Name" }
+                }
+            };
+            
+            // Act
+            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(structuralElementType);
+            bool isValid = validMappings != null && validMappings.Count > 0;
+            
+            // Assert
+            isValid.Should().BeTrue("All valid property mappings should pass validation");
+        }
+
+        [Test]
+        public void Test_ValidatePropertyMappings_InvalidMappings_ReturnsFalse()
+        {
+            // Test validation of invalid property mappings
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            PushConfig config = new PushConfig()
+            {
+                PropertyMappings = new Dictionary<string, string>
+                {
+                    { "Name", "ElementName" }, // Valid
+                    { "InvalidMapping", "NonExistentProperty" }, // Invalid
+                    { "MaterialName", "Material.Name" } // Valid
+                }
+            };
+            
+            // Act
+            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(structuralElementType);
+            bool isValid = validMappings == null || validMappings.Count < config.PropertyMappings.Count;
+            
+            // Assert
+            isValid.Should().BeTrue("Invalid property mappings should be filtered out");
+        }
+
+        [Test]
+        public void Test_ValidatePropertyMappings_EmptyConfig_ReturnsTrue()
+        {
+            // Test validation with empty or null config
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            
+            // Act & Assert - Null config should not throw and empty config should work
+            PushConfig nullConfig = null;
+            PushConfig emptyConfig = new PushConfig();
+            
+            // These should not throw exceptions
+            Action nullConfigAction = () => nullConfig?.ValidatePropertyMappings(structuralElementType);
+            Action emptyConfigAction = () => emptyConfig.ValidatePropertyMappings(structuralElementType);
+            
+            nullConfigAction.Should().NotThrow("Null config should not throw");
+            emptyConfigAction.Should().NotThrow("Empty config should not throw");
+        }
+
+        [Test]
+        public void Test_ValidatePropertyMappings_InvalidColumnNames_ReturnsFalse()
+        {
+            // Test validation with invalid column names in mappings
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            PushConfig config = new PushConfig()
+            {
+                PropertyMappings = new Dictionary<string, string>
+                {
+                    { "Valid Name", "ElementName" }, // Invalid column name (space)
+                    { "MaterialName", "Material.Name" } // Valid
+                }
+            };
+            
+            // Act
+            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(structuralElementType);
+            bool isValid = validMappings == null || validMappings.Count < config.PropertyMappings.Count;
+            
+            // Assert
+            isValid.Should().BeTrue("Invalid column names should be filtered out");
+        }
+
+        [Test]
+        public void Test_IsPrimitiveForDatabase_PrimitiveTypes_ReturnsTrue()
+        {
+            // Test primitive type detection for database compatibility
+            
+            // Arrange & Act & Assert
+            typeof(string).IsPrimitiveForDatabase().Should().BeTrue("String should be primitive for database");
+            typeof(int).IsPrimitiveForDatabase().Should().BeTrue("Int should be primitive for database");
+            typeof(double).IsPrimitiveForDatabase().Should().BeTrue("Double should be primitive for database");
+            typeof(bool).IsPrimitiveForDatabase().Should().BeTrue("Bool should be primitive for database");
+            typeof(DateTime).IsPrimitiveForDatabase().Should().BeTrue("DateTime should be primitive for database");
+            typeof(Guid).IsPrimitiveForDatabase().Should().BeTrue("Guid should be primitive for database");
+            typeof(decimal).IsPrimitiveForDatabase().Should().BeTrue("Decimal should be primitive for database");
+            typeof(ElementType).IsPrimitiveForDatabase().Should().BeTrue("Enum should be primitive for database");
+        }
+
+        [Test]
+        public void Test_IsPrimitiveForDatabase_NullableTypes_ReturnsTrue()
+        {
+            // Test nullable primitive types
+            
+            // Arrange & Act & Assert
+            typeof(int?).IsPrimitiveForDatabase().Should().BeTrue("Nullable int should be primitive for database");
+            typeof(double?).IsPrimitiveForDatabase().Should().BeTrue("Nullable double should be primitive for database");
+            typeof(bool?).IsPrimitiveForDatabase().Should().BeTrue("Nullable bool should be primitive for database");
+            typeof(DateTime?).IsPrimitiveForDatabase().Should().BeTrue("Nullable DateTime should be primitive for database");
+            typeof(Guid?).IsPrimitiveForDatabase().Should().BeTrue("Nullable Guid should be primitive for database");
+        }
+
+        [Test]
+        public void Test_IsPrimitiveForDatabase_ComplexTypes_ReturnsFalse()
+        {
+            // Test complex types that are not primitive for database
+            
+            // Arrange & Act & Assert
+            typeof(PositionCoordinates).IsPrimitiveForDatabase().Should().BeFalse("PositionCoordinates should not be primitive for database");
+            typeof(DirectionVector).IsPrimitiveForDatabase().Should().BeFalse("DirectionVector should not be primitive for database");
+            typeof(MaterialProperties).IsPrimitiveForDatabase().Should().BeFalse("Custom object should not be primitive for database");
+            typeof(List<string>).IsPrimitiveForDatabase().Should().BeFalse("Collection should not be primitive for database");
+            typeof(object).IsPrimitiveForDatabase().Should().BeFalse("Object should not be primitive for database");
+        }
+
+        [Test]
+        public void Test_GetPrimitiveProperties_IRecordObject_ReturnsAllProperties()
+        {
+            // Test primitive property extraction from IRecord object
+            
+            // Arrange
+            Type sensorType = typeof(SensorReading);
+            
+            // Act
+            Dictionary<string, Type> primitiveProperties = sensorType.GetPrimitiveProperties();
+            
+            // Assert
+            primitiveProperties.Should().NotBeNull("Should return dictionary of primitive properties");
+            primitiveProperties.Should().NotBeEmpty("IRecord object should have primitive properties");
+            primitiveProperties.Should().ContainKey("SensorId", "String property should be included");
+            primitiveProperties.Should().ContainKey("Temperature", "Double property should be included");
+            primitiveProperties.Should().ContainKey("Humidity", "Double property should be included");
+            primitiveProperties.Should().ContainKey("Timestamp", "DateTime property should be included");
+            primitiveProperties.Should().ContainKey("IsValid", "Bool property should be included");
+            primitiveProperties.Should().ContainKey("StatusCode", "Int property should be included");
+            primitiveProperties.Should().ContainKey("BHoM_Guid", "BHoM_Guid should be included");
+        }
+
+        [Test]
+        public void Test_GetPrimitiveProperties_ComplexObject_ReturnsOnlyPrimitives()
+        {
+            // Test primitive property extraction from complex object
+            
+            // Arrange
+            Type structuralElementType = typeof(StructuralElement);
+            
+            // Act
+            Dictionary<string, Type> primitiveProperties = structuralElementType.GetPrimitiveProperties();
+            
+            // Assert
+            primitiveProperties.Should().NotBeNull("Should return dictionary of primitive properties");
+            primitiveProperties.Should().NotBeEmpty("Complex object should have some primitive properties");
+            
+            // Should include primitive properties
+            primitiveProperties.Should().ContainKey("ElementName", "String property should be included");
+            primitiveProperties.Should().ContainKey("CrossSectionalArea", "Double property should be included");
+            primitiveProperties.Should().ContainKey("Length", "Double property should be included");
+            primitiveProperties.Should().ContainKey("ElementType", "Enum property should be included");
+            primitiveProperties.Should().ContainKey("DesignDate", "DateTime property should be included");
+            primitiveProperties.Should().ContainKey("IsLoadBearing", "Bool property should be included");
+            primitiveProperties.Should().ContainKey("BHoM_Guid", "BHoM_Guid should be included");
+            
+            // Should not include complex properties
+            primitiveProperties.Should().NotContainKey("StartPosition", "Complex object should not be included");
+            primitiveProperties.Should().NotContainKey("EndPosition", "Complex object should not be included");
+            primitiveProperties.Should().NotContainKey("Material", "Complex object should not be included");
+            primitiveProperties.Should().NotContainKey("Loads", "Collection should not be included");
+        }
+    }
+}

@@ -179,6 +179,20 @@ namespace BH.Adapter.SQLite
                         result.ColumnNames.Add(reader.GetName(i));
                     }
 
+                    // Try to get schema information for type conversion
+                    string tableName = ExtractTableNameFromError(command.CommandText);
+                    Dictionary<string, Type> columnTypes = new Dictionary<string, Type>();
+                    
+                    if (!string.IsNullOrWhiteSpace(tableName))
+                    {
+                        columnTypes = GetTableSchemaUsingPull(tableName);
+                        BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: Found {columnTypes.Count} column types for table '{tableName}'");
+                    }
+                    else
+                    {
+                        BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: Could not extract table name from query: {command.CommandText}");
+                    }
+
                     // Read data rows
                     while (reader.Read())
                     {
@@ -188,6 +202,16 @@ namespace BH.Adapter.SQLite
                         {
                             string columnName = reader.GetName(i);
                             object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                            
+                            // Apply type conversion if schema information is available
+                            if (value != null && columnTypes.ContainsKey(columnName))
+                            {
+                                Type targetType = columnTypes[columnName];
+                                object originalValue = value;
+                                value = BH.Engine.SQLite.Compute.ConvertSqliteValue(value, targetType);
+                                BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: '{columnName}' {originalValue} ({originalValue.GetType().Name}) -> {value} ({value?.GetType().Name})");
+                            }
+                            
                             row[columnName] = value;
                         }
                         
@@ -507,6 +531,173 @@ namespace BH.Adapter.SQLite
                 return matches[0].Value.Trim('@');
             }
             return string.Empty;
+        }
+
+        /***************************************************/
+        /**** Private Helper Methods                  ****/
+        /***************************************************/
+
+        private Dictionary<string, Type> GetTableSchemaUsingPull(string tableName)
+        {
+            Dictionary<string, Type> columnTypes = new Dictionary<string, Type>();
+
+            try
+            {
+                // Use CustomSqlRequest to query the __Schema table
+                CustomSqlRequest schemaQuery = new CustomSqlRequest()
+                {
+                    SqlQuery = "SELECT ColumnName, DataType FROM __Schema WHERE TableName = @TableName",
+                    Parameters = new Dictionary<string, object> { { "@TableName", tableName } },
+                    IsReadOnly = true
+                };
+
+                // Execute the query without type conversion to avoid recursion
+                QueryResult schemaResult = ExecuteQueryWithoutTypeConversion(schemaQuery.SqlQuery, schemaQuery.Parameters);
+                
+                if (schemaResult.IsSuccess && schemaResult.Data.Count > 0)
+                {
+                    foreach (Dictionary<string, object> row in schemaResult.Data)
+                    {
+                        if (row.ContainsKey("ColumnName") && row.ContainsKey("DataType"))
+                        {
+                            string columnName = row["ColumnName"]?.ToString();
+                            string dataTypeString = row["DataType"]?.ToString();
+                            
+                            if (!string.IsNullOrWhiteSpace(columnName) && !string.IsNullOrWhiteSpace(dataTypeString))
+                            {
+                                Type columnType = ConvertStringToType(dataTypeString);
+                                if (columnType != null)
+                                {
+                                    columnTypes[columnName] = columnType;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to retrieve schema for table '{tableName}' using Pull method: {ex.Message}");
+            }
+
+            return columnTypes;
+        }
+
+        private QueryResult ExecuteQueryWithoutTypeConversion(string sqlQuery, Dictionary<string, object> parameters = null)
+        {
+            QueryResult result = new QueryResult
+            {
+                ExecutedQuery = sqlQuery,
+                ExecutedAt = DateTime.Now,
+                IsSuccess = false
+            };
+
+            try
+            {
+                using (SqliteCommand command = new SqliteCommand(sqlQuery, m_Connection))
+                {
+                    // Add parameters
+                    if (parameters != null)
+                    {
+                        foreach (KeyValuePair<string, object> param in parameters)
+                        {
+                            command.Parameters.AddWithValue(param.Key, param.Value ?? DBNull.Value);
+                        }
+                    }
+
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        // Get column names
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            result.ColumnNames.Add(reader.GetName(i));
+                        }
+
+                        // Read data rows without type conversion
+                        while (reader.Read())
+                        {
+                            Dictionary<string, object> row = new Dictionary<string, object>();
+                            
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                string columnName = reader.GetName(i);
+                                object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                row[columnName] = value;
+                            }
+                            
+                            result.Data.Add(row);
+                        }
+
+                        result.RowCount = result.Data.Count;
+                        result.IsSuccess = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessage = ex.Message;
+                result.IsSuccess = false;
+            }
+
+            return result;
+        }
+
+        private static Type ConvertStringToType(string typeString)
+        {
+            if (string.IsNullOrWhiteSpace(typeString))
+                return null;
+
+            try
+            {
+                // Handle common .NET types stored as strings
+                switch (typeString.ToLowerInvariant())
+                {
+                    case "system.boolean":
+                    case "boolean":
+                    case "bool":
+                        return typeof(bool);
+                        
+                    case "system.int32":
+                    case "int32":
+                    case "int":
+                        return typeof(int);
+                        
+                    case "system.int64":
+                    case "int64":
+                    case "long":
+                        return typeof(long);
+                        
+                    case "system.double":
+                    case "double":
+                        return typeof(double);
+                        
+                    case "system.single":
+                    case "single":
+                    case "float":
+                        return typeof(float);
+                        
+                    case "system.string":
+                    case "string":
+                        return typeof(string);
+                        
+                    case "system.datetime":
+                    case "datetime":
+                        return typeof(DateTime);
+                        
+                    case "system.guid":
+                    case "guid":
+                        return typeof(Guid);
+                        
+                    default:
+                        // Try to resolve the full type name
+                        return Type.GetType(typeString);
+                }
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Failed to convert type string '{typeString}' to Type: {ex.Message}");
+                return null;
+            }
         }
 
         /***************************************************/

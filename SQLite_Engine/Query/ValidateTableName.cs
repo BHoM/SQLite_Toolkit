@@ -54,7 +54,7 @@ namespace BH.Engine.SQLite
             }
 
             // Check for dangerous characters
-            char[] forbiddenChars = { ';', '\'', '"', '\\', '\n', '\r', '\t' };
+            char[] forbiddenChars = { ';', '\'', '"', '\\', '\n', '\r', '\t', ' ', '-', '.' };
             if (tableName.IndexOfAny(forbiddenChars) >= 0)
             {
                 BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' contains forbidden characters.");
@@ -65,6 +65,13 @@ namespace BH.Engine.SQLite
             if (tableName.Length > 999)
             {
                 BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' is too long (max 999 characters).");
+                return false;
+            }
+
+            // Must start with letter or underscore (not digit)
+            if (!char.IsLetter(tableName[0]) && tableName[0] != '_')
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' must start with a letter or underscore, not a digit or special character.");
                 return false;
             }
 

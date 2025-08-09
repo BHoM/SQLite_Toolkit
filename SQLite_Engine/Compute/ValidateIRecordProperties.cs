@@ -50,6 +50,23 @@ namespace BH.Engine.SQLite
 
                 foreach (PropertyInfo property in allProperties)
                 {
+                    // Skip inherited BHoMObject properties that are not primitive
+                    if (property.DeclaringType == typeof(BH.oM.Base.BHoMObject))
+                    {
+                        // Only check BHoMObject properties that are primitive
+                        if (property.Name == "BHoM_Guid" || property.Name == "Name")
+                        {
+                            if (!property.PropertyType.IsPrimitiveForDatabase())
+                            {
+                                Engine.Base.Compute.RecordWarning($"IRecord type {type.Name} contains non-primitive BHoMObject property {property.Name} of type {property.PropertyType.Name}.");
+                                return false;
+                            }
+                        }
+                        // Skip other BHoMObject properties (Fragments, Tags, CustomData)
+                        continue;
+                    }
+
+                    // Check all properties declared in the IRecord type itself
                     if (!property.PropertyType.IsPrimitiveForDatabase())
                     {
                         Engine.Base.Compute.RecordWarning($"IRecord type {type.Name} contains non-primitive property {property.Name} of type {property.PropertyType.Name}. " +

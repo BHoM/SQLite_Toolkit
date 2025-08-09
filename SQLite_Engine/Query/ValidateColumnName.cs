@@ -54,7 +54,7 @@ namespace BH.Engine.SQLite
             }
 
             // Check for dangerous characters
-            char[] forbiddenChars = { ';', '\'', '"', '\\', '\n', '\r', '\t' };
+            char[] forbiddenChars = { ';', '\'', '"', '\\', '\n', '\r', '\t', ' ', '-', '.' };
             if (columnName.IndexOfAny(forbiddenChars) >= 0)
             {
                 BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains forbidden characters.");
@@ -68,10 +68,10 @@ namespace BH.Engine.SQLite
                 return false;
             }
 
-            // Must start with letter or underscore
+            // Must start with letter or underscore (not digit)
             if (!char.IsLetter(columnName[0]) && columnName[0] != '_')
             {
-                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' must start with a letter or underscore.");
+                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' must start with a letter or underscore, not a digit or special character.");
                 return false;
             }
 

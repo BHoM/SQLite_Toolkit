@@ -58,6 +58,13 @@ namespace BH.Engine.SQLite
                     continue;
                 }
 
+                // Validate that the column name is valid for SQL
+                if (!BH.Engine.SQLite.Query.ValidateColumnName(columnName))
+                {
+                    Engine.Base.Compute.RecordWarning($"Column name '{columnName}' is not valid for SQL database storage.");
+                    continue;
+                }
+
                 // Validate that the property path exists on the object type
                 if (objectType.IsValidPropertyPath(propertyPath))
                 {
