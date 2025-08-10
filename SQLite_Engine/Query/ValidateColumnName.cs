@@ -41,15 +41,22 @@ namespace BH.Engine.SQLite
             if (string.IsNullOrWhiteSpace(columnName))
                 return false;
 
-            // Check for exact SQL keywords (not substrings)
+            // Check for SQL injection patterns - look for dangerous keyword combinations and statements
             string lowerName = columnName.ToLowerInvariant();
-            string[] forbiddenKeywords = { "drop", "delete", "insert", "update", "create", "alter", "truncate", "select", "from", "where", "join", "union", "exec", "execute" };
             
-            foreach (string keyword in forbiddenKeywords)
+            // Dangerous SQL statement patterns that should never appear in column names
+            string[] dangerousPatterns = { 
+                "drop table", "drop database", "drop schema", "delete from", "insert into", 
+                "update set", "create table", "alter table", "truncate table", "exec ", "execute ",
+                "union select", "select from", "' or ", "\" or ", "; drop", "; delete", "; insert",
+                "; update", "; create", "; alter", "; truncate", "; exec", "; execute"
+            };
+            
+            foreach (string pattern in dangerousPatterns)
             {
-                if (lowerName.Equals(keyword, StringComparison.OrdinalIgnoreCase))
+                if (lowerName.Contains(pattern))
                 {
-                    BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' cannot be a reserved SQL keyword: {keyword}");
+                    BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains dangerous SQL pattern: {pattern}");
                     return false;
                 }
             }
