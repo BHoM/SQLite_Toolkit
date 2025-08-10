@@ -131,6 +131,7 @@ namespace BH.Engine.SQLite
                 {
                     Name = mapping.ColumnName,
                     DataType = GetSqliteDataTypeFromNetType(mapping.PropertyType),
+                    NetTypeName = mapping.PropertyType.FullName,
                     AllowNull = true, // Default to allow nulls for flexibility
                     Position = position
                 };

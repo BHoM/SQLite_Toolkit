@@ -73,8 +73,8 @@ namespace BH.Engine.SQLite
 
                 // Insert schema information for each column
                 string insertSql = @"
-                    INSERT INTO __Schema (TableName, ColumnName, DataType, IsNullable, IsPrimaryKey, DefaultValue) 
-                    VALUES (@TableName, @ColumnName, @DataType, @IsNullable, @IsPrimaryKey, @DefaultValue)";
+                    INSERT INTO __Schema (TableName, ColumnName, DataType, NetTypeName, IsNullable, IsPrimaryKey, DefaultValue) 
+                    VALUES (@TableName, @ColumnName, @DataType, @NetTypeName, @IsNullable, @IsPrimaryKey, @DefaultValue)";
 
                 using (SqliteCommand insertCommand = new SqliteCommand(insertSql, connection))
                 {
@@ -84,6 +84,7 @@ namespace BH.Engine.SQLite
                         insertCommand.Parameters.AddWithValue("@TableName", tableSchema.Name);
                         insertCommand.Parameters.AddWithValue("@ColumnName", column.Name);
                         insertCommand.Parameters.AddWithValue("@DataType", column.DataType.ToString());
+                        insertCommand.Parameters.AddWithValue("@NetTypeName", column.NetTypeName ?? (object)DBNull.Value);
                         insertCommand.Parameters.AddWithValue("@IsNullable", column.AllowNull);
                         insertCommand.Parameters.AddWithValue("@IsPrimaryKey", column.IsPrimaryKey);
                         insertCommand.Parameters.AddWithValue("@DefaultValue", column.DefaultValue ?? (object)DBNull.Value);

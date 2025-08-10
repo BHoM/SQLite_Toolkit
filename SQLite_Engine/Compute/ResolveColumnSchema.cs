@@ -48,6 +48,9 @@ namespace BH.Engine.SQLite
             if (objectType == null)
                 return columnSchema;
 
+            // Get excluded properties once for all tiers
+            List<string> excludedProperties = config?.ExcludedProperties ?? new List<string>();
+
             // Tier 1: Check if object implements IRecord
             if (objectType.IsIRecord())
             {
@@ -61,15 +64,19 @@ namespace BH.Engine.SQLite
                 }
 
                 Dictionary<string, Type> allProperties = objectType.GetPrimitiveProperties();
+                
                 foreach (KeyValuePair<string, Type> prop in allProperties)
                 {
-                    columnSchema[prop.Key] = new PropertyColumnInfo
+                    if (!excludedProperties.Contains(prop.Key))
                     {
-                        ColumnName = prop.Key,
-                        PropertyPath = prop.Key,
-                        PropertyType = prop.Value,
-                        IsFromMapping = false
-                    };
+                        columnSchema[prop.Key] = new PropertyColumnInfo
+                        {
+                            ColumnName = prop.Key,
+                            PropertyPath = prop.Key,
+                            PropertyType = prop.Value,
+                            IsFromMapping = false
+                        };
+                    }
                 }
 
                 return columnSchema;
@@ -96,7 +103,6 @@ namespace BH.Engine.SQLite
 
                 // Add primitive properties (excluding those in ExcludedProperties)
                 Dictionary<string, Type> primitiveProperties = objectType.GetPrimitiveProperties();
-                List<string> excludedProperties = config.ExcludedProperties ?? new List<string>();
 
                 foreach (KeyValuePair<string, Type> prop in primitiveProperties)
                 {
@@ -118,15 +124,19 @@ namespace BH.Engine.SQLite
             // Tier 3: Fallback to primitive properties only
             Engine.Base.Compute.RecordNote($"Using primitive properties fallback for type '{objectType.Name}'.");
             Dictionary<string, Type> fallbackProperties = objectType.GetPrimitiveProperties();
+            
             foreach (KeyValuePair<string, Type> prop in fallbackProperties)
             {
-                columnSchema[prop.Key] = new PropertyColumnInfo
+                if (!excludedProperties.Contains(prop.Key))
                 {
-                    ColumnName = prop.Key,
-                    PropertyPath = prop.Key,
-                    PropertyType = prop.Value,
-                    IsFromMapping = false
-                };
+                    columnSchema[prop.Key] = new PropertyColumnInfo
+                    {
+                        ColumnName = prop.Key,
+                        PropertyPath = prop.Key,
+                        PropertyType = prop.Value,
+                        IsFromMapping = false
+                    };
+                }
             }
 
             return columnSchema;

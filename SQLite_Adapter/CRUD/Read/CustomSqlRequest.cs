@@ -546,7 +546,7 @@ namespace BH.Adapter.SQLite
                 // Use CustomSqlRequest to query the __Schema table
                 CustomSqlRequest schemaQuery = new CustomSqlRequest()
                 {
-                    SqlQuery = "SELECT ColumnName, DataType FROM __Schema WHERE TableName = @TableName",
+                    SqlQuery = "SELECT ColumnName, NetTypeName FROM __Schema WHERE TableName = @TableName",
                     Parameters = new Dictionary<string, object> { { "@TableName", tableName } },
                     IsReadOnly = true
                 };
@@ -558,14 +558,14 @@ namespace BH.Adapter.SQLite
                 {
                     foreach (Dictionary<string, object> row in schemaResult.Data)
                     {
-                        if (row.ContainsKey("ColumnName") && row.ContainsKey("DataType"))
+                        if (row.ContainsKey("ColumnName") && row.ContainsKey("NetTypeName"))
                         {
                             string columnName = row["ColumnName"]?.ToString();
-                            string dataTypeString = row["DataType"]?.ToString();
+                            string netTypeName = row["NetTypeName"]?.ToString();
                             
-                            if (!string.IsNullOrWhiteSpace(columnName) && !string.IsNullOrWhiteSpace(dataTypeString))
+                            if (!string.IsNullOrWhiteSpace(columnName) && !string.IsNullOrWhiteSpace(netTypeName))
                             {
-                                Type columnType = ConvertStringToType(dataTypeString);
+                                Type columnType = ConvertStringToType(netTypeName);
                                 if (columnType != null)
                                 {
                                     columnTypes[columnName] = columnType;

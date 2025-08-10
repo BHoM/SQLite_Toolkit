@@ -41,6 +41,9 @@ namespace BH.oM.SQLite.Objects
         [Description("The SQLite data type for this column.")]
         public virtual SqliteDataType DataType { get; set; } = SqliteDataType.TEXT;
 
+        [Description("The original .NET property type name for type conversion during data retrieval.")]
+        public virtual string NetTypeName { get; set; } = "";
+
         [Description("Whether this column can contain null values.")]
         public virtual bool AllowNull { get; set; } = true;
 

@@ -89,6 +89,17 @@ namespace BH.Adapter.SQLite
                             result.ColumnNames.Add(reader.GetName(i));
                         }
 
+                        // Try to get schema information for type conversion
+                        Dictionary<string, Type> columnTypes = GetTableSchemaUsingPull(tableName);
+                        if (columnTypes.Count > 0)
+                        {
+                            BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: Found {columnTypes.Count} column types for table '{tableName}'");
+                        }
+                        else
+                        {
+                            BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: No schema information found for table '{tableName}'");
+                        }
+
                         // Read data rows
                         while (reader.Read())
                         {
@@ -98,6 +109,14 @@ namespace BH.Adapter.SQLite
                             {
                                 string columnName = reader.GetName(i);
                                 object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                
+                                // Apply type conversion if schema information is available
+                                if (value != null && columnTypes.ContainsKey(columnName))
+                                {
+                                    Type targetType = columnTypes[columnName];
+                                    value = BH.Engine.SQLite.Compute.ConvertSqliteValue(value, targetType);
+                                }
+                                
                                 row[columnName] = value;
                             }
                             

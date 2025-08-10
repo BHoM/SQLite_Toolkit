@@ -52,6 +52,7 @@ namespace BH.Engine.SQLite
                         TableName TEXT NOT NULL,
                         ColumnName TEXT NOT NULL,
                         DataType TEXT NOT NULL,
+                        NetTypeName TEXT,
                         IsNullable BOOLEAN DEFAULT 1,
                         IsPrimaryKey BOOLEAN DEFAULT 0,
                         DefaultValue TEXT,
