@@ -49,7 +49,12 @@ namespace BH.Engine.SQLite
             }
 
             string fullTypeName = type.FullName ?? type.Name;
-            string finalTableName = string.IsNullOrWhiteSpace(tableName) ? type.Name : tableName;
+            string finalTableName;
+            
+            if (string.IsNullOrWhiteSpace(tableName))
+                finalTableName = type.GenerateTableName(connection);
+            else
+                finalTableName = tableName;
 
             try
             {
@@ -78,7 +83,16 @@ namespace BH.Engine.SQLite
                     int result = command.ExecuteNonQuery();
                     if (result > 0)
                     {
-                        Engine.Base.Compute.RecordNote($"Successfully registered type {fullTypeName} with table {finalTableName}.");
+                        // Get the generated ID
+                        command.CommandText = "SELECT last_insert_rowid()";
+                        command.Parameters.Clear();
+                        object idResult = command.ExecuteScalar();
+                        if (idResult != null && long.TryParse(idResult.ToString(), out long id))
+                        {
+                            registration.Id = (int)id;
+                        }
+
+                        Engine.Base.Compute.RecordNote($"Successfully registered type {fullTypeName} with table {finalTableName} (ID: {registration.Id}).");
                         return registration;
                     }
                 }

@@ -37,11 +37,11 @@ namespace BH.Engine.SQLite
         [Description("Gets the table name for a given .NET Type.")]
         [Input("connection", "Active SQLite database connection.")]
         [Input("type", "The .NET Type to get the table name for.")]
-        [Output("tableName", "The table name if registered, empty string otherwise.")]
+        [Output("tableName", "The table name if registered, null otherwise.")]
         public static string GetTableName(this SqliteConnection connection, Type type)
         {
             TypeRegistration registration = connection.LookupTypeRegistration(type);
-            return registration?.TableName ?? "";
+            return registration?.TableName;
         }
 
         /***************************************************/
@@ -49,11 +49,11 @@ namespace BH.Engine.SQLite
         [Description("Gets the table name for a given full type name.")]
         [Input("connection", "Active SQLite database connection.")]
         [Input("fullTypeName", "The full type name including namespace.")]
-        [Output("tableName", "The table name if registered, empty string otherwise.")]
+        [Output("tableName", "The table name if registered, null otherwise.")]
         public static string GetTableName(this SqliteConnection connection, string fullTypeName)
         {
             TypeRegistration registration = connection.LookupTypeRegistration(fullTypeName);
-            return registration?.TableName ?? "";
+            return registration?.TableName;
         }
 
         /***************************************************/

@@ -62,22 +62,22 @@ namespace BH.Engine.SQLite
                 string columnName = columnFilter.ColumnName;
                 List<object> values = columnFilter.Values;
 
-                // Check if all values are numeric - if so, use tolerance-based comparison
-                bool allNumeric = values.All(v => IsNumericValue(v));
+                // Check if all values are floating-point numbers (need tolerance comparison)
+                bool allFloatingPoint = values.All(v => IsFloatingPointValue(v));
 
                 // Handle single value vs multiple values
                 if (values.Count == 1)
                 {
                     string paramName = $"@{parameterPrefix}_{paramIndex++}";
                     
-                    if (allNumeric)
+                    if (allFloatingPoint)
                     {
-                        // Use tolerance-based comparison for numeric values
+                        // Use tolerance-based comparison for floating-point values
                         whereConditions.Add(CreateFloatingPointCondition(columnName, paramName));
                     }
                     else
                     {
-                        // Use exact comparison for non-numeric values
+                        // Use exact comparison for integers, strings, and other values
                         whereConditions.Add($"\"{columnName}\" = {paramName}");
                     }
                     
@@ -85,9 +85,9 @@ namespace BH.Engine.SQLite
                 }
                 else
                 {
-                    if (allNumeric)
+                    if (allFloatingPoint)
                     {
-                        // Multiple numeric values - use OR with tolerance comparisons
+                        // Multiple floating-point values - use OR with tolerance comparisons
                         List<string> toleranceConditions = new List<string>();
                         foreach (object value in values)
                         {
@@ -99,7 +99,7 @@ namespace BH.Engine.SQLite
                     }
                     else
                     {
-                        // Multiple non-numeric values - use IN clause
+                        // Multiple integers, strings, or other values - use IN clause
                         List<string> paramNames = new List<string>();
                         foreach (object value in values)
                         {
@@ -133,19 +133,23 @@ namespace BH.Engine.SQLite
         /***************************************************/
 
         /// <summary>
-        /// Checks if a value can be parsed as a numeric type suitable for floating-point comparison
+        /// Checks if a value is a floating-point type that needs tolerance-based comparison
         /// </summary>
-        private static bool IsNumericValue(object value)
+        private static bool IsFloatingPointValue(object value)
         {
             if (value == null) return false;
             
-            if (value is double || value is float || value is decimal || 
-                value is int || value is long || value is short || value is byte)
+            // Only floating-point types need tolerance comparison
+            if (value is double || value is float || value is decimal)
                 return true;
                 
             if (value is string stringValue)
             {
-                return double.TryParse(stringValue, out _);
+                // Check if string represents a floating-point number (has decimal point)
+                if (double.TryParse(stringValue, out double result))
+                {
+                    return stringValue.Contains(".") || stringValue.Contains("e") || stringValue.Contains("E");
+                }
             }
             
             return false;

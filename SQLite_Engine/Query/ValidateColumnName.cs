@@ -21,6 +21,7 @@
  */
 
 using BH.oM.Base.Attributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -40,17 +41,24 @@ namespace BH.Engine.SQLite
             if (string.IsNullOrWhiteSpace(columnName))
                 return false;
 
-            // Check for basic SQL injection patterns
+            // Check for exact SQL keywords (not substrings)
             string lowerName = columnName.ToLowerInvariant();
-            string[] forbiddenKeywords = { "drop", "delete", "insert", "update", "create", "alter", "truncate", "--", "/*", "*/" };
+            string[] forbiddenKeywords = { "drop", "delete", "insert", "update", "create", "alter", "truncate", "select", "from", "where", "join", "union", "exec", "execute" };
             
             foreach (string keyword in forbiddenKeywords)
             {
-                if (lowerName.Contains(keyword))
+                if (lowerName.Equals(keyword, StringComparison.OrdinalIgnoreCase))
                 {
-                    BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains forbidden keyword: {keyword}");
+                    BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' cannot be a reserved SQL keyword: {keyword}");
                     return false;
                 }
+            }
+
+            // Check for SQL injection comment patterns
+            if (lowerName.Contains("--") || lowerName.Contains("/*") || lowerName.Contains("*/"))
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains SQL comment patterns.");
+                return false;
             }
 
             // Check for dangerous characters
