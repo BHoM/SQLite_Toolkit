@@ -29,6 +29,14 @@ using BH.Engine.SQLite;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite.Examples;
+using BH.oM.Structure.Elements;
+using BH.oM.Structure.SectionProperties;
+using BH.oM.Structure.MaterialFragments;
+using BH.oM.Spatial.ShapeProfiles;
+using BH.oM.Geometry;
+using BH.Engine.Structure;
+using BH.Engine.Spatial;
+using System.Collections.Generic;
 
 
 namespace SQLite_Toolkit.Tests.Unit
@@ -76,43 +84,40 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test Tier 2: PushConfig mappings with non-excluded primitives
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             PushConfig config = new PushConfig()
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "ElementName", "ElementName" },
-                    { "StartX", "StartPosition.X" },
-                    { "StartY", "StartPosition.Y" },
-                    { "StartZ", "StartPosition.Z" },
-                    { "EndX", "EndPosition.X" },
-                    { "EndY", "EndPosition.Y" },
-                    { "EndZ", "EndPosition.Z" },
-                    { "MaterialName", "Material.Name" },
-                    { "MaterialDensity", "Material.Density" },
-                    { "ThermalConductivity", "Material.Thermal.Conductivity" }
+                    { "BarName", "Name" },
+                    { "StartX", "Start.Position.X" },
+                    { "StartY", "Start.Position.Y" },
+                    { "StartZ", "Start.Position.Z" },
+                    { "EndX", "End.Position.X" },
+                    { "EndY", "End.Position.Y" },
+                    { "EndZ", "End.Position.Z" },
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" }
                 },
-                ExcludedProperties = new List<string> { "DesignDate" } // Exclude this primitive
+                ExcludedProperties = new List<string> { "OrientationAngle" } // Exclude this primitive
             };
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = structuralElementType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ResolveColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("Complex objects with config should generate column schema");
             columnSchema.Should().NotBeEmpty("Should have mappings from config and non-excluded primitives");
             
             // Verify mapped properties
-            columnSchema.Should().ContainKey("ElementName", "Direct property mapping should work");
+            columnSchema.Should().ContainKey("BarName", "Direct property mapping should work");
             columnSchema.Should().ContainKey("StartX", "Nested property mapping should work");
-            columnSchema.Should().ContainKey("MaterialName", "One-level nested property mapping should work");
-            columnSchema.Should().ContainKey("ThermalConductivity", "Two-level nested property mapping should work");
+            columnSchema.Should().ContainKey("MaterialDamping", "Two-level nested property mapping should work");
+
             
             // Verify primitive properties are included (except excluded ones)
-            columnSchema.Should().ContainKey("CrossSectionalArea", "Non-excluded primitive should be included");
-            columnSchema.Should().ContainKey("Length", "Non-excluded primitive should be included");
-            columnSchema.Should().ContainKey("IsLoadBearing", "Non-excluded primitive should be included");
-            columnSchema.Should().NotContainKey("DesignDate", "Excluded primitive should not be included");
+            columnSchema.Should().ContainKey("Name", "Non-excluded primitive should be included");
+            columnSchema.Should().ContainKey("FEAType", "Non-excluded primitive should be included");
+            columnSchema.Should().NotContainKey("OrientationAngle", "Excluded primitive should not be included");
             
             // Verify BHoM_Guid is included
             columnSchema.Should().ContainKey("BHoM_Guid", "BHoM_Guid should always be included");
@@ -124,30 +129,27 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test Tier 3: Fallback to primitive properties only
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             PushConfig config = null; // No config provided
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = structuralElementType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ResolveColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("Objects should generate primitive column schema as fallback");
             columnSchema.Should().NotBeEmpty("Should have mappings for primitive properties");
             
             // Verify only primitive properties are included
-            columnSchema.Should().ContainKey("ElementName", "string primitive should be included");
-            columnSchema.Should().ContainKey("CrossSectionalArea", "double primitive should be included");
-            columnSchema.Should().ContainKey("Length", "double primitive should be included");
-            columnSchema.Should().ContainKey("ElementType", "enum primitive should be included");
-            columnSchema.Should().ContainKey("DesignDate", "DateTime primitive should be included");
-            columnSchema.Should().ContainKey("IsLoadBearing", "bool primitive should be included");
+            columnSchema.Should().ContainKey("Name", "string primitive should be included");
+            columnSchema.Should().ContainKey("OrientationAngle", "double primitive should be included");
+            columnSchema.Should().ContainKey("FEAType", "enum primitive should be included");
             columnSchema.Should().ContainKey("BHoM_Guid", "BHoM_Guid should be included");
             
             // Verify complex properties are NOT included
-            columnSchema.Should().NotContainKey("StartPoint", "Complex object should not be included in fallback");
-            columnSchema.Should().NotContainKey("EndPoint", "Complex object should not be included in fallback");
-            columnSchema.Should().NotContainKey("Material", "Complex object should not be included in fallback");
-            columnSchema.Should().NotContainKey("Loads", "Collection should not be included in fallback");
+            columnSchema.Should().NotContainKey("Start", "Complex object should not be included in fallback");
+            columnSchema.Should().NotContainKey("End", "Complex object should not be included in fallback");
+            columnSchema.Should().NotContainKey("SectionProperty", "Complex object should not be included in fallback");
+            columnSchema.Should().NotContainKey("Release", "Complex object should not be included in fallback");
         }
 
         [Test]
@@ -186,20 +188,20 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test handling of invalid property mappings
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             PushConfig config = new PushConfig()
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "ValidMapping", "ElementName" },
+                    { "ValidMapping", "Name" },
                     { "InvalidMapping", "NonExistentProperty.Value" },
-                    { "InvalidNested", "Material.NonExistentProperty" }
+                    { "InvalidNested", "SectionProperty.NonExistentProperty" }
                 },
                 ValidateMappings = false // Allow invalid mappings for this test
             };
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = structuralElementType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ResolveColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("Should still generate schema despite invalid mappings");
@@ -253,37 +255,41 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test value extraction with complex nested property mappings
             
             // Arrange
-            StructuralElement element = new StructuralElement()
+            Steel steelMaterial = new Steel()
             {
-                ElementName = "Beam-001",
-                StartPosition = new PositionCoordinates() { X = 0, Y = 0, Z = 0 },
-                EndPosition = new PositionCoordinates() { X = 5, Y = 0, Z = 0 },
-                Material = new MaterialProperties()
-                {
-                    Name = "Steel S355",
-                    Density = 7850.0,
-                    Thermal = new ThermalProperties()
-                    {
-                        Conductivity = 50.0
-                    }
-                }
+                Name = "Steel S355",
+                Density = 7850.0,
+                ThermalExpansionCoeff = 1.2e-5
+            };
+            
+            RectangleProfile profile = new RectangleProfile(0.5, 0.3, 0, new List<ICurve>());
+            SteelSection section = BH.Engine.Structure.Create.SteelSectionFromProfile(profile, steelMaterial, "S355 Rectangle");
+            
+            Node startNode = new Node() { Position = new Point() { X = 0, Y = 0, Z = 0 } };
+            Node endNode = new Node() { Position = new Point() { X = 5, Y = 0, Z = 0 } };
+            
+            Bar bar = new Bar()
+            {
+                Name = "Beam-001",
+                Start = startNode,
+                End = endNode,
+                SectionProperty = section
             };
             
             PushConfig config = new PushConfig()
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "StartX", "StartPosition.X" },
-                    { "EndX", "EndPosition.X" },
-                    { "MaterialName", "Material.Name" },
-                    { "ThermalConductivity", "Material.Thermal.Conductivity" }
+                    { "StartX", "Start.Position.X" },
+                    { "EndX", "End.Position.X" },
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" }
                 }
             };
             
-            Dictionary<string, PropertyColumnInfo> columnSchema = typeof(StructuralElement).ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = typeof(Bar).ResolveColumnSchema(config);
             
             // Act
-            Dictionary<string, object> columnValues = element.ExtractColumnValues(columnSchema);
+            Dictionary<string, object> columnValues = bar.ExtractColumnValues(columnSchema);
             
             // Assert
             columnValues.Should().NotBeNull("Should extract nested property values");
@@ -291,8 +297,7 @@ namespace SQLite_Toolkit.Tests.Unit
             // Verify nested property extraction
             columnValues["StartX"].Should().Be(0.0);
             columnValues["EndX"].Should().Be(5.0);
-            columnValues["MaterialName"].Should().Be("Steel S355");
-            columnValues["ThermalConductivity"].Should().Be(50.0);
+            columnValues["MaterialDamping"].Should().Be(0.0); // Default DampingRatio value
         }
     }
 }

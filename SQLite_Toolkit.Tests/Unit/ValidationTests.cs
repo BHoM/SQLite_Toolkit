@@ -27,6 +27,13 @@ using FluentAssertions;
 using BH.Engine.SQLite;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite.Examples;
+using BH.oM.Structure.Elements;
+using BH.oM.Structure.SectionProperties;
+using BH.oM.Structure.MaterialFragments;
+using BH.oM.Spatial.ShapeProfiles;
+using BH.oM.Geometry;
+using BH.Engine.Structure;
+using BH.Engine.Spatial;
 
 namespace SQLite_Toolkit.Tests.Unit
 {
@@ -111,14 +118,13 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test valid property paths
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             
             // Act & Assert
-            structuralElementType.IsValidPropertyPath("ElementName").Should().BeTrue("Direct property should be valid");
-            structuralElementType.IsValidPropertyPath("StartPosition.X").Should().BeTrue("One-level nested property should be valid");
-            structuralElementType.IsValidPropertyPath("Material.Name").Should().BeTrue("One-level nested property should be valid");
-            structuralElementType.IsValidPropertyPath("Material.Thermal.Conductivity").Should().BeTrue("Two-level nested property should be valid");
-            structuralElementType.IsValidPropertyPath("BHoM_Guid").Should().BeTrue("BHoM base property should be valid");
+            barType.IsValidPropertyPath("Name").Should().BeTrue("Direct property should be valid");
+            barType.IsValidPropertyPath("Start.Position.X").Should().BeTrue("Two-level nested property should be valid");
+            barType.IsValidPropertyPath("SectionProperty.Material.DampingRatio").Should().BeTrue("Two-level nested property should be valid");
+            barType.IsValidPropertyPath("BHoM_Guid").Should().BeTrue("BHoM base property should be valid");
         }
 
         [Test]
@@ -127,14 +133,14 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test invalid property paths
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             
             // Act & Assert
-            structuralElementType.IsValidPropertyPath("NonExistentProperty").Should().BeFalse("Non-existent property should be invalid");
-            structuralElementType.IsValidPropertyPath("Material.NonExistentProperty").Should().BeFalse("Invalid nested property should be invalid");
-            structuralElementType.IsValidPropertyPath("StartPosition.NonExistentAxis").Should().BeFalse("Invalid position property should be invalid");
-            structuralElementType.IsValidPropertyPath("").Should().BeFalse("Empty path should be invalid");
-            structuralElementType.IsValidPropertyPath(null).Should().BeFalse("Null path should be invalid");
+            barType.IsValidPropertyPath("NonExistentProperty").Should().BeFalse("Non-existent property should be invalid");
+            barType.IsValidPropertyPath("SectionProperty.NonExistentProperty").Should().BeFalse("Invalid nested property should be invalid");
+            barType.IsValidPropertyPath("Start.Position.NonExistentAxis").Should().BeFalse("Invalid position property should be invalid");
+            barType.IsValidPropertyPath("").Should().BeFalse("Empty path should be invalid");
+            barType.IsValidPropertyPath(null).Should().BeFalse("Null path should be invalid");
         }
 
         [Test]
@@ -143,15 +149,14 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test getting property types from valid paths
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             
             // Act & Assert
-            structuralElementType.GetPropertyType("ElementName").Should().Be(typeof(string), "String property should return string type");
-            structuralElementType.GetPropertyType("CrossSectionalArea").Should().Be(typeof(double), "Double property should return double type");
-            structuralElementType.GetPropertyType("IsLoadBearing").Should().Be(typeof(bool), "Bool property should return bool type");
-            structuralElementType.GetPropertyType("ElementType").Should().Be(typeof(ElementType), "Enum property should return enum type");
-            structuralElementType.GetPropertyType("StartPosition.X").Should().Be(typeof(double), "Nested double property should return double type");
-            structuralElementType.GetPropertyType("Material.Name").Should().Be(typeof(string), "Nested string property should return string type");
+            barType.GetPropertyType("Name").Should().Be(typeof(string), "String property should return string type");
+            barType.GetPropertyType("OrientationAngle").Should().Be(typeof(double), "Double property should return double type");
+            barType.GetPropertyType("FEAType").Should().Be(typeof(BarFEAType), "Enum property should return enum type");
+            barType.GetPropertyType("Start.Position.X").Should().Be(typeof(double), "Nested double property should return double type");
+            barType.GetPropertyType("SectionProperty.Material.DampingRatio").Should().Be(typeof(double), "Nested double property should return double type");
         }
 
         [Test]
@@ -160,13 +165,13 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test getting property types from invalid paths
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             
             // Act & Assert
-            structuralElementType.GetPropertyType("NonExistentProperty").Should().BeNull("Invalid property should return null");
-            structuralElementType.GetPropertyType("Material.NonExistentProperty").Should().BeNull("Invalid nested property should return null");
-            structuralElementType.GetPropertyType("").Should().BeNull("Empty path should return null");
-            structuralElementType.GetPropertyType(null).Should().BeNull("Null path should return null");
+            barType.GetPropertyType("NonExistentProperty").Should().BeNull("Invalid property should return null");
+            barType.GetPropertyType("SectionProperty.NonExistentProperty").Should().BeNull("Invalid nested property should return null");
+            barType.GetPropertyType("").Should().BeNull("Empty path should return null");
+            barType.GetPropertyType(null).Should().BeNull("Null path should return null");
         }
 
         [Test]
@@ -175,19 +180,19 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test validation of valid property mappings
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             PushConfig config = new PushConfig()
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "Name", "ElementName" },
-                    { "StartX", "StartPosition.X" },
-                    { "MaterialName", "Material.Name" }
+                    { "BarName", "Name" },
+                    { "StartX", "Start.Position.X" },
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" }
                 }
             };
             
             // Act
-            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(structuralElementType);
+            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(barType);
             bool isValid = validMappings != null && validMappings.Count > 0;
             
             // Assert
@@ -200,19 +205,19 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test validation of invalid property mappings
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             PushConfig config = new PushConfig()
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "Name", "ElementName" }, // Valid
+                    { "BarName", "Name" }, // Valid
                     { "InvalidMapping", "NonExistentProperty" }, // Invalid
-                    { "MaterialName", "Material.Name" } // Valid
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" } // Valid
                 }
             };
             
             // Act
-            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(structuralElementType);
+            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(barType);
             bool isValid = validMappings == null || validMappings.Count < config.PropertyMappings.Count;
             
             // Assert
@@ -225,15 +230,15 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test validation with empty or null config
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             
             // Act & Assert - Null config should not throw and empty config should work
             PushConfig nullConfig = null;
             PushConfig emptyConfig = new PushConfig();
             
             // These should not throw exceptions
-            Action nullConfigAction = () => nullConfig?.ValidatePropertyMappings(structuralElementType);
-            Action emptyConfigAction = () => emptyConfig.ValidatePropertyMappings(structuralElementType);
+            Action nullConfigAction = () => nullConfig?.ValidatePropertyMappings(barType);
+            Action emptyConfigAction = () => emptyConfig.ValidatePropertyMappings(barType);
             
             nullConfigAction.Should().NotThrow("Null config should not throw");
             emptyConfigAction.Should().NotThrow("Empty config should not throw");
@@ -245,18 +250,18 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test validation with invalid column names in mappings
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             PushConfig config = new PushConfig()
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "Valid Name", "ElementName" }, // Invalid column name (space)
-                    { "MaterialName", "Material.Name" } // Valid
+                    { "Valid Name", "Name" }, // Invalid column name (space)
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" } // Valid
                 }
             };
             
             // Act
-            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(structuralElementType);
+            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(barType);
             bool isValid = validMappings == null || validMappings.Count < config.PropertyMappings.Count;
             
             // Assert
@@ -276,7 +281,7 @@ namespace SQLite_Toolkit.Tests.Unit
             typeof(DateTime).IsPrimitiveForDatabase().Should().BeTrue("DateTime should be primitive for database");
             typeof(Guid).IsPrimitiveForDatabase().Should().BeTrue("Guid should be primitive for database");
             typeof(decimal).IsPrimitiveForDatabase().Should().BeTrue("Decimal should be primitive for database");
-            typeof(ElementType).IsPrimitiveForDatabase().Should().BeTrue("Enum should be primitive for database");
+            typeof(BarFEAType).IsPrimitiveForDatabase().Should().BeTrue("Enum should be primitive for database");
         }
 
         [Test]
@@ -298,9 +303,9 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test complex types that are not primitive for database
             
             // Arrange & Act & Assert
-            typeof(PositionCoordinates).IsPrimitiveForDatabase().Should().BeFalse("PositionCoordinates should not be primitive for database");
-            typeof(DirectionVector).IsPrimitiveForDatabase().Should().BeFalse("DirectionVector should not be primitive for database");
-            typeof(MaterialProperties).IsPrimitiveForDatabase().Should().BeFalse("Custom object should not be primitive for database");
+            typeof(Point).IsPrimitiveForDatabase().Should().BeFalse("Point should not be primitive for database");
+            typeof(Vector).IsPrimitiveForDatabase().Should().BeFalse("Vector should not be primitive for database");
+            typeof(Steel).IsPrimitiveForDatabase().Should().BeFalse("Custom object should not be primitive for database");
             typeof(List<string>).IsPrimitiveForDatabase().Should().BeFalse("Collection should not be primitive for database");
             typeof(object).IsPrimitiveForDatabase().Should().BeFalse("Object should not be primitive for database");
         }
@@ -334,29 +339,26 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test primitive property extraction from complex object
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             
             // Act
-            Dictionary<string, Type> primitiveProperties = structuralElementType.GetPrimitiveProperties();
+            Dictionary<string, Type> primitiveProperties = barType.GetPrimitiveProperties();
             
             // Assert
             primitiveProperties.Should().NotBeNull("Should return dictionary of primitive properties");
             primitiveProperties.Should().NotBeEmpty("Complex object should have some primitive properties");
             
             // Should include primitive properties
-            primitiveProperties.Should().ContainKey("ElementName", "String property should be included");
-            primitiveProperties.Should().ContainKey("CrossSectionalArea", "Double property should be included");
-            primitiveProperties.Should().ContainKey("Length", "Double property should be included");
-            primitiveProperties.Should().ContainKey("ElementType", "Enum property should be included");
-            primitiveProperties.Should().ContainKey("DesignDate", "DateTime property should be included");
-            primitiveProperties.Should().ContainKey("IsLoadBearing", "Bool property should be included");
+            primitiveProperties.Should().ContainKey("Name", "String property should be included");
+            primitiveProperties.Should().ContainKey("OrientationAngle", "Double property should be included");
+            primitiveProperties.Should().ContainKey("FEAType", "Enum property should be included");
             primitiveProperties.Should().ContainKey("BHoM_Guid", "BHoM_Guid should be included");
             
             // Should not include complex properties
-            primitiveProperties.Should().NotContainKey("StartPosition", "Complex object should not be included");
-            primitiveProperties.Should().NotContainKey("EndPosition", "Complex object should not be included");
-            primitiveProperties.Should().NotContainKey("Material", "Complex object should not be included");
-            primitiveProperties.Should().NotContainKey("Loads", "Collection should not be included");
+            primitiveProperties.Should().NotContainKey("Start", "Complex object should not be included");
+            primitiveProperties.Should().NotContainKey("End", "Complex object should not be included");
+            primitiveProperties.Should().NotContainKey("SectionProperty", "Complex object should not be included");
+            primitiveProperties.Should().NotContainKey("Release", "Collection should not be included");
         }
     }
 }

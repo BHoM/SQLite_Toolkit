@@ -25,6 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Analytical_oM">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Analytical_oM.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
     <Reference Include="BHoM">
       <HintPath>$(ProgramData)\BHoM\Assemblies\BHoM.dll</HintPath>
       <Private>false</Private>
@@ -60,6 +65,41 @@
       <Private>false</Private>
       <SpecificVersion>false</SpecificVersion>
     </Reference>
+    <Reference Include="Geometry_oM">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Geometry_oM.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Physical_oM">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Physical_oM.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Spatial_Engine">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Spatial_Engine.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Spatial_oM">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Spatial_oM.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Structure_Engine">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Structure_Engine.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Structure_oM">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Structure_oM.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+    <Reference Include="Dimensional_oM">
+      <HintPath>$(ProgramData)\BHoM\Assemblies\Dimensional_oM.dll</HintPath>
+      <Private>false</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -77,6 +117,14 @@
     <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Geometry_Engine.dll&quot; &quot;$(TargetDir)&quot; /Y" />
     <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Reflection_Engine.dll&quot; &quot;$(TargetDir)&quot; /Y" />
     <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Diffing_oM.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Dimensional_oM.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Structure_oM.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Structure_Engine.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Spatial_oM.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Spatial_Engine.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Analytical_oM.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\Physical_oM.dll&quot; &quot;$(TargetDir)&quot; /Y" />
+    <Exec Command="xcopy &quot;$(ProgramData)\BHoM\Assemblies\DeepCloner.dll&quot; &quot;$(TargetDir)&quot; /Y" />
   </Target>
 
 </Project> 

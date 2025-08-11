@@ -27,6 +27,13 @@ using NUnit.Framework;
 using FluentAssertions;
 using BH.Adapter.SQLite;
 using BH.oM.SQLite.Examples;
+using BH.oM.Structure.Elements;
+using BH.oM.Structure.SectionProperties;
+using BH.oM.Structure.MaterialFragments;
+using BH.oM.Spatial.ShapeProfiles;
+using BH.oM.Geometry;
+using BH.Engine.Structure;
+using BH.Engine.Spatial;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite.Requests;
 using BH.oM.SQLite.Objects;
@@ -60,7 +67,7 @@ namespace SQLite_Toolkit.Tests.Examples
         }
 
         [Test]
-        public void Example_StructuralElement_BasicPropertyMapping()
+        public void Example_Bar_BasicPropertyMapping()
         {
             /*
              * EXAMPLE: Basic Property Mapping for Complex Objects
@@ -70,83 +77,85 @@ namespace SQLite_Toolkit.Tests.Examples
              * three-tier strategy for objects that don't implement IRecord.
              */
 
-            // Step 1: Define property mappings for structural elements
+            // Step 1: Define property mappings for bars
             // We want to flatten the complex object structure into a simple table
-            PushConfig structuralElementConfig = new PushConfig()
+            PushConfig barConfig = new PushConfig()
             {
-                Table = "StructuralElements", // Optional: specify table name
+                Table = "Bars", // Optional: specify table name
                 PropertyMappings = new Dictionary<string, string>
                 {
                     // Direct property mappings
-                    { "ElementName", "ElementName" },
-                    { "Area", "CrossSectionalArea" },
-                    { "Length", "Length" },
-                    { "ElementType", "ElementType" },
-                    { "LoadBearing", "IsLoadBearing" },
+                    { "BarName", "Name" },
+                    { "Angle", "OrientationAngle" },
+                    { "ElementType", "FEAType" },
                     
                     // Nested property mappings using dot notation
-                    { "StartX", "StartPosition.X" },
-                    { "StartY", "StartPosition.Y" },
-                    { "StartZ", "StartPosition.Z" },
-                    { "EndX", "EndPosition.X" },
-                    { "EndY", "EndPosition.Y" },
-                    { "EndZ", "EndPosition.Z" },
+                    { "StartX", "Start.Position.X" },
+                    { "StartY", "Start.Position.Y" },
+                    { "StartZ", "Start.Position.Z" },
+                    { "EndX", "End.Position.X" },
+                    { "EndY", "End.Position.Y" },
+                    { "EndZ", "End.Position.Z" },
                     
-                    // Material property mappings
-                    { "MaterialName", "Material.Name" },
-                    { "MaterialDensity", "Material.Density" },
-                    { "YoungModulus", "Material.YoungModulus" }
+                    // Material property mappings - using interface-accessible properties only  
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" }
                 },
-                ExcludedProperties = new List<string> { "DesignDate" }, // Exclude some primitives
+                ExcludedProperties = new List<string> { "Support" }, // Exclude some primitives
                 ValidateMappings = true
             };
 
-            // Step 2: Create structural elements with complex nested data
-            List<StructuralElement> elements = new List<StructuralElement>
+            // Step 2: Create bars with complex nested data
+            Steel steelMaterial = new Steel()
             {
-                new StructuralElement()
+                Name = "Steel S355",
+                Density = 7850.0,
+                YoungsModulus = 210000000000.0 // 210 GPa
+            };
+            
+            Steel concreteMaterial = new Steel()
+            {
+                Name = "Concrete C30/37",
+                Density = 2400.0,
+                YoungsModulus = 33000000000.0 // 33 GPa
+            };
+            
+            RectangleProfile beamProfile = new RectangleProfile(0.5, 0.25, 0, new List<ICurve>());
+            RectangleProfile columnProfile = new RectangleProfile(0.4, 0.4, 0, new List<ICurve>());
+            
+            SteelSection beamSection = BH.Engine.Structure.Create.SteelSectionFromProfile(beamProfile, steelMaterial, "Beam Section");
+            SteelSection columnSection = BH.Engine.Structure.Create.SteelSectionFromProfile(columnProfile, concreteMaterial, "Column Section");
+            
+            List<Bar> bars = new List<Bar>
+            {
+                new Bar()
                 {
-                    ElementName = "Beam-B001",
-                    CrossSectionalArea = 0.025, // 25 cm²
-                    Length = 6.0, // 6 metres
-                    StartPosition = new PositionCoordinates() { X = 0.0, Y = 0.0, Z = 3.0 },
-                    EndPosition = new PositionCoordinates() { X = 6.0, Y = 0.0, Z = 3.0 },
-                    Material = new MaterialProperties()
-                    {
-                        Name = "Steel S355",
-                        Density = 7850.0,
-                        YoungModulus = 210000000000.0 // 210 GPa
-                    },
-                    ElementType = ElementType.Beam,
-                    IsLoadBearing = true
+                    Name = "Beam-B001",
+                    Start = new Node() { Position = new Point() { X = 0.0, Y = 0.0, Z = 3.0 } },
+                    End = new Node() { Position = new Point() { X = 6.0, Y = 0.0, Z = 3.0 } },
+                    SectionProperty = beamSection,
+                    FEAType = BarFEAType.Flexural,
+                    OrientationAngle = 0.0
                 },
-                new StructuralElement()
+                new Bar()
                 {
-                    ElementName = "Column-C001",
-                    CrossSectionalArea = 0.04, // 40 cm²
-                    Length = 3.0, // 3 metres
-                    StartPosition = new PositionCoordinates() { X = 0.0, Y = 0.0, Z = 0.0 },
-                    EndPosition = new PositionCoordinates() { X = 0.0, Y = 0.0, Z = 3.0 },
-                    Material = new MaterialProperties()
-                    {
-                        Name = "Concrete C30/37",
-                        Density = 2400.0,
-                        YoungModulus = 33000000000.0 // 33 GPa
-                    },
-                    ElementType = ElementType.Column,
-                    IsLoadBearing = true
+                    Name = "Column-C001",
+                    Start = new Node() { Position = new Point() { X = 0.0, Y = 0.0, Z = 0.0 } },
+                    End = new Node() { Position = new Point() { X = 0.0, Y = 0.0, Z = 3.0 } },
+                    SectionProperty = columnSection,
+                    FEAType = BarFEAType.Flexural,
+                    OrientationAngle = 0.0
                 }
             };
 
             // Step 3: Push with custom configuration
-            List<object> pushedElements = adapter.Push(elements, actionConfig: structuralElementConfig);
+            List<object> pushedBars = adapter.Push(bars, actionConfig: barConfig);
 
-            pushedElements.Should().HaveCount(2, "Both structural elements should be pushed successfully");
+            pushedBars.Should().HaveCount(2, "Both bars should be pushed successfully");
 
             // Step 4: Verify data was mapped correctly
             CustomSqlRequest getAllRequest = new CustomSqlRequest()
             {
-                SqlQuery = "SELECT * FROM StructuralElements ORDER BY ElementName",
+                SqlQuery = "SELECT * FROM Bars ORDER BY BarName",
                 IsReadOnly = true
             };
 
@@ -158,17 +167,16 @@ namespace SQLite_Toolkit.Tests.Examples
 
             // Verify the beam data
             Dictionary<string, object> beamData = queryResult.Data[0];
-            beamData["ElementName"].Should().Be("Beam-B001");
-            beamData["Area"].Should().Be(0.025);
+            beamData["BarName"].Should().Be("Beam-B001");
+            beamData["ElementType"].Should().Be(BarFEAType.Flexural);
             beamData["StartX"].Should().Be(0.0);
             beamData["StartY"].Should().Be(0.0);
             beamData["StartZ"].Should().Be(3.0);
             beamData["EndX"].Should().Be(6.0);
-            beamData["MaterialName"].Should().Be("Steel S355");
-            beamData["MaterialDensity"].Should().Be(7850.0);
+            beamData["MaterialDamping"].Should().Be(0.0); // Default DampingRatio
 
             // Verify excluded property is not present
-            beamData.Should().NotContainKey("DesignDate", "Excluded property should not be in database");
+            beamData.Should().NotContainKey("Support", "Excluded property should not be in database");
         }
 
         [Test]
@@ -178,7 +186,7 @@ namespace SQLite_Toolkit.Tests.Examples
              * EXAMPLE: Deeply Nested Property Mapping
              * 
              * This example shows how to map properties that are multiple levels deep
-             * in the object hierarchy, such as Material.Thermal.Conductivity.
+             * in the object hierarchy, such as SectionProperty.Material.ThermalExpansionCoeff.
              */
 
             // Step 1: Create config with deeply nested mappings
@@ -186,36 +194,35 @@ namespace SQLite_Toolkit.Tests.Examples
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "ElementName", "ElementName" },
-                    { "MaterialName", "Material.Name" },
-                    { "Density", "Material.Density" },
-                    
-                    // Deeply nested thermal properties
-                    { "ThermalConductivity", "Material.Thermal.Conductivity" },
-                    { "SpecificHeat", "Material.Thermal.SpecificHeat" },
-                    { "ExpansionCoeff", "Material.Thermal.ExpansionCoefficient" }
+                    { "BarName", "Name" },
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" },
                 }
             };
 
-            // Step 2: Create element with complete thermal data
-            StructuralElement elementWithThermal = new StructuralElement()
+            // Step 2: Create bar with complete material data
+            Steel thermalMaterial = new Steel()
             {
-                ElementName = "Wall-W001",
-                Material = new MaterialProperties()
-                {
-                    Name = "Insulated Concrete",
-                    Density = 1800.0,
-                    Thermal = new ThermalProperties()
-                    {
-                        Conductivity = 0.15, // W/(m·K)
-                        SpecificHeat = 1000.0, // J/(kg·K)
-                        ExpansionCoefficient = 0.00001 // 1/K
-                    }
-                }
+                Name = "Structural Steel",
+                Density = 7850.0,
+                YoungsModulus = 210000000000.0, // 210 GPa
+                PoissonsRatio = 0.3,
+                ThermalExpansionCoeff = 1.2e-5 // 1/K
+            };
+            
+            RectangleProfile profile = new RectangleProfile(0.3, 0.2, 0, new List<ICurve>());
+            SteelSection section = BH.Engine.Structure.Create.SteelSectionFromProfile(profile, thermalMaterial, "Thermal Section");
+            
+            Bar barWithThermalData = new Bar()
+            {
+                Name = "Bar-T001",
+                Start = new Node() { Position = new Point() { X = 0, Y = 0, Z = 0 } },
+                End = new Node() { Position = new Point() { X = 3, Y = 0, Z = 0 } },
+                SectionProperty = section,
+                FEAType = BarFEAType.Flexural
             };
 
             // Step 3: Push with thermal mapping
-            List<object> pushed = adapter.Push(new List<StructuralElement> { elementWithThermal }, 
+            List<object> pushed = adapter.Push(new List<Bar> { barWithThermalData }, 
                                               actionConfig: thermalConfig);
 
             pushed.Should().HaveCount(1);
@@ -223,7 +230,7 @@ namespace SQLite_Toolkit.Tests.Examples
             // Step 4: Verify deeply nested properties were mapped correctly
             CustomSqlRequest thermalQuery = new CustomSqlRequest()
             {
-                SqlQuery = "SELECT * FROM StructuralElement WHERE ElementName = 'Wall-W001'",
+                SqlQuery = "SELECT * FROM Bar WHERE BarName = 'Bar-T001'",
                 IsReadOnly = true
             };
 
@@ -233,10 +240,8 @@ namespace SQLite_Toolkit.Tests.Examples
             queryResult.Should().NotBeNull();
             queryResult.Data.Should().HaveCount(1);
 
-            Dictionary<string, object> wallData = queryResult.Data[0];
-            wallData["ThermalConductivity"].Should().Be(0.15);
-            wallData["SpecificHeat"].Should().Be(1000.0);
-            wallData["ExpansionCoeff"].Should().Be(0.00001);
+            Dictionary<string, object> barData = queryResult.Data[0];
+            barData["MaterialDamping"].Should().Be(0.0); // Default DampingRatio
         }
 
         [Test]
@@ -251,34 +256,36 @@ namespace SQLite_Toolkit.Tests.Examples
 
             // Step 1: Push complex object WITHOUT any configuration
             // This triggers the primitive fallback strategy
-            StructuralElement elementNoConfig = new StructuralElement()
+            Steel material = new Steel()
             {
-                ElementName = "Beam-NoConfig",
-                CrossSectionalArea = 0.03,
-                Length = 4.5,
-                ElementType = ElementType.Beam,
-                DesignDate = new DateTime(2024, 1, 15),
-                IsLoadBearing = true,
+                Name = "Steel S275",
+                Density = 7850.0
+            };
+            
+            RectangleProfile profile = new RectangleProfile(0.3, 0.2, 0, new List<ICurve>());
+            SteelSection section = BH.Engine.Structure.Create.SteelSectionFromProfile(profile, material, "Basic Section");
+            
+            Bar barNoConfig = new Bar()
+            {
+                Name = "Bar-NoConfig",
+                OrientationAngle = 0.0,
+                FEAType = BarFEAType.Flexural,
                 
                 // These complex properties will be ignored in fallback mode
-                StartPosition = new PositionCoordinates() { X = 1.0, Y = 2.0, Z = 3.0 },
-                EndPosition = new PositionCoordinates() { X = 5.5, Y = 2.0, Z = 3.0 },
-                Material = new MaterialProperties()
-                {
-                    Name = "Steel S275",
-                    Density = 7850.0
-                }
+                Start = new Node() { Position = new Point() { X = 1.0, Y = 2.0, Z = 3.0 } },
+                End = new Node() { Position = new Point() { X = 5.5, Y = 2.0, Z = 3.0 } },
+                SectionProperty = section
             };
 
             // Step 2: Push without any config (triggers primitive fallback)
-            List<object> pushed = adapter.Push(new List<StructuralElement> { elementNoConfig });
+            List<object> pushed = adapter.Push(new List<Bar> { barNoConfig });
 
             pushed.Should().HaveCount(1, "Object should still be pushed using primitive fallback");
 
             // Step 3: Verify only primitive properties were stored
             CustomSqlRequest primitiveQuery = new CustomSqlRequest()
             {
-                SqlQuery = "SELECT * FROM StructuralElement WHERE ElementName = 'Beam-NoConfig'",
+                SqlQuery = "SELECT * FROM Bar WHERE Name = 'Bar-NoConfig'",
                 IsReadOnly = true
             };
 
@@ -291,16 +298,14 @@ namespace SQLite_Toolkit.Tests.Examples
             Dictionary<string, object> primitiveData = queryResult.Data[0];
             
             // Verify primitive properties are present
-            primitiveData["ElementName"].Should().Be("Beam-NoConfig");
-            primitiveData["CrossSectionalArea"].Should().Be(0.03);
-            primitiveData["Length"].Should().Be(4.5);
-            primitiveData["ElementType"].Should().Be((int)ElementType.Beam);
-            primitiveData["IsLoadBearing"].Should().Be(true, "Boolean values should be automatically converted from SQLite storage");
+            primitiveData["Name"].Should().Be("Bar-NoConfig");
+            primitiveData["OrientationAngle"].Should().Be(0.0);
+            primitiveData["FEAType"].Should().Be((int)BarFEAType.Flexural);
             primitiveData.Should().ContainKey("BHoM_Guid");
 
             // Verify complex properties are NOT present
-            primitiveData.Should().NotContainKey("StartPosition", "Complex properties should not be in fallback mode");
-            primitiveData.Should().NotContainKey("Material", "Complex properties should not be in fallback mode");
+            primitiveData.Should().NotContainKey("Start", "Complex properties should not be in fallback mode");
+            primitiveData.Should().NotContainKey("SectionProperty", "Complex properties should not be in fallback mode");
             primitiveData.Should().NotContainKey("StartX", "Nested properties should not be in fallback mode");
         }
 
@@ -320,46 +325,47 @@ namespace SQLite_Toolkit.Tests.Examples
                 PropertyMappings = new Dictionary<string, string>
                 {
                     // Map key geometric properties
-                    { "StartX", "StartPoint.X" },
-                    { "StartY", "StartPoint.Y" },
-                    { "StartZ", "StartPoint.Z" },
-                    { "EndX", "EndPoint.X" },
-                    { "EndY", "EndPoint.Y" },
-                    { "EndZ", "EndPoint.Z" },
+                    { "StartX", "Start.Position.X" },
+                    { "StartY", "Start.Position.Y" },
+                    { "StartZ", "Start.Position.Z" },
+                    { "EndX", "End.Position.X" },
+                    { "EndY", "End.Position.Y" },
+                    { "EndZ", "End.Position.Z" },
                     
                     // Map essential material properties
-                    { "MaterialName", "Material.Name" },
-                    { "MaterialDensity", "Material.Density" }
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" }
                 },
                 ExcludedProperties = new List<string> 
                 { 
-                    "DesignDate", // Exclude this primitive property
-                    "ElementType" // Exclude this enum property
+                    "OrientationAngle", // Exclude this primitive property
+                    "Release" // Exclude this complex property
                 },
                 ValidateMappings = true
             };
 
-            // Step 2: Create element with full data
-            StructuralElement mixedElement = new StructuralElement()
+            // Step 2: Create bar with full data
+            Steel timberMaterial = new Steel()
             {
-                ElementName = "Beam-Mixed",
-                CrossSectionalArea = 0.035,
-                Length = 5.5,
-                ElementType = ElementType.Beam, // This will be excluded
-                DesignDate = new DateTime(2024, 1, 15), // This will be excluded
-                IsLoadBearing = true, // This will be included (not excluded)
-                StartPosition = new PositionCoordinates() { X = 2.0, Y = 1.0, Z = 2.5 },
-                EndPosition = new PositionCoordinates() { X = 7.5, Y = 1.0, Z = 2.5 },
-                Material = new MaterialProperties()
-                {
-                    Name = "Timber GL24h",
-                    Density = 420.0,
-                    YoungModulus = 11600000000.0
-                }
+                Name = "Timber GL24h",
+                Density = 420.0,
+                YoungsModulus = 11600000000.0
+            };
+            
+            RectangleProfile profile = new RectangleProfile(0.4, 0.2, 0, new List<ICurve>());
+            SteelSection section = BH.Engine.Structure.Create.SteelSectionFromProfile(profile, timberMaterial, "Mixed Section");
+            
+            Bar mixedBar = new Bar()
+            {
+                Name = "Bar-Mixed",
+                OrientationAngle = 45.0, // This will be excluded
+                FEAType = BarFEAType.Flexural, // This will be included (not excluded)
+                Start = new Node() { Position = new Point() { X = 2.0, Y = 1.0, Z = 2.5 } },
+                End = new Node() { Position = new Point() { X = 7.5, Y = 1.0, Z = 2.5 } },
+                SectionProperty = section
             };
 
             // Step 3: Push with mixed configuration
-            List<object> pushed = adapter.Push(new List<StructuralElement> { mixedElement }, 
+            List<object> pushed = adapter.Push(new List<Bar> { mixedBar }, 
                                               actionConfig: mixedConfig);
 
             pushed.Should().HaveCount(1);
@@ -367,7 +373,7 @@ namespace SQLite_Toolkit.Tests.Examples
             // Step 4: Verify mixed mapping results
             CustomSqlRequest mixedQuery = new CustomSqlRequest()
             {
-                SqlQuery = "SELECT * FROM StructuralElement WHERE ElementName = 'Beam-Mixed'",
+                SqlQuery = "SELECT * FROM Bar WHERE Name = 'Bar-Mixed'",
                 IsReadOnly = true
             };
 
@@ -383,22 +389,19 @@ namespace SQLite_Toolkit.Tests.Examples
             mixedData["StartX"].Should().Be(2.0);
             mixedData["StartY"].Should().Be(1.0);
             mixedData["StartZ"].Should().Be(2.5);
-            mixedData["MaterialName"].Should().Be("Timber GL24h");
-            mixedData["MaterialDensity"].Should().Be(420.0);
+            mixedData["MaterialDamping"].Should().Be(0.0); // Default DampingRatio
 
             // Verify non-excluded primitives are present
-            mixedData["ElementName"].Should().Be("Beam-Mixed");
-            mixedData["CrossSectionalArea"].Should().Be(0.035);
-            mixedData["Length"].Should().Be(5.5);
-            mixedData["IsLoadBearing"].Should().Be(true, "Boolean values should be automatically converted from SQLite storage");
+            mixedData["Name"].Should().Be("Bar-Mixed");
+            mixedData["FEAType"].Should().Be((int)BarFEAType.Flexural);
             mixedData.Should().ContainKey("BHoM_Guid");
 
             // Verify excluded properties are NOT present
-            mixedData.Should().NotContainKey("DesignDate", "Excluded primitive should not be present");
-            mixedData.Should().NotContainKey("ElementType", "Excluded enum should not be present");
+            mixedData.Should().NotContainKey("OrientationAngle", "Excluded primitive should not be present");
+            mixedData.Should().NotContainKey("Release", "Excluded complex property should not be present");
 
             // Verify non-mapped complex properties are NOT present
-            mixedData.Should().NotContainKey("YoungModulus", "Non-mapped material property should not be present");
+            mixedData.Should().NotContainKey("YoungsModulus", "Non-mapped material property should not be present");
         }
 
         [Test]
@@ -411,55 +414,68 @@ namespace SQLite_Toolkit.Tests.Examples
              * You can filter on both the mapped columns and the automatically included primitives.
              */
 
-            // Step 1: Setup multiple structural elements with mappings
-            PushConfig structuralConfig = new PushConfig()
+            // Step 1: Setup multiple bars with mappings
+            PushConfig barConfig = new PushConfig()
             {
                 PropertyMappings = new Dictionary<string, string>
                 {
-                    { "StartX", "StartPoint.X" },
-                    { "StartY", "StartPoint.Y" },
-                    { "MaterialName", "Material.Name" },
-                    { "MaterialDensity", "Material.Density" }
+                    { "StartX", "Start.Position.X" },
+                    { "StartY", "Start.Position.Y" },
+                    { "MaterialDamping", "SectionProperty.Material.DampingRatio" }
                 }
             };
 
-            List<StructuralElement> elements = new List<StructuralElement>
+            // Create materials
+            Steel steelMaterial = new Steel() { Name = "Steel S355", Density = 7850.0 };
+            Steel concreteMaterial = new Steel() { Name = "Concrete C30", Density = 2400.0 };
+            
+            // Create sections
+            RectangleProfile profile1 = new RectangleProfile(0.4, 0.2, 0, new List<ICurve>());
+            RectangleProfile profile2 = new RectangleProfile(0.3, 0.3, 0, new List<ICurve>());
+            
+            SteelSection steelSection = BH.Engine.Structure.Create.SteelSectionFromProfile(profile1, steelMaterial, "Steel Section");
+            SteelSection concreteSection = BH.Engine.Structure.Create.SteelSectionFromProfile(profile2, concreteMaterial, "Concrete Section");
+
+            List<Bar> bars = new List<Bar>
             {
-                new StructuralElement()
+                new Bar()
                 {
-                    ElementName = "Beam-001",
-                    IsLoadBearing = true,
-                    StartPosition = new PositionCoordinates() { X = 0.0, Y = 0.0, Z = 3.0 },
-                    Material = new MaterialProperties() { Name = "Steel S355", Density = 7850.0 }
+                    Name = "Bar-001",
+                    FEAType = BarFEAType.Flexural,
+                    Start = new Node() { Position = new Point() { X = 0.0, Y = 0.0, Z = 3.0 } },
+                    End = new Node() { Position = new Point() { X = 3.0, Y = 0.0, Z = 3.0 } },
+                    SectionProperty = steelSection
                 },
-                new StructuralElement()
+                new Bar()
                 {
-                    ElementName = "Beam-002",
-                    IsLoadBearing = false,
-                    StartPosition = new PositionCoordinates() { X = 5.0, Y = 0.0, Z = 3.0 },
-                    Material = new MaterialProperties() { Name = "Steel S355", Density = 7850.0 }
+                    Name = "Bar-002",
+                    FEAType = BarFEAType.CompressionOnly,
+                    Start = new Node() { Position = new Point() { X = 5.0, Y = 0.0, Z = 3.0 } },
+                    End = new Node() { Position = new Point() { X = 8.0, Y = 0.0, Z = 3.0 } },
+                    SectionProperty = steelSection
                 },
-                new StructuralElement()
+                new Bar()
                 {
-                    ElementName = "Column-001",
-                    IsLoadBearing = true,
-                    StartPosition = new PositionCoordinates() { X = 0.0, Y = 0.0, Z = 0.0 },
-                    Material = new MaterialProperties() { Name = "Concrete C30", Density = 2400.0 }
+                    Name = "Column-001",
+                    FEAType = BarFEAType.Flexural,
+                    Start = new Node() { Position = new Point() { X = 0.0, Y = 0.0, Z = 0.0 } },
+                    End = new Node() { Position = new Point() { X = 0.0, Y = 0.0, Z = 3.0 } },
+                    SectionProperty = concreteSection
                 }
             };
 
-            adapter.Push(elements, actionConfig: structuralConfig);
+            adapter.Push(bars, actionConfig: barConfig);
 
-            // Step 2: Filter by mapped property (material name)
+            // Step 2: Filter by mapped property (material damping)
             EqualityFilterRequest materialFilter = new EqualityFilterRequest()
             {
-                TableName = "StructuralElement",
+                TableName = "Bar",
                 ColumnFilters = new List<ColumnFilter>
                 {
                     new ColumnFilter()
                     {
-                        ColumnName = "MaterialName",
-                        Values = new List<object> { "Steel S355" }
+                        ColumnName = "MaterialDamping",
+                        Values = new List<object> { 0.0 }
                     }
                 }
             };
@@ -467,23 +483,23 @@ namespace SQLite_Toolkit.Tests.Examples
             IEnumerable<object> steelResults = adapter.Pull(materialFilter);
             QueryResult steelQuery = steelResults.FirstOrDefault() as QueryResult;
 
-            steelQuery.Data.Should().HaveCount(2, "Should find both steel beams");
+            steelQuery.Data.Should().HaveCount(2, "Should find both bars with default damping");
 
             // Step 3: Filter by combination of mapped and primitive properties
             EqualityFilterRequest combinedFilter = new EqualityFilterRequest()
             {
-                TableName = "StructuralElement",
+                TableName = "Bar",
                 ColumnFilters = new List<ColumnFilter>
                 {
                     new ColumnFilter()
                     {
-                        ColumnName = "MaterialName",
-                        Values = new List<object> { "Steel S355" }
+                        ColumnName = "MaterialDamping",
+                        Values = new List<object> { 0.0 }
                     },
                     new ColumnFilter()
                     {
-                        ColumnName = "IsLoadBearing",
-                        Values = new List<object> { true }
+                        ColumnName = "FEAType",
+                        Values = new List<object> { (int)BarFEAType.Flexural }
                     }
                 },
                 Logic = LogicalOperator.And
@@ -492,13 +508,13 @@ namespace SQLite_Toolkit.Tests.Examples
             IEnumerable<object> combinedResults = adapter.Pull(combinedFilter);
             QueryResult combinedQuery = combinedResults.FirstOrDefault() as QueryResult;
 
-            combinedQuery.Data.Should().HaveCount(1, "Should find only load-bearing steel beam");
-            combinedQuery.Data[0]["ElementName"].Should().Be("Beam-001");
+            combinedQuery.Data.Should().HaveCount(1, "Should find only flexural bar with default damping");
+            combinedQuery.Data[0]["Name"].Should().Be("Bar-001");
 
             // Step 4: Filter by range on mapped numeric property
             RangeFilterRequest positionFilter = new RangeFilterRequest()
             {
-                TableName = "StructuralElement",
+                TableName = "Bar",
                 ColumnRanges = new Dictionary<string, GeneralDomain>
                 {
                     {
@@ -511,8 +527,8 @@ namespace SQLite_Toolkit.Tests.Examples
             IEnumerable<object> positionResults = adapter.Pull(positionFilter);
             QueryResult positionQuery = positionResults.FirstOrDefault() as QueryResult;
 
-            positionQuery.Data.Should().HaveCount(1, "Should find beam with StartX = 5.0");
-            positionQuery.Data[0]["ElementName"].Should().Be("Beam-002");
+            positionQuery.Data.Should().HaveCount(1, "Should find bar with StartX = 5.0");
+            positionQuery.Data[0]["Name"].Should().Be("Bar-002");
         }
     }
 }

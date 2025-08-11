@@ -27,6 +27,13 @@ using FluentAssertions;
 using BH.Engine.SQLite;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Examples;
+using BH.oM.Structure.Elements;
+using BH.oM.Structure.SectionProperties;
+using BH.oM.Structure.MaterialFragments;
+using BH.oM.Spatial.ShapeProfiles;
+using BH.oM.Geometry;
+using BH.Engine.Structure;
+using BH.Engine.Spatial;
 using BH.oM.Base;
 
 
@@ -58,14 +65,14 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test IRecord detection on objects that don't implement IRecord
             
             // Arrange
-            StructuralElement element = new StructuralElement();
-            PositionCoordinates position = new PositionCoordinates();
-            MaterialProperties materialProps = new MaterialProperties();
+            Bar bar = new Bar();
+            Point position = new Point();
+            Steel materialProps = new Steel();
             
             // Act & Assert
-            element.IsIRecord().Should().BeFalse("StructuralElement does not implement IRecord");
-            position.IsIRecord().Should().BeFalse("PositionCoordinates does not implement IRecord");
-            materialProps.IsIRecord().Should().BeFalse("MaterialProperties does not implement IRecord");
+            bar.IsIRecord().Should().BeFalse("Bar does not implement IRecord");
+            position.IsIRecord().Should().BeFalse("Point does not implement IRecord");
+            materialProps.IsIRecord().Should().BeFalse("Steel does not implement IRecord");
         }
 
         [Test]
@@ -100,13 +107,13 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test IRecord detection on types that don't implement IRecord
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
-            Type positionType = typeof(PositionCoordinates);
+            Type barType = typeof(Bar);
+            Type positionType = typeof(Point);
             Type stringType = typeof(string);
             
             // Act & Assert
-            structuralElementType.IsIRecord().Should().BeFalse("StructuralElement type does not implement IRecord");
-            positionType.IsIRecord().Should().BeFalse("PositionCoordinates type does not implement IRecord");
+            barType.IsIRecord().Should().BeFalse("Bar type does not implement IRecord");
+            positionType.IsIRecord().Should().BeFalse("Point type does not implement IRecord");
             stringType.IsIRecord().Should().BeFalse("string type does not implement IRecord");
         }
 
@@ -158,10 +165,10 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test validation on types that don't implement IRecord
             
             // Arrange
-            Type structuralElementType = typeof(StructuralElement);
+            Type barType = typeof(Bar);
             
             // Act
-            bool isValid = BH.Engine.SQLite.Compute.ValidateIRecordProperties(structuralElementType);
+            bool isValid = BH.Engine.SQLite.Compute.ValidateIRecordProperties(barType);
             
             // Assert
             isValid.Should().BeFalse("Non-IRecord types should not pass IRecord validation");
@@ -186,7 +193,7 @@ namespace SQLite_Toolkit.Tests.Unit
         private class InvalidIRecordExample : BHoMObject, IRecord
         {
             public new string Name { get; set; } = "";
-            public PositionCoordinates ComplexProperty { get; set; } = new PositionCoordinates(); // This makes it invalid
+            public Point ComplexProperty { get; set; } = new Point(); // This makes it invalid
             public double ValidPrimitive { get; set; } = 0.0;
         }
 
@@ -214,12 +221,12 @@ namespace SQLite_Toolkit.Tests.Unit
             Type baseIRecordType = typeof(IRecord);
             Type sensorType = typeof(SensorReading);
             Type materialType = typeof(SimpleMaterial);
-            Type nonIRecordType = typeof(StructuralElement);
+            Type nonIRecordType = typeof(Bar);
             
             // Act & Assert
             baseIRecordType.IsAssignableFrom(sensorType).Should().BeTrue("SensorReading should be assignable from IRecord");
             baseIRecordType.IsAssignableFrom(materialType).Should().BeTrue("SimpleMaterial should be assignable from IRecord");
-            baseIRecordType.IsAssignableFrom(nonIRecordType).Should().BeFalse("StructuralElement should not be assignable from IRecord");
+            baseIRecordType.IsAssignableFrom(nonIRecordType).Should().BeFalse("Bar should not be assignable from IRecord");
         }
 
         [Test]
@@ -278,12 +285,12 @@ namespace SQLite_Toolkit.Tests.Unit
             // Arrange
             Type sensorType = typeof(SensorReading);
             Type materialType = typeof(SimpleMaterial);
-            Type complexType = typeof(StructuralElement);
+            Type complexType = typeof(Bar);
             
             // Act & Assert - Tier 1: IRecord detection
             sensorType.IsIRecord().Should().BeTrue("SensorReading should be detected as IRecord (Tier 1)");
             materialType.IsIRecord().Should().BeTrue("SimpleMaterial should be detected as IRecord (Tier 1)");
-            complexType.IsIRecord().Should().BeFalse("StructuralElement should not be IRecord (goes to Tier 2/3)");
+            complexType.IsIRecord().Should().BeFalse("Bar should not be IRecord (goes to Tier 2/3)");
         }
     }
 }
