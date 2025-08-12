@@ -67,18 +67,49 @@ namespace BH.Engine.SQLite
                     return false;
                 }
 
-                // Get or register table name for this type
-                string tableName = connection.GetTableName(objectType.FullName);
-                if (string.IsNullOrWhiteSpace(tableName))
+                // Determine table name - use custom name from config if provided, otherwise use type-based name
+                string tableName = null;
+                
+                // Check if a custom table name is provided in config
+                if (config != null && !string.IsNullOrWhiteSpace(config.Table))
                 {
-                    // Register new type
-                    TypeRegistration registration = connection.RegisterType(objectType);
-                    if (registration == null)
+                    // Validate the provided table name
+                    if (!BH.Engine.SQLite.Query.ValidateTableName(config.Table))
                     {
-                        BH.Engine.Base.Compute.RecordError($"Failed to register object type {objectType.FullName}.");
+                        BH.Engine.Base.Compute.RecordError($"Invalid table name provided in config: '{config.Table}'.");
                         return false;
                     }
+                    
+                    tableName = config.Table;
+                    
+                    // Ensure the type is registered with the custom table name
+                    string existingTableName = connection.GetTableName(objectType.FullName);
+                    if (string.IsNullOrEmpty(existingTableName) || existingTableName != tableName)
+                    {
+                        // Register the type with the custom table name
+                        TypeRegistration registration = connection.RegisterType(objectType, tableName);
+                        if (registration == null)
+                        {
+                            BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} with custom table name '{tableName}'.");
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    // Use type-based table name resolution
                     tableName = connection.GetTableName(objectType.FullName);
+                    if (string.IsNullOrWhiteSpace(tableName))
+                    {
+                        // Register new type
+                        TypeRegistration registration = connection.RegisterType(objectType);
+                        if (registration == null)
+                        {
+                            BH.Engine.Base.Compute.RecordError($"Failed to register object type {objectType.FullName}.");
+                            return false;
+                        }
+                        tableName = connection.GetTableName(objectType.FullName);
+                    }
                 }
 
                 if (string.IsNullOrWhiteSpace(tableName))

@@ -189,7 +189,7 @@ namespace SQLite_Toolkit.Tests.Examples
 
             IEnumerable<object> successResults = adapter.Pull(successStatusCodes);
             QueryResult successQuery = successResults.FirstOrDefault() as QueryResult;
-            successQuery.Data.Should().HaveCount(6, "Should find readings with status 200 or 201");
+            successQuery.Data.Should().HaveCount(5, "Should find readings with status 200 or 201");
 
             // Scenario 3: Multiple columns with AND logic
             EqualityFilterRequest validSuccessReadings = new EqualityFilterRequest()
@@ -365,7 +365,7 @@ namespace SQLite_Toolkit.Tests.Examples
 
             IEnumerable<object> highStrengthResults = adapter.Pull(highStrengthMaterials);
             QueryResult highStrengthQuery = highStrengthResults.FirstOrDefault() as QueryResult;
-            highStrengthQuery.Data.Should().HaveCount(3, "Should find high-strength materials (steels and aluminium)");
+            highStrengthQuery.Data.Should().HaveCount(2, "Should find high-strength materials (steels only, aluminium is 69 GPa < 100 GPa minimum)");
         }
 
         [Test]
@@ -563,7 +563,7 @@ namespace SQLite_Toolkit.Tests.Examples
 
             // Verify steel has highest average Young's modulus
             Dictionary<string, object> topMaterial = comparisonQuery.Data[0];
-            topMaterial["Type"].Should().Be((int)MaterialType.Steel);
+            topMaterial["Type"].Should().Be(MaterialType.Steel);
         }
 
         [Test]

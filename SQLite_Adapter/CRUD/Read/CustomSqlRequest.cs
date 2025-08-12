@@ -690,7 +690,26 @@ namespace BH.Adapter.SQLite
                         
                     default:
                         // Try to resolve the full type name
-                        return Type.GetType(typeString);
+                        Type resolvedType = Type.GetType(typeString);
+                        if (resolvedType != null)
+                            return resolvedType;
+                        
+                        // If that fails, try to find it in loaded assemblies
+                        foreach (System.Reflection.Assembly assembly in System.AppDomain.CurrentDomain.GetAssemblies())
+                        {
+                            try
+                            {
+                                resolvedType = assembly.GetType(typeString);
+                                if (resolvedType != null)
+                                    return resolvedType;
+                            }
+                            catch (Exception)
+                            {
+                                // Continue to next assembly
+                            }
+                        }
+                        
+                        return null;
                 }
             }
             catch (Exception ex)

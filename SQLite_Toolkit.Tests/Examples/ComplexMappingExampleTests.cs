@@ -300,7 +300,7 @@ namespace SQLite_Toolkit.Tests.Examples
             // Verify primitive properties are present
             primitiveData["Name"].Should().Be("Bar-NoConfig");
             primitiveData["OrientationAngle"].Should().Be(0.0);
-            primitiveData["FEAType"].Should().Be((int)BarFEAType.Flexural);
+            primitiveData["FEAType"].Should().Be(BarFEAType.Flexural);
             primitiveData.Should().ContainKey("BHoM_Guid");
 
             // Verify complex properties are NOT present
@@ -393,7 +393,7 @@ namespace SQLite_Toolkit.Tests.Examples
 
             // Verify non-excluded primitives are present
             mixedData["Name"].Should().Be("Bar-Mixed");
-            mixedData["FEAType"].Should().Be((int)BarFEAType.Flexural);
+            mixedData["FEAType"].Should().Be(BarFEAType.Flexural);
             mixedData.Should().ContainKey("BHoM_Guid");
 
             // Verify excluded properties are NOT present
@@ -483,7 +483,7 @@ namespace SQLite_Toolkit.Tests.Examples
             IEnumerable<object> steelResults = adapter.Pull(materialFilter);
             QueryResult steelQuery = steelResults.FirstOrDefault() as QueryResult;
 
-            steelQuery.Data.Should().HaveCount(2, "Should find both bars with default damping");
+            steelQuery.Data.Should().HaveCount(3, "Should find all bars with default damping (all bars have DampingRatio = 0.0)");
 
             // Step 3: Filter by combination of mapped and primitive properties
             EqualityFilterRequest combinedFilter = new EqualityFilterRequest()
@@ -499,7 +499,7 @@ namespace SQLite_Toolkit.Tests.Examples
                     new ColumnFilter()
                     {
                         ColumnName = "FEAType",
-                        Values = new List<object> { (int)BarFEAType.Flexural }
+                        Values = new List<object> { BarFEAType.Flexural }
                     }
                 },
                 Logic = LogicalOperator.And
@@ -508,8 +508,12 @@ namespace SQLite_Toolkit.Tests.Examples
             IEnumerable<object> combinedResults = adapter.Pull(combinedFilter);
             QueryResult combinedQuery = combinedResults.FirstOrDefault() as QueryResult;
 
-            combinedQuery.Data.Should().HaveCount(1, "Should find only flexural bar with default damping");
-            combinedQuery.Data[0]["Name"].Should().Be("Bar-001");
+            combinedQuery.Data.Should().HaveCount(2, "Should find both flexural bars with default damping (Bar-001 and Column-001)");
+            
+            // Verify we found both flexural bars
+            List<string> foundNames = combinedQuery.Data.Select(row => row["Name"].ToString()).OrderBy(name => name).ToList();
+            foundNames.Should().Contain("Bar-001");
+            foundNames.Should().Contain("Column-001");
 
             // Step 4: Filter by range on mapped numeric property
             RangeFilterRequest positionFilter = new RangeFilterRequest()
