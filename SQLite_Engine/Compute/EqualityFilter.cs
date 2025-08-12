@@ -37,10 +37,11 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Converts an EqualityFilterRequest to a parameterised SQL WHERE clause.")]
-        [Input("filter", "The equality filter request to convert.")]
-        [Input("parameterPrefix", "Prefix for parameter names to avoid conflicts. Default is 'eq'.")]
-        [Output("result", "FilterResult containing the SQL WHERE clause and parameters, or null if conversion failed.")]
+        [Description("Converts an EqualityFilterRequest into a parameterised SQL WHERE clause with appropriate handling for floating-point tolerance comparisons and multi-value IN clauses. \n" +
+            "This method intelligently distinguishes between floating-point values requiring tolerance-based comparisons and discrete values suitable for exact matching or IN clauses.")]
+        [Input("filter", "The equality filter request containing column-value pairs to be converted into SQL conditions. Each column can specify multiple values for IN clause generation.")]
+        [Input("parameterPrefix", "Optional prefix for SQL parameter names to prevent naming conflicts when combining multiple filters. Defaults to 'eq' if not specified.")]
+        [Output("result", "FilterResult object containing the complete SQL WHERE clause and associated parameters, or null if the filter contains no valid conditions or conversion fails.")]
         public static FilterResult EqualityFilter(EqualityFilterRequest filter, string parameterPrefix = "eq")
         {
             if (filter == null || filter.ColumnFilters == null || !filter.ColumnFilters.Any())
@@ -132,9 +133,7 @@ namespace BH.Engine.SQLite
 
         /***************************************************/
 
-        /// <summary>
-        /// Checks if a value is a floating-point type that needs tolerance-based comparison
-        /// </summary>
+        // Checks if a value is a floating-point type that needs tolerance-based comparison
         private static bool IsFloatingPointValue(object value)
         {
             if (value == null) return false;

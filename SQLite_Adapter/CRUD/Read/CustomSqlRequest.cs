@@ -436,9 +436,7 @@ namespace BH.Adapter.SQLite
             return string.Empty;
         }
 
-        /// <summary>
-        /// Extracts column name from SQLite error message or SQL query
-        /// </summary>
+        // Extracts column name from SQLite error message or SQL query
         private string ExtractColumnNameFromError(string errorMessage, string sqlQuery)
         {
             // Try error message first
@@ -484,9 +482,7 @@ namespace BH.Adapter.SQLite
             return string.Empty;
         }
 
-        /// <summary>
-        /// Extracts a snippet of the query for error messages
-        /// </summary>
+        // Extracts a snippet of the query for error messages
         private string GetQuerySnippet(string sqlQuery)
         {
             if (string.IsNullOrWhiteSpace(sqlQuery))
@@ -494,9 +490,7 @@ namespace BH.Adapter.SQLite
             return sqlQuery.Length > 80 ? sqlQuery.Substring(0, 80) + "..." : sqlQuery;
         }
 
-        /// <summary>
-        /// Extracts constraint type from SQLite error message
-        /// </summary>
+        // Extracts constraint type from SQLite error message
         private string ExtractConstraintType(string errorMessage)
         {
             // Try to extract constraint type (e.g., UNIQUE, FOREIGN KEY, CHECK)
@@ -508,9 +502,7 @@ namespace BH.Adapter.SQLite
             return "Constraint violation";
         }
 
-        /// <summary>
-        /// Extracts parameter name from SQLite error message or SQL query
-        /// </summary>
+        // Extracts parameter name from SQLite error message or SQL query
         private string ExtractParameterName(string errorMessage, string sqlQuery)
         {
             // Try error message first

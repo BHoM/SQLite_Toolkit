@@ -48,7 +48,7 @@ namespace SQLite_Toolkit.Tests.Unit
             testConnection.Open();
             
             // Create system tables
-            testConnection.EnsureTypesTableExists();
+            testConnection.ExistsTypesTable();
         }
 
         [TearDown]

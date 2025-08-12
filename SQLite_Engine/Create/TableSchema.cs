@@ -37,14 +37,14 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates a table schema using the smart three-tier strategy based on object type and configuration. \n" +
-            "Tier 1: IRecord objects → All properties become columns \n" +
-            "Tier 2: PushConfig mappings → Mapped properties + non-excluded primitives \n" +
-            "Tier 3: Fallback → Primitive properties only")]
-        [Input("objectType", "The .NET type of objects that will be stored in this table.")]
-        [Input("tableName", "Name for the table. If empty, will be derived from the object type.")]
-        [Input("config", "Optional PushConfig for property mappings and exclusions. If null, falls back to primitive properties.")]
-        [Output("tableSchema", "Generated TableSchema object ready for table creation, or null if generation failed.")]
+        [Description("Creates an optimised table schema using the intelligent three-tier strategy to determine the most appropriate column mapping approach. \n" +
+            "Tier 1: IRecord implementations → All public properties automatically mapped to columns with type-safe conversion \n" +
+            "Tier 2: PushConfig mappings → Explicitly mapped properties plus non-excluded primitive properties for hybrid approaches \n" +
+            "Tier 3: Primitive fallback → Only database-compatible primitive properties when no other strategy applies")]
+        [Input("objectType", "The .NET Type representing objects to be stored in the table. This type determines which tier strategy is most appropriate for schema generation.")]
+        [Input("tableName", "The target database table name for the schema. If empty or null, will be automatically derived from the object type name using standard naming conventions.")]
+        [Input("config", "Optional PushConfig containing custom property-to-column mappings, property exclusion lists, and validation preferences. If null, uses automatic primitive property detection.")]
+        [Output("tableSchema", "A complete TableSchema object containing all column definitions, data types, and constraints required for table creation, or null if schema generation fails due to type analysis errors.")]
         public static TableSchema TableSchema(Type objectType, string tableName = "", PushConfig config = null)
         {
             if (objectType == null)

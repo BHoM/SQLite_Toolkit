@@ -35,14 +35,13 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Executes a parameterised SQL statement against a SQLite connection with comprehensive error handling and automatic value conversion. \n" +
-            "This method provides secure SQL execution by converting .NET types to SQLite-compatible values and preventing SQL injection through parameterisation.")]
-        [Input("connection", "Active SQLite database connection in an open state with appropriate permissions for the intended SQL operation (SELECT, INSERT, UPDATE, DELETE, etc.).")]
-        [Input("sql", "The SQL statement to execute, which may contain named parameter placeholders (e.g., '@paramName'). The statement will be executed as a non-query operation.")]
-        [Input("parameters", "Optional dictionary mapping parameter names to their values. Parameter names should include the '@' prefix. Values are automatically converted to SQLite-compatible types.")]
-        [Input("operationName", "Optional descriptive name for the operation used in error reporting and logging. Helps identify the source of database errors during debugging.")]
-        [Output("success", "True if the SQL statement executed successfully without throwing exceptions, false if execution failed due to database errors, connection issues, or parameter problems.")]
-        public static bool ExecuteSql(this SqliteConnection connection, string sql, Dictionary<string, object> parameters = null, string operationName = "SQL operation")
+        [Description("Executes a SQL statement with ordered parameters against a SQLite connection.")]
+        [Input("connection", "The SQLite connection to execute the statement against.")]
+        [Input("sql", "The SQL statement to execute with positional parameter placeholders.")]
+        [Input("parameterValues", "List of parameter values in the order they appear in the SQL.")]
+        [Input("operationName", "Optional name for the operation for error reporting.")]
+        [Output("success", "True if the SQL executed successfully, false otherwise.")]
+        public static bool ExecuteSqlWithOrderedParameters(this SqliteConnection connection, string sql, List<object> parameterValues, string operationName = "SQL operation")
         {
             if (connection == null)
             {
@@ -61,12 +60,13 @@ namespace BH.Engine.SQLite
                 using (SqliteCommand command = new SqliteCommand(sql, connection))
                 {
                     // Add parameters if provided
-                    if (parameters != null && parameters.Any())
+                    if (parameterValues != null && parameterValues.Any())
                     {
-                        foreach (KeyValuePair<string, object> parameter in parameters)
+                        for (int i = 0; i < parameterValues.Count; i++)
                         {
-                            object sqliteValue = ConvertToSqliteValue(parameter.Value);
-                            command.Parameters.AddWithValue(parameter.Key, sqliteValue);
+                            object sqliteValue = ConvertToSqliteValue(parameterValues[i]);
+                            command.Parameters.Add($"@param{i}", Microsoft.Data.Sqlite.SqliteType.Text);
+                            command.Parameters[$"@param{i}"].Value = sqliteValue;
                         }
                     }
 

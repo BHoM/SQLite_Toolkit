@@ -37,13 +37,14 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates a table in the database using intelligent schema detection from an object type. \n" +
-            "Combines type registration, schema generation, and table creation in one operation.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("objectType", "The .NET type of objects that will be stored in this table.")]
-        [Input("config", "Optional PushConfig for property mappings and exclusions.")]
-        [Input("dropIfExists", "Whether to drop the table first if it already exists. Default is false.")]
-        [Output("success", "True if table was created successfully, false otherwise.")]
+        [Description("Creates a database table using the intelligent three-tier schema detection strategy based on object type analysis. \n" +
+            "Automatically determines the optimal table structure through IRecord detection, PushConfig mappings, or primitive property fallback. \n" +
+            "Handles type registration, schema optimisation, and complete table creation workflow including system table population.")]
+        [Input("connection", "Active SQLite database connection with write permissions and sufficient privileges for table creation and system table modifications.")]
+        [Input("objectType", "The .NET Type representing objects that will be stored in the created table. This type guides the three-tier schema detection process.")]
+        [Input("config", "Optional PushConfig containing custom property mappings, exclusion lists, and table naming preferences. If null, uses automatic schema detection.")]
+        [Input("dropIfExists", "Whether to drop and recreate the table if it already exists. When false, skips creation for existing tables. Defaults to false for safety.")]
+        [Output("success", "True if the table was created successfully with proper schema population, false if creation failed due to validation errors, database constraints, or system table issues.")]
         public static bool CreateTableForObjectType(SqliteConnection connection, Type objectType, PushConfig config = null, bool dropIfExists = false)
         {
             if (connection == null)
@@ -61,7 +62,7 @@ namespace BH.Engine.SQLite
             try
             {
                 // Ensure type management table exists
-                if (!connection.EnsureTypesTableExists())
+                if (!connection.ExistsTypesTable())
                 {
                     BH.Engine.Base.Compute.RecordError("Failed to ensure __Types table exists.");
                     return false;

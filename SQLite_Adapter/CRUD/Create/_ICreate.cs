@@ -95,7 +95,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Step 1: Ensure __Types table exists
-                m_Connection.EnsureTypesTableExists();
+                m_Connection.ExistsTypesTable();
 
                 // Step 2: Get or register table name for this type
                 string tableName = m_Connection.GetTableName(objectType.FullName);

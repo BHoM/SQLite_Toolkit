@@ -35,11 +35,12 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Registers a .NET type with its corresponding SQLite table name in the __Types system table.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("type", "The .NET type to register.")]
-        [Input("tableName", "The database table name. If not specified, uses the type name.")]
-        [Output("registration", "The TypeRegistration object that was created, or null if registration failed.")]
+        [Description("Registers a .NET type with its corresponding SQLite table name in the __Types system table, enabling automatic type-to-table mapping for subsequent operations. \n" +
+            "If the type is already registered, returns the existing registration. Automatically generates unique table names when conflicts occur.")]
+        [Input("connection", "Active SQLite database connection with an open transaction state. The connection must have the __Types system table already created.")]
+        [Input("type", "The .NET Type object to register for database storage. The full type name including namespace will be stored for precise type resolution.")]
+        [Input("tableName", "Optional custom database table name for this type. If not specified or empty, generates a unique table name based on the type name with conflict resolution.")]
+        [Output("registration", "The TypeRegistration object containing the assigned ID, full type name, table name and creation timestamp, or null if registration fails due to database errors.")]
         public static TypeRegistration RegisterType(this SqliteConnection connection, Type type, string tableName = "")
         {
             if (connection == null || type == null)
@@ -52,7 +53,7 @@ namespace BH.Engine.SQLite
             string finalTableName;
             
             if (string.IsNullOrWhiteSpace(tableName))
-                finalTableName = type.GenerateTableName(connection);
+                finalTableName = type.TableName(connection);
             else
                 finalTableName = tableName;
 
@@ -104,80 +105,6 @@ namespace BH.Engine.SQLite
             {
                 Engine.Base.Compute.RecordError($"Error registering type {fullTypeName}: {ex.Message}");
                 return null;
-            }
-        }
-
-        /***************************************************/
-
-        [Description("Ensures the __Types system table exists in the database, creating it if necessary.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Output("success", "True if the table exists or was created successfully, false otherwise.")]
-        public static bool EnsureTypesTableExists(this SqliteConnection connection)
-        {
-            if (connection == null)
-            {
-                Engine.Base.Compute.RecordError("Cannot ensure __Types table: connection is null.");
-                return false;
-            }
-
-            // Check if table already exists to avoid duplicate messages
-            bool tableExists = connection.TableExists("__Types");
-            bool success = Create.TypesTable(connection);
-            
-            // Only show success message if table was actually created (didn't exist before)
-            if (success && !tableExists)
-                BH.Engine.Base.Compute.RecordNote("Successfully created __Types system table.");
-            
-            return success;
-        }
-
-        /***************************************************/
-
-        [Description("Generates a unique table name from a .NET type, handling potential conflicts.")]
-        [Input("type", "The .NET type to generate a table name for.")]
-        [Input("connection", "Optional SQLite connection to check for existing table names.")]
-        [Output("tableName", "A unique table name for the type.")]
-        public static string GenerateTableName(this Type type, SqliteConnection connection = null)
-        {
-            if (type == null)
-                return "";
-
-            string baseName = type.Name;
-
-            // If no connection provided, just return the type name
-            if (connection == null)
-                return baseName;
-
-            try
-            {
-                // Check if table name already exists in __Types
-                string checkSql = "SELECT COUNT(*) FROM __Types WHERE TableName = @TableName";
-                using (var command = new SqliteCommand(checkSql, connection))
-                {
-                    command.Parameters.AddWithValue("@TableName", baseName);
-                    long count = (long)command.ExecuteScalar();
-
-                    if (count == 0)
-                        return baseName;
-
-                    // Generate unique name with suffix
-                    int suffix = 1;
-                    string uniqueName;
-                    do
-                    {
-                        uniqueName = $"{baseName}_{suffix}";
-                        command.Parameters["@TableName"].Value = uniqueName;
-                        count = (long)command.ExecuteScalar();
-                        suffix++;
-                    } while (count > 0);
-
-                    return uniqueName;
-                }
-            }
-            catch (Exception ex)
-            {
-                Engine.Base.Compute.RecordWarning($"Error generating unique table name for {type.Name}: {ex.Message}. Using base name.");
-                return baseName;
             }
         }
 

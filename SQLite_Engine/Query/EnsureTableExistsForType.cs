@@ -57,7 +57,7 @@ namespace BH.Engine.SQLite
             try
             {
                 // Ensure type management table exists
-                if (!connection.EnsureTypesTableExists())
+                if (!connection.ExistsTypesTable())
                 {
                     BH.Engine.Base.Compute.RecordError("Failed to ensure __Types table exists.");
                     return "";

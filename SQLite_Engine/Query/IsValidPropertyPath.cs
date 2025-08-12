@@ -34,10 +34,11 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Validates that a property path exists on a given object type.")]
-        [Input("type", "The object Type to check.")]
-        [Input("propertyPath", "The property path to validate, supporting dot notation.")]
-        [Output("isValid", "True if the property path exists, false otherwise.")]
+        [Description("Validates that a property path exists and is accessible on the specified object type, with comprehensive support for dot notation traversal. \n" +
+            "This method recursively validates nested property access chains, ensuring each property in the path is publicly accessible and properly typed.")]
+        [Input("type", "The root .NET Type object on which to validate the property path. This serves as the starting point for property traversal and validation.")]
+        [Input("propertyPath", "The property access path to validate, using dot notation for nested properties (e.g., 'Position.X', 'Material.Properties.Density'). Simple property names are also supported.")]
+        [Output("isValid", "True if the complete property path exists and all intermediate properties are accessible, false if any part of the path is invalid, non-existent, or inaccessible.")]
         public static bool IsValidPropertyPath(this Type type, string propertyPath)
         {
             if (type == null || string.IsNullOrWhiteSpace(propertyPath))
