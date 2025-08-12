@@ -139,6 +139,7 @@ namespace SQLite_Toolkit.Tests.Unit
             barType.IsValidPropertyPath("NonExistentProperty").Should().BeFalse("Non-existent property should be invalid");
             barType.IsValidPropertyPath("SectionProperty.NonExistentProperty").Should().BeFalse("Invalid nested property should be invalid");
             barType.IsValidPropertyPath("Start.Position.NonExistentAxis").Should().BeFalse("Invalid position property should be invalid");
+            barType.IsValidPropertyPath("SectionProperty.Material.Name").Should().BeFalse("Interface properties requiring casting should be invalid");
             barType.IsValidPropertyPath("").Should().BeFalse("Empty path should be invalid");
             barType.IsValidPropertyPath(null).Should().BeFalse("Null path should be invalid");
         }
@@ -170,6 +171,7 @@ namespace SQLite_Toolkit.Tests.Unit
             // Act & Assert
             barType.GetPropertyType("NonExistentProperty").Should().BeNull("Invalid property should return null");
             barType.GetPropertyType("SectionProperty.NonExistentProperty").Should().BeNull("Invalid nested property should return null");
+            barType.GetPropertyType("SectionProperty.Material.Name").Should().BeNull("Interface properties requiring casting should return null");
             barType.GetPropertyType("").Should().BeNull("Empty path should return null");
             barType.GetPropertyType(null).Should().BeNull("Null path should return null");
         }
