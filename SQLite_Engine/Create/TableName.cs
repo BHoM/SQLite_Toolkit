@@ -28,7 +28,7 @@ using System.ComponentModel;
 
 namespace BH.Engine.SQLite
 {
-    public static partial class Compute
+    public static partial class Create
     {
         /***************************************************/
         /**** Public Methods                            ****/

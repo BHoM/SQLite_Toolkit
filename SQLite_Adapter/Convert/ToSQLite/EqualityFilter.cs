@@ -29,9 +29,9 @@ using System.ComponentModel;
 using System.Linq;
 using System;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public static partial class Convert
     {
         /***************************************************/
         /**** Public Methods                            ****/

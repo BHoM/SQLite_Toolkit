@@ -596,8 +596,8 @@ namespace SQLite_Toolkit.Tests.Examples
             QueryResult topTempQuery = topTempResults.FirstOrDefault() as QueryResult;
             topTempQuery.Data.Should().HaveCount(3, "Should return top 3 temperatures");
             
-            double firstTemp = Convert.ToDouble(topTempQuery.Data[0]["Temperature"]);
-            double secondTemp = Convert.ToDouble(topTempQuery.Data[1]["Temperature"]);
+            double firstTemp = System.Convert.ToDouble(topTempQuery.Data[0]["Temperature"]);
+            double secondTemp = System.Convert.ToDouble(topTempQuery.Data[1]["Temperature"]);
             firstTemp.Should().BeGreaterThanOrEqualTo(secondTemp, "Results should be ordered by temperature DESC");
 
             // Scenario 2: Most recent readings with limit using EqualityFilterRequest

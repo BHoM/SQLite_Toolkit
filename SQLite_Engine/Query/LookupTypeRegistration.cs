@@ -39,7 +39,7 @@ namespace BH.Engine.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("fullTypeName", "The full type name including namespace.")]
         [Output("registration", "The TypeRegistration if found, null otherwise.")]
-        public static TypeRegistration LookupTypeRegistration(this SqliteConnection connection, string fullTypeName)
+        public static TypeRegistration TypeRegistration(this SqliteConnection connection, string fullTypeName)
         {
             if (connection == null || string.IsNullOrWhiteSpace(fullTypeName))
                 return null;
@@ -84,13 +84,13 @@ namespace BH.Engine.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("type", "The .NET Type to look up.")]
         [Output("registration", "The TypeRegistration if found, null otherwise.")]
-        public static TypeRegistration LookupTypeRegistration(this SqliteConnection connection, Type type)
+        public static TypeRegistration TypeRegistration(this SqliteConnection connection, Type type)
         {
             if (type == null)
                 return null;
 
             string fullTypeName = type.FullName ?? type.Name;
-            return connection.LookupTypeRegistration(fullTypeName);
+            return connection.TypeRegistration(fullTypeName);
         }
 
         /***************************************************/

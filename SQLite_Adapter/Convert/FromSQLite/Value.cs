@@ -24,9 +24,9 @@ using BH.oM.Base.Attributes;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public static partial class Convert
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -36,7 +36,7 @@ namespace BH.Engine.SQLite
         [Input("sqliteValue", "The value returned from SQLite.")]
         [Input("targetType", "The original .NET type to convert to.")]
         [Output("convertedValue", "The value converted to its original .NET type.")]
-        public static object ConvertSqliteValue(object sqliteValue, Type targetType)
+        public static object Value(object sqliteValue, Type targetType)
         {
             if (sqliteValue == null || sqliteValue == DBNull.Value)
                 return null;
@@ -67,7 +67,7 @@ namespace BH.Engine.SQLite
                         return doubleValue != 0.0;
                     
                     // Try to parse as boolean
-                    return Convert.ToBoolean(sqliteValue);
+                    return System.Convert.ToBoolean(sqliteValue);
                 }
                 else if (targetType == typeof(int))
                 {
@@ -75,7 +75,7 @@ namespace BH.Engine.SQLite
                     if (sqliteValue is long longValue)
                         return (int)longValue;
                     
-                    return Convert.ToInt32(sqliteValue);
+                    return System.Convert.ToInt32(sqliteValue);
                 }
                 else if (targetType == typeof(DateTime))
                 {
@@ -83,7 +83,7 @@ namespace BH.Engine.SQLite
                     if (sqliteValue is string dateString)
                         return DateTime.Parse(dateString);
                     
-                    return Convert.ToDateTime(sqliteValue);
+                    return System.Convert.ToDateTime(sqliteValue);
                 }
                 else if (targetType == typeof(Guid))
                 {
@@ -108,7 +108,7 @@ namespace BH.Engine.SQLite
                 else
                 {
                     // Generic conversion for other types
-                    return Convert.ChangeType(sqliteValue, targetType);
+                    return System.Convert.ChangeType(sqliteValue, targetType);
                 }
             }
             catch (Exception ex)

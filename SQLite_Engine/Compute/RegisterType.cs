@@ -60,7 +60,7 @@ namespace BH.Engine.SQLite
             try
             {
                 // Check if type is already registered
-                var existing = connection.LookupTypeRegistration(fullTypeName);
+                var existing = connection.GetTypeRegistration(fullTypeName);
                 if (existing != null)
                 {
                     Engine.Base.Compute.RecordNote($"Type {fullTypeName} is already registered with table {existing.TableName}.");
@@ -68,7 +68,12 @@ namespace BH.Engine.SQLite
                 }
 
                 // Create new registration
-                var registration = new TypeRegistration(type, finalTableName);
+                var registration = new TypeRegistration()
+                {
+                    FullTypeName = fullTypeName,
+                    TableName = finalTableName,
+                    DateCreated = DateTime.UtcNow
+                };
 
                 // Insert into __Types table
                 string insertSql = @"

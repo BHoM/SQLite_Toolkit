@@ -215,7 +215,7 @@ namespace SQLite_Toolkit.Tests.Unit
         }
 
         [Test]
-        public void Test_ExtractColumnValues_IRecordObject()
+        public void Test_GetColumnValues_IRecordObject()
         {
             // Test value extraction from IRecord objects
             
@@ -233,7 +233,7 @@ namespace SQLite_Toolkit.Tests.Unit
             Dictionary<string, PropertyColumnInfo> columnSchema = typeof(SensorReading).ResolveColumnSchema(null);
             
             // Act
-            Dictionary<string, object> columnValues = sensor.ExtractColumnValues(columnSchema);
+            Dictionary<string, object> columnValues = sensor.GetColumnValues(columnSchema);
             
             // Assert
             columnValues.Should().NotBeNull("Should extract column values");
@@ -250,7 +250,7 @@ namespace SQLite_Toolkit.Tests.Unit
         }
 
         [Test]
-        public void Test_ExtractColumnValues_WithNestedPropertyMappings()
+        public void Test_GetColumnValues_WithNestedPropertyMappings()
         {
             // Test value extraction with complex nested property mappings
             
@@ -289,7 +289,7 @@ namespace SQLite_Toolkit.Tests.Unit
             Dictionary<string, PropertyColumnInfo> columnSchema = typeof(Bar).ResolveColumnSchema(config);
             
             // Act
-            Dictionary<string, object> columnValues = bar.ExtractColumnValues(columnSchema);
+            Dictionary<string, object> columnValues = bar.GetColumnValues(columnSchema);
             
             // Assert
             columnValues.Should().NotBeNull("Should extract nested property values");

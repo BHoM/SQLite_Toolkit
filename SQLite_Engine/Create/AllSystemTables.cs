@@ -46,12 +46,52 @@ namespace BH.Engine.SQLite
 
             try
             {
-                bool typesSuccess = TypesTable(connection);
-                bool schemaSuccess = SchemaTable(connection);
+                // Check if __Types table exists before creating
+                bool typesExists = connection.TableExists("__Types");
+                bool typesSuccess;
+                
+                if (typesExists)
+                {
+                    BH.Engine.Base.Compute.RecordNote("System table '__Types' already exists.");
+                    typesSuccess = true;
+                }
+                else
+                {
+                    typesSuccess = TypesTable(connection);
+                    if (typesSuccess)
+                    {
+                        BH.Engine.Base.Compute.RecordNote("Successfully created system table '__Types'.");
+                    }
+                }
+
+                // Check if __Schema table exists before creating
+                bool schemaExists = connection.TableExists("__Schema");
+                bool schemaSuccess;
+                
+                if (schemaExists)
+                {
+                    BH.Engine.Base.Compute.RecordNote("System table '__Schema' already exists.");
+                    schemaSuccess = true;
+                }
+                else
+                {
+                    schemaSuccess = SchemaTable(connection);
+                    if (schemaSuccess)
+                    {
+                        BH.Engine.Base.Compute.RecordNote("Successfully created system table '__Schema'.");
+                    }
+                }
 
                 if (typesSuccess && schemaSuccess)
                 {
-                    BH.Engine.Base.Compute.RecordNote("Successfully created all system tables.");
+                    if (typesExists && schemaExists)
+                    {
+                        BH.Engine.Base.Compute.RecordNote("All system tables were already present and verified.");
+                    }
+                    else if (!typesExists || !schemaExists)
+                    {
+                        BH.Engine.Base.Compute.RecordNote("System tables initialised successfully - some tables were created.");
+                    }
                     return true;
                 }
                 else

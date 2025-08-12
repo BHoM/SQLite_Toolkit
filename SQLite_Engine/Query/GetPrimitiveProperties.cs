@@ -54,7 +54,7 @@ namespace BH.Engine.SQLite
 
                 foreach (PropertyInfo property in properties)
                 {
-                    if (property.PropertyType.IsPrimitiveForDatabase())
+                    if (property.PropertyType.IsPrimitive())
                     {
                         primitiveProperties[property.Name] = property.PropertyType;
                     }

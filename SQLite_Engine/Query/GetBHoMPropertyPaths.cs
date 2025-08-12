@@ -63,7 +63,7 @@ namespace BH.Engine.SQLite
                         
                         // Check if the final property type is primitive
                         Type finalPropertyType = obj.GetType().GetPropertyType(propertyPath);
-                        if (finalPropertyType != null && finalPropertyType.IsPrimitiveForDatabase())
+                        if (finalPropertyType != null && finalPropertyType.IsPrimitive())
                         {
                             propertyPaths.Add(propertyPath);
                         }

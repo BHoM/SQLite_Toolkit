@@ -208,7 +208,7 @@ namespace BH.Adapter.SQLite
                             {
                                 Type targetType = columnTypes[columnName];
                                 object originalValue = value;
-                                value = BH.Engine.SQLite.Compute.ConvertSqliteValue(value, targetType);
+                                value = Convert.Value(value, targetType);
                                 BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: '{columnName}' {originalValue} ({originalValue.GetType().Name}) -> {value} ({value?.GetType().Name})");
                             }
                             

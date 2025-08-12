@@ -22,9 +22,9 @@
 
 using BH.Engine.Base;
 using BH.oM.Base.Attributes;
+using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace BH.Engine.SQLite
 {
@@ -34,43 +34,53 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Validates that a property path exists and is accessible on the specified object type, with comprehensive support for dot notation traversal. \n" +
-            "This method recursively validates nested property access chains, ensuring each property in the path is publicly accessible and properly typed.")]
-        [Input("type", "The root .NET Type object on which to validate the property path. This serves as the starting point for property traversal and validation.")]
-        [Input("propertyPath", "The property access path to validate, using dot notation for nested properties (e.g., 'Position.X', 'Material.Properties.Density'). Simple property names are also supported.")]
-        [Output("isValid", "True if the complete property path exists and all intermediate properties are accessible, false if any part of the path is invalid, non-existent, or inaccessible.")]
-        public static bool IsValidPropertyPath(this Type type, string propertyPath)
+        [Description("Checks if a specific column exists in the given table.")]
+        [Input("connection", "The SQLite database connection to use.")]
+        [Input("tableName", "Name of the table to check.")]
+        [Input("columnName", "Name of the column to check for.")]
+        [Output("exists", "True if the column exists in the table, false otherwise.")]
+        public static bool ColumnExists(this SqliteConnection connection, string tableName, string columnName)
         {
-            if (type == null || string.IsNullOrWhiteSpace(propertyPath))
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check column existence: connection is null.");
                 return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check column existence: table name is null or empty.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(columnName))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check column existence: column name is null or empty.");
+                return false;
+            }
 
             try
             {
-                // Handle simple property access
-                if (!propertyPath.Contains("."))
+                using (SqliteCommand command = new SqliteCommand($"PRAGMA table_info(\"{tableName}\")", connection))
                 {
-                    PropertyInfo property = type.GetProperty(propertyPath);
-                    return property != null;
+                    using (SqliteDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string existingColumnName = reader.GetString(1); // Column name is at index 1
+                            if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                        }
+                    }
                 }
 
-                // Handle nested property access
-                string[] propertyParts = propertyPath.Split('.');
-                Type currentType = type;
-
-                foreach (string propertyName in propertyParts)
-                {
-                    PropertyInfo property = currentType.GetProperty(propertyName);
-                    if (property == null)
-                        return false;
-
-                    currentType = property.PropertyType;
-                }
-
-                return true;
+                return false;
             }
             catch (Exception ex)
             {
-                Engine.Base.Compute.RecordWarning($"Error validating property path '{propertyPath}' for type '{type.Name}': {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to check if column '{columnName}' exists in table '{tableName}': {ex.Message}");
                 return false;
             }
         }

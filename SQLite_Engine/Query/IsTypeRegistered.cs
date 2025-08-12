@@ -40,7 +40,7 @@ namespace BH.Engine.SQLite
         [Output("isRegistered", "True if the type is registered, false otherwise.")]
         public static bool IsTypeRegistered(this SqliteConnection connection, Type type)
         {
-            TypeRegistration registration = connection.LookupTypeRegistration(type);
+            TypeRegistration registration = connection.GetTypeRegistration(type);
             return registration != null;
         }
 

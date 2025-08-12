@@ -59,18 +59,18 @@ namespace BH.Engine.SQLite
                 }
 
                 // Validate that the column name is valid for SQL
-                if (!BH.Engine.SQLite.Query.ValidateColumnName(columnName))
+                if (!BH.Engine.SQLite.Query.IsValid(columnName))
                 {
                     Engine.Base.Compute.RecordWarning($"Column name '{columnName}' is not valid for SQL database storage.");
                     continue;
                 }
 
                 // Validate that the property path exists on the object type
-                if (objectType.IsValidPropertyPath(propertyPath))
+                if (objectType.IsValid(propertyPath))
                 {
                     // Validate that the property type is suitable for database storage
                     Type propertyType = objectType.GetPropertyType(propertyPath);
-                    if (propertyType != null && propertyType.IsPrimitiveForDatabase())
+                    if (propertyType != null && propertyType.IsPrimitive())
                     {
                         validMappings[columnName] = propertyPath;
                     }

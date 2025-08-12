@@ -107,7 +107,10 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Step 1: Ensure __Types table exists
-                m_Connection.ExistsTypesTable();
+                if (!m_Connection.TableExists("__Types"))
+                {
+                    BH.Engine.SQLite.Create.TypesTable(m_Connection);
+                }
 
                 // Step 2: Get or register table name for this type
                 string tableName = GetTableNameForType(objectType, config);
@@ -120,7 +123,7 @@ namespace BH.Adapter.SQLite
                 // Step 3: Ensure table exists (create if it doesn't)
                 if (!m_Connection.TableExists(tableName))
                 {
-                    bool tableCreated = BH.Engine.SQLite.Compute.CreateTableForObjectType(m_Connection, objectType, config);
+                    bool tableCreated = BH.Adapter.SQLite.Create.TableFromType(m_Connection, objectType, config);
                     if (!tableCreated)
                     {
                         BH.Engine.Base.Compute.RecordError($"Failed to create table '{tableName}' for type {objectType.Name}.");
@@ -162,7 +165,7 @@ namespace BH.Adapter.SQLite
             if (!string.IsNullOrWhiteSpace(config.Table))
             {
                 // Validate the provided table name
-                if (!BH.Engine.SQLite.Query.ValidateTableName(config.Table))
+                if (!BH.Engine.SQLite.Query.IsValid(config.Table, true))
                 {
                     BH.Engine.Base.Compute.RecordError($"Invalid table name provided in config: '{config.Table}'.");
                     return null;
@@ -284,9 +287,9 @@ namespace BH.Adapter.SQLite
                     foreach (IBHoMObject obj in objects)
                     {
                         // Extract column values for this object
-                        Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
+                        Dictionary<string, object> columnValues = obj.GetColumnValues(columnSchema);
 
-                        // BHoM_Guid is automatically extracted via ExtractColumnValues if it's in the schema
+                        // BHoM_Guid is automatically extracted via GetColumnValues if it's in the schema
                         // No special handling needed as it's a primitive property
 
                         // Set parameter values

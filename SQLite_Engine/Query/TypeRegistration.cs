@@ -25,7 +25,6 @@ using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Objects;
 using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace BH.Engine.SQLite
@@ -36,44 +35,62 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Gets all type registrations from the database.")]
+        [Description("Looks up a type registration by full type name.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Output("registrations", "List of all TypeRegistration objects.")]
-        public static List<TypeRegistration> GetAllTypeRegistrations(this SqliteConnection connection)
+        [Input("fullTypeName", "The full type name including namespace.")]
+        [Output("registration", "The TypeRegistration if found, null otherwise.")]
+        public static TypeRegistration GetTypeRegistration(this SqliteConnection connection, string fullTypeName)
         {
-            List<TypeRegistration> registrations = new List<TypeRegistration>();
-
-            if (connection == null)
-                return registrations;
+            if (connection == null || string.IsNullOrWhiteSpace(fullTypeName))
+                return null;
 
             try
             {
                 string selectSql = @"
                     SELECT Id, FullTypeName, TableName, DateCreated 
                     FROM __Types 
-                    ORDER BY DateCreated";
+                    WHERE FullTypeName = @FullTypeName";
 
                 using (var command = new SqliteCommand(selectSql, connection))
-                using (var reader = command.ExecuteReader())
                 {
-                    while (reader.Read())
+                    command.Parameters.AddWithValue("@FullTypeName", fullTypeName);
+
+                    using (var reader = command.ExecuteReader())
                     {
-                        registrations.Add(new TypeRegistration
+                        if (reader.Read())
                         {
-                            Id = reader.GetInt32(0),
-                            FullTypeName = reader.GetString(1),
-                            TableName = reader.GetString(2),
-                            DateCreated = reader.GetDateTime(3)
-                        });
+                            return new TypeRegistration
+                            {
+                                Id = reader.GetInt32(0),
+                                FullTypeName = reader.GetString(1),
+                                TableName = reader.GetString(2),
+                                DateCreated = reader.GetDateTime(3)
+                            };
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Engine.Base.Compute.RecordWarning($"Error retrieving type registrations: {ex.Message}");
+                Engine.Base.Compute.RecordWarning($"Error looking up type registration for {fullTypeName}: {ex.Message}");
             }
 
-            return registrations;
+            return null;
+        }
+
+        /***************************************************/
+
+        [Description("Looks up a type registration by .NET Type.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Input("type", "The .NET Type to look up.")]
+        [Output("registration", "The TypeRegistration if found, null otherwise.")]
+        public static TypeRegistration GetTypeRegistration(this SqliteConnection connection, Type type)
+        {
+            if (type == null)
+                return null;
+
+            string fullTypeName = type.FullName ?? type.Name;
+            return connection.GetTypeRegistration(fullTypeName);
         }
 
         /***************************************************/

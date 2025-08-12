@@ -31,17 +31,17 @@ using System.Reflection;
 
 namespace BH.Engine.SQLite
 {
-    public static partial class Compute
+    public static partial class Query
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Extracts column values from a BHoM object using the resolved column schema.")]
+        [Description("Gets column values from a BHoM object using the resolved column schema.")]
         [Input("obj", "The BHoM object to extract values from.")]
         [Input("columnSchema", "The column schema defining how to extract values.")]
         [Output("columnValues", "Dictionary of column names and their extracted values.")]
-        public static Dictionary<string, object> ExtractColumnValues(this IBHoMObject obj, Dictionary<string, PropertyColumnInfo> columnSchema)
+        public static Dictionary<string, object> GetColumnValues(this IBHoMObject obj, Dictionary<string, PropertyColumnInfo> columnSchema)
         {
             Dictionary<string, object> columnValues = new Dictionary<string, object>();
 

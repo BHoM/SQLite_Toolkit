@@ -40,7 +40,7 @@ namespace BH.Engine.SQLite
         [Output("tableName", "The table name if registered, null otherwise.")]
         public static string GetTableName(this SqliteConnection connection, Type type)
         {
-            TypeRegistration registration = connection.LookupTypeRegistration(type);
+            TypeRegistration registration = connection.GetTypeRegistration(type);
             return registration?.TableName;
         }
 
@@ -52,7 +52,7 @@ namespace BH.Engine.SQLite
         [Output("tableName", "The table name if registered, null otherwise.")]
         public static string GetTableName(this SqliteConnection connection, string fullTypeName)
         {
-            TypeRegistration registration = connection.LookupTypeRegistration(fullTypeName);
+            TypeRegistration registration = connection.GetTypeRegistration(fullTypeName);
             return registration?.TableName;
         }
 

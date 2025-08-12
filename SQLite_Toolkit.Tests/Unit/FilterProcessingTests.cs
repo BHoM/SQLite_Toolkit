@@ -58,7 +58,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.EqualityFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -94,7 +94,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.EqualityFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -134,7 +134,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.EqualityFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -170,7 +170,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.EqualityFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -197,7 +197,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.RangeFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("Range filter should generate result");
@@ -230,7 +230,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.RangeFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("Range filter should generate result");
@@ -261,7 +261,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.RangeFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("DateTime range filter should generate result");
@@ -294,7 +294,7 @@ namespace SQLite_Toolkit.Tests.Unit
             };
             
             // Act
-            FilterResult result = BH.Engine.SQLite.Compute.RangeFilter(request);
+            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("Multi-column range filter should generate result");

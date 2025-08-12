@@ -20,8 +20,9 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.Engine.Base;
 using BH.oM.Base.Attributes;
-using Microsoft.Data.Sqlite;
+using System;
 using System.ComponentModel;
 
 namespace BH.Engine.SQLite
@@ -32,27 +33,41 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Verifies that the __Types system table exists within the database and creates it automatically if absent. \n" +
-            "This method ensures the type management infrastructure is properly initialised before performing type registration operations.")]
-        [Input("connection", "Active SQLite database connection with appropriate write permissions. The connection should be in an open state and support table creation operations.")]
-        [Output("exists", "True if the __Types table already existed or was successfully created during this operation, false if table creation failed due to database errors or permission restrictions.")]
-        public static bool ExistsTypesTable(this SqliteConnection connection)
+        [Description("Determines if a Type is suitable for database storage as a primitive column.")]
+        [Input("type", "The Type to check.")]
+        [Output("isPrimitive", "True if the type can be stored as a database column, false otherwise.")]
+        public static bool IsPrimitive(this Type type)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot ensure __Types table: connection is null.");
+            if (type == null)
                 return false;
+
+            // Handle nullable types
+            Type actualType = Nullable.GetUnderlyingType(type) ?? type;
+
+            // Check explicit numeric types first (fallback if BHoM IsNumeric fails)
+            if (actualType == typeof(double) || actualType == typeof(float) || 
+                actualType == typeof(int) || actualType == typeof(long) || 
+                actualType == typeof(short) || actualType == typeof(byte) ||
+                actualType == typeof(decimal))
+                return true;
+
+            // Use BHoM's IsNumeric method for additional numeric types (if available)
+            try
+            {
+                if (actualType.IsNumeric())
+                    return true;
+            }
+            catch
+            {
+                // If BHoM IsNumeric fails, continue with other checks
             }
 
-            // Check if table already exists to avoid duplicate messages
-            bool tableExists = connection.TableExists("__Types");
-            bool success = Create.TypesTable(connection);
-            
-            // Only show success message if table was actually created (didn't exist before)
-            if (success && !tableExists)
-                BH.Engine.Base.Compute.RecordNote("Successfully created __Types system table.");
-            
-            return success;
+            // Additional types that map well to database columns
+            return actualType == typeof(string) ||
+                   actualType == typeof(bool) ||
+                   actualType == typeof(DateTime) ||
+                   actualType == typeof(Guid) ||
+                   actualType.IsEnum;
         }
 
         /***************************************************/

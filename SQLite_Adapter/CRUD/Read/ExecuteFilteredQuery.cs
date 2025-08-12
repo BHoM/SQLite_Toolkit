@@ -78,7 +78,7 @@ namespace BH.Adapter.SQLite
                     // Apply filter parameters if available
                     if (filterResult != null)
                     {
-                        BH.Engine.SQLite.Compute.ApplyFilterParameters(command, filterResult);
+                        ApplyFilterParameters(command, filterResult);
                     }
 
                     using (SqliteDataReader reader = command.ExecuteReader())
@@ -114,7 +114,7 @@ namespace BH.Adapter.SQLite
                                 if (value != null && columnTypes.ContainsKey(columnName))
                                 {
                                     Type targetType = columnTypes[columnName];
-                                    value = BH.Engine.SQLite.Compute.ConvertSqliteValue(value, targetType);
+                                    value = Convert.Value(value, targetType);
                                 }
                                 
                                 row[columnName] = value;
@@ -138,6 +138,45 @@ namespace BH.Adapter.SQLite
             }
 
             return result;
+        }
+
+        /***************************************************/
+        /**** Private Helper Methods                   ****/
+        /***************************************************/
+
+        private static bool ApplyFilterParameters(SqliteCommand command, FilterResult filterResult)
+        {
+            if (command == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot apply filter parameters: command is null.");
+                return false;
+            }
+
+            if (filterResult == null || filterResult.Parameters == null)
+            {
+                // No parameters to apply - this is valid for queries without filters
+                return true;
+            }
+
+            foreach (KeyValuePair<string, object> parameter in filterResult.Parameters)
+            {
+                string paramName = parameter.Key;
+                object paramValue = parameter.Value;
+
+                // Ensure parameter name starts with @
+                if (!paramName.StartsWith("@"))
+                {
+                    paramName = "@" + paramName;
+                }
+
+                // Convert value to appropriate SQLite type
+                object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(paramValue);
+                
+                command.Parameters.AddWithValue(paramName, sqliteValue);
+            }
+
+            BH.Engine.Base.Compute.RecordNote($"Applied {filterResult.Parameters.Count} parameters to SQL command.");
+            return true;
         }
 
         /***************************************************/

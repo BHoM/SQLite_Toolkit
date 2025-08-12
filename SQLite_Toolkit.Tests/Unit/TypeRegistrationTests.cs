@@ -48,7 +48,10 @@ namespace SQLite_Toolkit.Tests.Unit
             testConnection.Open();
             
             // Create system tables
-            testConnection.ExistsTypesTable();
+            if (!testConnection.TableExists("__Types"))
+            {
+                BH.Engine.SQLite.Create.TypesTable(testConnection);
+            }
         }
 
         [TearDown]
@@ -157,7 +160,7 @@ namespace SQLite_Toolkit.Tests.Unit
         }
 
         [Test]
-        public void Test_LookupTypeRegistration_ExistingType_ReturnsRegistration()
+        public void Test_GetTypeRegistration_ExistingType_ReturnsRegistration()
         {
             // Test looking up an existing type registration
             
@@ -166,7 +169,7 @@ namespace SQLite_Toolkit.Tests.Unit
             TypeRegistration originalRegistration = testConnection.RegisterType(sensorType);
             
             // Act
-            TypeRegistration lookupResult = testConnection.LookupTypeRegistration(sensorType.FullName);
+            TypeRegistration lookupResult = testConnection.GetTypeRegistration(sensorType.FullName);
             
             // Assert
             lookupResult.Should().NotBeNull("Should find existing type registration");
@@ -176,7 +179,7 @@ namespace SQLite_Toolkit.Tests.Unit
         }
 
         [Test]
-        public void Test_LookupTypeRegistration_NonExistentType_ReturnsNull()
+        public void Test_GetTypeRegistration_NonExistentType_ReturnsNull()
         {
             // Test looking up a non-existent type registration
             
@@ -184,7 +187,7 @@ namespace SQLite_Toolkit.Tests.Unit
             string nonExistentTypeName = "Some.NonExistent.Type";
             
             // Act
-            TypeRegistration lookupResult = testConnection.LookupTypeRegistration(nonExistentTypeName);
+            TypeRegistration lookupResult = testConnection.GetTypeRegistration(nonExistentTypeName);
             
             // Assert
             lookupResult.Should().BeNull("Should return null for non-existent type");
@@ -255,7 +258,7 @@ namespace SQLite_Toolkit.Tests.Unit
         }
 
         [Test]
-        public void Test_GetAllTypeRegistrations_MultipleTypes_ReturnsAllRegistrations()
+        public void Test_TypeRegistrations_MultipleTypes_ReturnsAllRegistrations()
         {
             // Test getting all type registrations
             
@@ -267,7 +270,7 @@ namespace SQLite_Toolkit.Tests.Unit
             TypeRegistration materialRegistration = testConnection.RegisterType(materialType);
             
             // Act
-            List<TypeRegistration> allRegistrations = testConnection.GetAllTypeRegistrations();
+            List<TypeRegistration> allRegistrations = testConnection.TypeRegistrations();
             
             // Assert
             allRegistrations.Should().NotBeNull("Should return list of registrations");
@@ -278,12 +281,12 @@ namespace SQLite_Toolkit.Tests.Unit
         }
 
         [Test]
-        public void Test_GetAllTypeRegistrations_EmptyDatabase_ReturnsEmptyList()
+        public void Test_TypeRegistrations_EmptyDatabase_ReturnsEmptyList()
         {
             // Test getting all type registrations from empty database
             
             // Act
-            List<TypeRegistration> allRegistrations = testConnection.GetAllTypeRegistrations();
+            List<TypeRegistration> allRegistrations = testConnection.TypeRegistrations();
             
             // Assert
             allRegistrations.Should().NotBeNull("Should return empty list, not null");

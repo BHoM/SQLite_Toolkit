@@ -61,7 +61,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Execute the SQL using the shared method
-                bool success = BH.Engine.SQLite.Compute.ExecuteSql(m_Connection, createSql, null, $"CREATE TABLE {tableSchema.Name}");
+                bool success = m_Connection.Command(createSql, (Dictionary<string, object>)null, $"CREATE TABLE {tableSchema.Name}");
                 
                 if (success)
                 {

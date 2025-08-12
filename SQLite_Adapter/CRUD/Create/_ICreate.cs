@@ -95,7 +95,10 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Step 1: Ensure __Types table exists
-                m_Connection.ExistsTypesTable();
+                if (!m_Connection.TableExists("__Types"))
+                {
+                    BH.Engine.SQLite.Create.TypesTable(m_Connection);
+                }
 
                 // Step 2: Get or register table name for this type
                 string tableName = m_Connection.GetTableName(objectType.FullName);
@@ -118,7 +121,7 @@ namespace BH.Adapter.SQLite
                 // Step 3: Ensure table exists (create if it doesn't)
                 if (!m_Connection.TableExists(tableName))
                 {
-                    bool tableCreated = BH.Engine.SQLite.Compute.CreateTableForObjectType(m_Connection, objectType, config);
+                    bool tableCreated = BH.Adapter.SQLite.Create.TableFromType(m_Connection, objectType, config);
                     if (!tableCreated)
                     {
                         BH.Engine.Base.Compute.RecordError($"Failed to create table '{tableName}' for type {objectType.Name}.");
@@ -156,7 +159,7 @@ namespace BH.Adapter.SQLite
 
                 // Extract column values from the object
                 // BHoM_Guid is automatically included via primitive property resolution unless excluded
-                Dictionary<string, object> columnValues = obj.ExtractColumnValues(columnSchema);
+                Dictionary<string, object> columnValues = obj.GetColumnValues(columnSchema);
 
                 // Build and execute INSERT statement
                 return ExecuteSingleInsert(tableName, columnValues);
@@ -175,8 +178,8 @@ namespace BH.Adapter.SQLite
             if (columnValues == null || !columnValues.Any())
                 return false;
 
-            // Use the shared ExecuteInsert method
-            return BH.Engine.SQLite.Compute.ExecuteInsert(m_Connection, tableName, columnValues, "OR REPLACE");
+            // Use the shared Insert method
+            return m_Connection.Insert(tableName, columnValues, "OR REPLACE");
         }
 
         /***************************************************/

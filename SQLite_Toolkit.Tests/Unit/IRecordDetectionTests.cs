@@ -268,12 +268,12 @@ namespace SQLite_Toolkit.Tests.Unit
             // All detected properties should be primitive
             foreach (var kvp in sensorProperties)
             {
-                kvp.Value.IsPrimitiveForDatabase().Should().BeTrue($"Property {kvp.Key} should be primitive for database");
+                kvp.Value.IsPrimitive().Should().BeTrue($"Property {kvp.Key} should be primitive for database");
             }
             
             foreach (var kvp in materialProperties)
             {
-                kvp.Value.IsPrimitiveForDatabase().Should().BeTrue($"Property {kvp.Key} should be primitive for database");
+                kvp.Value.IsPrimitive().Should().BeTrue($"Property {kvp.Key} should be primitive for database");
             }
         }
 

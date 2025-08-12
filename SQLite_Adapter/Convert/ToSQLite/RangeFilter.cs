@@ -24,13 +24,14 @@ using BH.oM.Base.Attributes;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Requests;
 using BH.oM.SQLite.Objects;
+using BH.Engine.SQLite;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public static partial class Convert
     {
         /***************************************************/
         /**** Public Methods                            ****/

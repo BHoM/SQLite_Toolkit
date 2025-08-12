@@ -21,33 +21,27 @@
  */
 
 using BH.oM.Base.Attributes;
-using Microsoft.Data.Sqlite;
-using System;
 using System.ComponentModel;
 
 namespace BH.Engine.SQLite
 {
-    public static partial class Compute
+    public static partial class Query
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates an optimised table for IRecord objects with all primitive properties as columns.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("recordType", "The .NET type that implements IRecord interface.")]
-        [Input("dropIfExists", "Whether to drop the table first if it already exists. Default is false.")]
-        [Output("success", "True if table was created successfully, false otherwise.")]
-        public static bool CreateIRecordTable(SqliteConnection connection, Type recordType, bool dropIfExists = false)
+        [Description("Determines if an object is a numeric type.")]
+        [Input("value", "The object to check.")]
+        [Output("isNumeric", "True if the object is a numeric type, false otherwise.")]
+        public static bool IsNumeric(this object value)
         {
-            if (!BH.Engine.SQLite.Query.IsIRecord(recordType))
-            {
-                BH.Engine.Base.Compute.RecordError($"Type {recordType.FullName} does not implement IRecord interface.");
+            if (value == null)
                 return false;
-            }
 
-            // Use the smart table creation with no config (will use all primitive properties)
-            return CreateTableForObjectType(connection, recordType, null, dropIfExists);
+            return value is byte || value is sbyte || value is short || value is ushort ||
+                   value is int || value is uint || value is long || value is ulong ||
+                   value is float || value is double || value is decimal;
         }
 
         /***************************************************/

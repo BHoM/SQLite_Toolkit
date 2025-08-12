@@ -20,11 +20,13 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.Engine.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Objects;
+using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace BH.Engine.SQLite
 {
@@ -34,34 +36,46 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Gets a list of column names that exist in the data but not in the schema.")]
-        [Input("tableData", "The TableData object to analyse.")]
-        [Output("columns", "List of column names missing from the schema.")]
-        public static List<string> GetMissingSchemaColumns(Table tableData)
+        [Description("Gets all type registrations from the database.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Output("registrations", "List of all TypeRegistration objects.")]
+        public static List<TypeRegistration> TypeRegistrations(this SqliteConnection connection)
         {
-            if (tableData == null)
+            List<TypeRegistration> registrations = new List<TypeRegistration>();
+
+            if (connection == null)
+                return registrations;
+
+            try
             {
-                BH.Engine.Base.Compute.RecordError("Cannot analyse missing schema columns: tableData is null.");
-                return new List<string>();
-            }
+                string selectSql = @"
+                    SELECT Id, FullTypeName, TableName, DateCreated 
+                    FROM __Types 
+                    ORDER BY DateCreated";
 
-            if (tableData.Rows == null || !tableData.Rows.Any())
-                return new List<string>();
-
-            HashSet<string> schemaColumns = tableData.Schema?.Columns?.Select(c => c.Name).ToHashSet() ?? new HashSet<string>();
-            HashSet<string> dataColumns = new HashSet<string>();
-
-            foreach (var row in tableData.Rows)
-            {
-                foreach (string key in row.Keys)
+                using (var command = new SqliteCommand(selectSql, connection))
+                using (var reader = command.ExecuteReader())
                 {
-                    dataColumns.Add(key);
+                    while (reader.Read())
+                    {
+                        registrations.Add(new TypeRegistration
+                        {
+                            Id = reader.GetInt32(0),
+                            FullTypeName = reader.GetString(1),
+                            TableName = reader.GetString(2),
+                            DateCreated = reader.GetDateTime(3)
+                        });
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Engine.Base.Compute.RecordWarning($"Error retrieving type registrations: {ex.Message}");
+            }
 
-            return dataColumns.Where(col => !schemaColumns.Contains(col)).ToList();
+            return registrations;
         }
 
         /***************************************************/
     }
-} 
+}

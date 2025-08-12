@@ -25,13 +25,15 @@ using BH.oM.Base.Attributes;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite.Objects;
+using BH.Engine.SQLite;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public static partial class Create
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -45,15 +47,24 @@ namespace BH.Engine.SQLite
         [Input("config", "Optional PushConfig containing custom property mappings, exclusion lists, and table naming preferences. If null, uses automatic schema detection.")]
         [Input("dropIfExists", "Whether to drop and recreate the table if it already exists. When false, skips creation for existing tables. Defaults to false for safety.")]
         [Output("success", "True if the table was created successfully with proper schema population, false if creation failed due to validation errors, database constraints, or system table issues.")]
-        public static bool CreateTableForObjectType(SqliteConnection connection, Type objectType, PushConfig config = null, bool dropIfExists = false)
+        public static bool TableFromType(SqliteConnection connection, Type objectType, PushConfig config = null, bool dropIfExists = false)
         {
-            if (!BH.Engine.SQLite.Query.ValidateInputParameters(connection, objectType, "create table"))
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot create table: no database connection.");
                 return false;
+            }
+
+            if (objectType == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot create table: object type is null.");
+                return false;
+            }
 
             try
             {
                 // Ensure type management table exists
-                if (!connection.ExistsTypesTable())
+                if (!connection.TableExists("__Types"))
                 {
                     BH.Engine.Base.Compute.RecordError("Failed to ensure __Types table exists.");
                     return false;
@@ -66,7 +77,7 @@ namespace BH.Engine.SQLite
                 if (config != null && !string.IsNullOrWhiteSpace(config.Table))
                 {
                     // Validate the provided table name
-                    if (!BH.Engine.SQLite.Query.ValidateTableName(config.Table))
+                    if (!BH.Engine.SQLite.Query.IsValid(config.Table, true))
                     {
                         BH.Engine.Base.Compute.RecordError($"Invalid table name provided in config: '{config.Table}'.");
                         return false;
@@ -135,10 +146,12 @@ namespace BH.Engine.SQLite
                     return false;
                 }
 
-                // Execute the creation
-                using (SqliteCommand command = new SqliteCommand(createSql, connection))
+                // Execute the creation using the consolidated command method
+                bool executed = connection.Command(createSql, (Dictionary<string, object>)null, $"CREATE TABLE {tableName}");
+                if (!executed)
                 {
-                    command.ExecuteNonQuery();
+                    BH.Engine.Base.Compute.RecordError($"Failed to execute CREATE TABLE command for '{tableName}'.");
+                    return false;
                 }
 
                 // Populate the __Schema system table with column information

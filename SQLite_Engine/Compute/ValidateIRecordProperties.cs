@@ -56,7 +56,7 @@ namespace BH.Engine.SQLite
                         // Only check BHoMObject properties that are primitive
                         if (property.Name == "BHoM_Guid" || property.Name == "Name")
                         {
-                            if (!property.PropertyType.IsPrimitiveForDatabase())
+                            if (!property.PropertyType.IsPrimitive())
                             {
                                 Engine.Base.Compute.RecordWarning($"IRecord type {type.Name} contains non-primitive BHoMObject property {property.Name} of type {property.PropertyType.Name}.");
                                 return false;
@@ -67,7 +67,7 @@ namespace BH.Engine.SQLite
                     }
 
                     // Check all properties declared in the IRecord type itself
-                    if (!property.PropertyType.IsPrimitiveForDatabase())
+                    if (!property.PropertyType.IsPrimitive())
                     {
                         Engine.Base.Compute.RecordWarning($"IRecord type {type.Name} contains non-primitive property {property.Name} of type {property.PropertyType.Name}. " +
                             "IRecord objects should only contain primitive properties.");

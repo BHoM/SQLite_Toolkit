@@ -100,8 +100,8 @@ namespace BH.Adapter.SQLite
                 {
                     foreach (Dictionary<string, object> row in batch)
                     {
-                        // Use the shared ExecuteInsert method for each row
-                        bool success = BH.Engine.SQLite.Compute.ExecuteInsert(m_Connection, tableName, row, conflictClause);
+                        // Use the shared Insert method for each row
+                        bool success = m_Connection.Insert(tableName, row, conflictClause);
                         if (!success)
                         {
                             BH.Engine.Base.Compute.RecordWarning($"Failed to insert a row into table '{tableName}'.");

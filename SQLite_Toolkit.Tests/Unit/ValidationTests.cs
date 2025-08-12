@@ -49,11 +49,11 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test valid table names
             
             // Arrange & Act & Assert
-            BH.Engine.SQLite.Query.ValidateTableName("Users").Should().BeTrue("Simple name should be valid");
-            BH.Engine.SQLite.Query.ValidateTableName("SensorReadings").Should().BeTrue("CamelCase name should be valid");
-            BH.Engine.SQLite.Query.ValidateTableName("sensor_readings").Should().BeTrue("Snake_case name should be valid");
-            BH.Engine.SQLite.Query.ValidateTableName("Table123").Should().BeTrue("Name with numbers should be valid");
-            BH.Engine.SQLite.Query.ValidateTableName("_Table").Should().BeTrue("Name starting with underscore should be valid");
+            BH.Engine.SQLite.Query.IsValid("Users", true).Should().BeTrue("Simple name should be valid");
+            BH.Engine.SQLite.Query.IsValid("SensorReadings", true).Should().BeTrue("CamelCase name should be valid");
+            BH.Engine.SQLite.Query.IsValid("sensor_readings", true).Should().BeTrue("Snake_case name should be valid");
+            BH.Engine.SQLite.Query.IsValid("Table123", true).Should().BeTrue("Name with numbers should be valid");
+            BH.Engine.SQLite.Query.IsValid("_Table", true).Should().BeTrue("Name starting with underscore should be valid");
         }
 
         [Test]
@@ -62,13 +62,13 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test invalid table names
             
             // Arrange & Act & Assert
-            BH.Engine.SQLite.Query.ValidateTableName("").Should().BeFalse("Empty name should be invalid");
-            BH.Engine.SQLite.Query.ValidateTableName(null).Should().BeFalse("Null name should be invalid");
-            BH.Engine.SQLite.Query.ValidateTableName("123Table").Should().BeFalse("Name starting with number should be invalid");
-            BH.Engine.SQLite.Query.ValidateTableName("Table Name").Should().BeFalse("Name with spaces should be invalid");
-            BH.Engine.SQLite.Query.ValidateTableName("Table-Name").Should().BeFalse("Name with hyphens should be invalid");
-            BH.Engine.SQLite.Query.ValidateTableName("Table.Name").Should().BeFalse("Name with dots should be invalid");
-            BH.Engine.SQLite.Query.ValidateTableName("Table;DROP").Should().BeFalse("SQL injection attempt should be invalid");
+            BH.Engine.SQLite.Query.IsValid("", true).Should().BeFalse("Empty name should be invalid");
+            BH.Engine.SQLite.Query.IsValid(null, true).Should().BeFalse("Null name should be invalid");
+            BH.Engine.SQLite.Query.IsValid("123Table", true).Should().BeFalse("Name starting with number should be invalid");
+            BH.Engine.SQLite.Query.IsValid("Table Name", true).Should().BeFalse("Name with spaces should be invalid");
+            BH.Engine.SQLite.Query.IsValid("Table-Name", true).Should().BeFalse("Name with hyphens should be invalid");
+            BH.Engine.SQLite.Query.IsValid("Table.Name", true).Should().BeFalse("Name with dots should be invalid");
+            BH.Engine.SQLite.Query.IsValid("Table;DROP", true).Should().BeFalse("SQL injection attempt should be invalid");
         }
 
         [Test]
@@ -77,11 +77,11 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test valid column names
             
             // Arrange & Act & Assert
-            BH.Engine.SQLite.Query.ValidateColumnName("Id").Should().BeTrue("Simple name should be valid");
-            BH.Engine.SQLite.Query.ValidateColumnName("FirstName").Should().BeTrue("CamelCase name should be valid");
-            BH.Engine.SQLite.Query.ValidateColumnName("first_name").Should().BeTrue("Snake_case name should be valid");
-            BH.Engine.SQLite.Query.ValidateColumnName("Column123").Should().BeTrue("Name with numbers should be valid");
-            BH.Engine.SQLite.Query.ValidateColumnName("_Column").Should().BeTrue("Name starting with underscore should be valid");
+            BH.Engine.SQLite.Query.IsValid("Id").Should().BeTrue("Simple name should be valid");
+            BH.Engine.SQLite.Query.IsValid("FirstName").Should().BeTrue("CamelCase name should be valid");
+            BH.Engine.SQLite.Query.IsValid("first_name").Should().BeTrue("Snake_case name should be valid");
+            BH.Engine.SQLite.Query.IsValid("Column123").Should().BeTrue("Name with numbers should be valid");
+            BH.Engine.SQLite.Query.IsValid("_Column").Should().BeTrue("Name starting with underscore should be valid");
         }
 
         [Test]
@@ -90,12 +90,12 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test invalid column names
             
             // Arrange & Act & Assert
-            BH.Engine.SQLite.Query.ValidateColumnName("").Should().BeFalse("Empty name should be invalid");
-            BH.Engine.SQLite.Query.ValidateColumnName((string)null).Should().BeFalse("Null name should be invalid");
-            BH.Engine.SQLite.Query.ValidateColumnName("123Column").Should().BeFalse("Name starting with number should be invalid");
-            BH.Engine.SQLite.Query.ValidateColumnName("Column Name").Should().BeFalse("Name with spaces should be invalid");
-            BH.Engine.SQLite.Query.ValidateColumnName("Column-Name").Should().BeFalse("Name with hyphens should be invalid");
-            BH.Engine.SQLite.Query.ValidateColumnName("Column.Name").Should().BeFalse("Name with dots should be invalid");
+            BH.Engine.SQLite.Query.IsValid("").Should().BeFalse("Empty name should be invalid");
+            BH.Engine.SQLite.Query.IsValid((string)null).Should().BeFalse("Null name should be invalid");
+            BH.Engine.SQLite.Query.IsValid("123Column").Should().BeFalse("Name starting with number should be invalid");
+            BH.Engine.SQLite.Query.IsValid("Column Name").Should().BeFalse("Name with spaces should be invalid");
+            BH.Engine.SQLite.Query.IsValid("Column-Name").Should().BeFalse("Name with hyphens should be invalid");
+            BH.Engine.SQLite.Query.IsValid("Column.Name").Should().BeFalse("Name with dots should be invalid");
         }
 
         [Test]
@@ -108,8 +108,8 @@ namespace SQLite_Toolkit.Tests.Unit
             List<string> invalidNames = new List<string> { "Id", "Invalid Name", "CreatedDate" };
             
             // Act & Assert
-            BH.Engine.SQLite.Query.ValidateColumnName((IEnumerable<string>)validNames).Should().BeTrue("All valid names should pass validation");
-            BH.Engine.SQLite.Query.ValidateColumnName((IEnumerable<string>)invalidNames).Should().BeFalse("Collection with invalid name should fail validation");
+            BH.Engine.SQLite.Query.IsValid((IEnumerable<string>)validNames).Should().BeTrue("All valid names should pass validation");
+            BH.Engine.SQLite.Query.IsValid((IEnumerable<string>)invalidNames).Should().BeFalse("Collection with invalid name should fail validation");
         }
 
         [Test]
@@ -121,10 +121,10 @@ namespace SQLite_Toolkit.Tests.Unit
             Type barType = typeof(Bar);
             
             // Act & Assert
-            barType.IsValidPropertyPath("Name").Should().BeTrue("Direct property should be valid");
-            barType.IsValidPropertyPath("Start.Position.X").Should().BeTrue("Two-level nested property should be valid");
-            barType.IsValidPropertyPath("SectionProperty.Material.DampingRatio").Should().BeTrue("Two-level nested property should be valid");
-            barType.IsValidPropertyPath("BHoM_Guid").Should().BeTrue("BHoM base property should be valid");
+            barType.IsValid("Name").Should().BeTrue("Direct property should be valid");
+            barType.IsValid("Start.Position.X").Should().BeTrue("Two-level nested property should be valid");
+            barType.IsValid("SectionProperty.Material.DampingRatio").Should().BeTrue("Two-level nested property should be valid");
+            barType.IsValid("BHoM_Guid").Should().BeTrue("BHoM base property should be valid");
         }
 
         [Test]
@@ -136,12 +136,12 @@ namespace SQLite_Toolkit.Tests.Unit
             Type barType = typeof(Bar);
             
             // Act & Assert
-            barType.IsValidPropertyPath("NonExistentProperty").Should().BeFalse("Non-existent property should be invalid");
-            barType.IsValidPropertyPath("SectionProperty.NonExistentProperty").Should().BeFalse("Invalid nested property should be invalid");
-            barType.IsValidPropertyPath("Start.Position.NonExistentAxis").Should().BeFalse("Invalid position property should be invalid");
-            barType.IsValidPropertyPath("SectionProperty.Material.Name").Should().BeFalse("Interface properties requiring casting should be invalid");
-            barType.IsValidPropertyPath("").Should().BeFalse("Empty path should be invalid");
-            barType.IsValidPropertyPath(null).Should().BeFalse("Null path should be invalid");
+            barType.IsValid("NonExistentProperty").Should().BeFalse("Non-existent property should be invalid");
+            barType.IsValid("SectionProperty.NonExistentProperty").Should().BeFalse("Invalid nested property should be invalid");
+            barType.IsValid("Start.Position.NonExistentAxis").Should().BeFalse("Invalid position property should be invalid");
+            barType.IsValid("SectionProperty.Material.Name").Should().BeFalse("Interface properties requiring casting should be invalid");
+            barType.IsValid("").Should().BeFalse("Empty path should be invalid");
+            barType.IsValid(null).Should().BeFalse("Null path should be invalid");
         }
 
         [Test]
@@ -271,45 +271,45 @@ namespace SQLite_Toolkit.Tests.Unit
         }
 
         [Test]
-        public void Test_IsPrimitiveForDatabase_PrimitiveTypes_ReturnsTrue()
+        public void Test_IsPrimitive_PrimitiveTypes_ReturnsTrue()
         {
             // Test primitive type detection for database compatibility
             
             // Arrange & Act & Assert
-            typeof(string).IsPrimitiveForDatabase().Should().BeTrue("String should be primitive for database");
-            typeof(int).IsPrimitiveForDatabase().Should().BeTrue("Int should be primitive for database");
-            typeof(double).IsPrimitiveForDatabase().Should().BeTrue("Double should be primitive for database");
-            typeof(bool).IsPrimitiveForDatabase().Should().BeTrue("Bool should be primitive for database");
-            typeof(DateTime).IsPrimitiveForDatabase().Should().BeTrue("DateTime should be primitive for database");
-            typeof(Guid).IsPrimitiveForDatabase().Should().BeTrue("Guid should be primitive for database");
-            typeof(decimal).IsPrimitiveForDatabase().Should().BeTrue("Decimal should be primitive for database");
-            typeof(BarFEAType).IsPrimitiveForDatabase().Should().BeTrue("Enum should be primitive for database");
+            typeof(string).IsPrimitive().Should().BeTrue("String should be primitive for database");
+            typeof(int).IsPrimitive().Should().BeTrue("Int should be primitive for database");
+            typeof(double).IsPrimitive().Should().BeTrue("Double should be primitive for database");
+            typeof(bool).IsPrimitive().Should().BeTrue("Bool should be primitive for database");
+            typeof(DateTime).IsPrimitive().Should().BeTrue("DateTime should be primitive for database");
+            typeof(Guid).IsPrimitive().Should().BeTrue("Guid should be primitive for database");
+            typeof(decimal).IsPrimitive().Should().BeTrue("Decimal should be primitive for database");
+            typeof(BarFEAType).IsPrimitive().Should().BeTrue("Enum should be primitive for database");
         }
 
         [Test]
-        public void Test_IsPrimitiveForDatabase_NullableTypes_ReturnsTrue()
+        public void Test_IsPrimitive_NullableTypes_ReturnsTrue()
         {
             // Test nullable primitive types
             
             // Arrange & Act & Assert
-            typeof(int?).IsPrimitiveForDatabase().Should().BeTrue("Nullable int should be primitive for database");
-            typeof(double?).IsPrimitiveForDatabase().Should().BeTrue("Nullable double should be primitive for database");
-            typeof(bool?).IsPrimitiveForDatabase().Should().BeTrue("Nullable bool should be primitive for database");
-            typeof(DateTime?).IsPrimitiveForDatabase().Should().BeTrue("Nullable DateTime should be primitive for database");
-            typeof(Guid?).IsPrimitiveForDatabase().Should().BeTrue("Nullable Guid should be primitive for database");
+            typeof(int?).IsPrimitive().Should().BeTrue("Nullable int should be primitive for database");
+            typeof(double?).IsPrimitive().Should().BeTrue("Nullable double should be primitive for database");
+            typeof(bool?).IsPrimitive().Should().BeTrue("Nullable bool should be primitive for database");
+            typeof(DateTime?).IsPrimitive().Should().BeTrue("Nullable DateTime should be primitive for database");
+            typeof(Guid?).IsPrimitive().Should().BeTrue("Nullable Guid should be primitive for database");
         }
 
         [Test]
-        public void Test_IsPrimitiveForDatabase_ComplexTypes_ReturnsFalse()
+        public void Test_IsPrimitive_ComplexTypes_ReturnsFalse()
         {
             // Test complex types that are not primitive for database
             
             // Arrange & Act & Assert
-            typeof(Point).IsPrimitiveForDatabase().Should().BeFalse("Point should not be primitive for database");
-            typeof(Vector).IsPrimitiveForDatabase().Should().BeFalse("Vector should not be primitive for database");
-            typeof(Steel).IsPrimitiveForDatabase().Should().BeFalse("Custom object should not be primitive for database");
-            typeof(List<string>).IsPrimitiveForDatabase().Should().BeFalse("Collection should not be primitive for database");
-            typeof(object).IsPrimitiveForDatabase().Should().BeFalse("Object should not be primitive for database");
+            typeof(Point).IsPrimitive().Should().BeFalse("Point should not be primitive for database");
+            typeof(Vector).IsPrimitive().Should().BeFalse("Vector should not be primitive for database");
+            typeof(Steel).IsPrimitive().Should().BeFalse("Custom object should not be primitive for database");
+            typeof(List<string>).IsPrimitive().Should().BeFalse("Collection should not be primitive for database");
+            typeof(object).IsPrimitive().Should().BeFalse("Object should not be primitive for database");
         }
 
         [Test]
