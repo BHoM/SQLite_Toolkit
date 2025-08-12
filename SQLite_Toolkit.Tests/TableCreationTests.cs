@@ -25,24 +25,25 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using FluentAssertions;
-using BH.oM.SQLite.Objects;
+using BH.Adapter.SQLite;
+using BH.oM.SQLite.Configs;
 using BH.oM.SQLite;
-using BH.oM.SQLite.Requests;
+using BH.oM.Base;
 using SQLite_Toolkit.Tests.Base;
+using BH.oM.SQLite.Objects;
 
 namespace SQLite_Toolkit.Tests
 {
     /// <summary>
-    /// Phase 2: Table Creation and Schema Testing
-    /// Tests SQL generation for table creation and actual table creation execution
+    /// Table Creation Tests
+    /// Tests SQL generation and table creation functionality  
     /// </summary>
     [TestFixture]
-    public class Phase2_TableCreationTests : SQLiteTestBase
+    public class TableCreationTests : SQLiteTestBase
     {
         [Test]
-        public void Test_2_1_SqlGenerationForTableCreation()
+        public void SqlGenerationForTableCreation()
         {
-            // Test 2.1: SQL Generation for Table Creation
             // Objective: Test Table.cs SQL generation functionality
 
             // Arrange
@@ -100,9 +101,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_2_2_TableCreationExecution()
+        public void TableCreationExecution()
         {
-            // Test 2.2: Table Creation Execution
             // Objective: Execute generated SQL to create actual tables
 
             // Arrange
@@ -158,9 +158,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_2_3_SqlGenerationWithDifferentDataTypes()
+        public void SqlGenerationWithDifferentDataTypes()
         {
-            // Test 2.3: SQL Generation with Different Data Types
             // Objective: Test all SQLite data types are handled correctly
 
             // Arrange
@@ -215,9 +214,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_2_4_SqlGenerationWithConstraints()
+        public void SqlGenerationWithConstraints()
         {
-            // Test 2.4: SQL Generation with Constraints
             // Objective: Test various column constraints are handled correctly
 
             // Arrange
@@ -273,9 +271,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_2_5_TableCreationWithIndexes()
+        public void TableCreationWithIndexes()
         {
-            // Test 2.5: Table Creation with Indexes
             // Objective: Test table creation with index definitions
 
             // Arrange
@@ -353,9 +350,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_2_6_InvalidTableSchemaHandling()
+        public void InvalidTableSchemaHandling()
         {
-            // Test 2.6: Invalid Table Schema Handling
             // Objective: Test error handling for invalid table schemas
 
             // Test null schema
@@ -402,9 +398,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_2_7_TableCreationWithIfNotExists()
+        public void TableCreationWithIfNotExists()
         {
-            // Test 2.7: Table Creation with IF NOT EXISTS
             // Objective: Test IF NOT EXISTS functionality
 
             // Arrange
@@ -458,9 +453,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_2_8_ComplexTableCreation()
+        public void ComplexTableCreation()
         {
-            // Test 2.8: Complex Table Creation
             // Objective: Test creation of complex tables with various features
 
             // Arrange
@@ -574,4 +568,4 @@ namespace SQLite_Toolkit.Tests
             CloseTestConnection();
         }
     }
-} 
+}

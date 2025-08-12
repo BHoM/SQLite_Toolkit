@@ -35,10 +35,10 @@ using SQLite_Toolkit.Tests.Base;
 namespace SQLite_Toolkit.Tests
 {
     [TestFixture]
-    public class Phase4_DataRetrievalTests : SQLiteTestBase
+    public class DataRetrievalTests : SQLiteTestBase
     {
         [Test]
-        public void Test_4_1_CustomSqlRequest_BasicExecution()
+        public void CustomSqlRequest_BasicExecution()
         {
             // Test 4.1: Custom SQL Execution
             // Objective: Test CustomSqlRequest functionality with basic SELECT statements
@@ -78,7 +78,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_2_CustomSqlRequest_WithParameters()
+        public void CustomSqlRequest_WithParameters()
         {
             // Test 4.2: Custom SQL with Parameters
             // Objective: Test CustomSqlRequest with parameterised queries
@@ -125,7 +125,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_3_CustomSqlRequest_ComplexQuery()
+        public void CustomSqlRequest_ComplexQuery()
         {
             // Test 4.3: Complex Custom SQL Query
             // Objective: Test CustomSqlRequest with complex SQL including joins, aggregations
@@ -184,7 +184,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_4_TableRequest_AdvancedFiltering()
+        public void TableRequest_AdvancedFiltering()
         {
             // Test 4.4: Advanced TableRequest Filtering
             // Objective: Test TableRequest with complex WHERE conditions and sorting
@@ -249,7 +249,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_5_TableRequest_PaginationAndDistinct()
+        public void TableRequest_PaginationAndDistinct()
         {
             // Test 4.5: TableRequest with Pagination and DISTINCT
             // Objective: Test LIMIT/OFFSET pagination and DISTINCT functionality
@@ -295,7 +295,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_6_CustomSqlRequest_ErrorHandling()
+        public void CustomSqlRequest_ErrorHandling()
         {
             // Test 4.6: Error Handling in CustomSqlRequest
             // Objective: Test error handling for invalid SQL queries
@@ -325,7 +325,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_7_TableRequest_EmptyResults()
+        public void TableRequest_EmptyResults()
         {
             // Test 4.7: TableRequest with No Matching Results
             // Objective: Test handling of queries that return no results
@@ -361,7 +361,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_8_CustomSqlRequest_AggregationQueries()
+        public void CustomSqlRequest_AggregationQueries()
         {
             // Test 4.8: CustomSqlRequest with Aggregation Functions
             // Objective: Test SQL queries with COUNT, SUM, AVG, MIN, MAX functions
@@ -419,7 +419,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_4_9_TableRequest_ComplexColumnSelection()
+        public void TableRequest_ComplexColumnSelection()
         {
             // Test 4.9: TableRequest with Complex Column Selection
             // Objective: Test selective column retrieval and column aliasing

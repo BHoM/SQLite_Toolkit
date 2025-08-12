@@ -37,10 +37,10 @@ using SQLite_Toolkit.Tests.Base;
 namespace SQLite_Toolkit.Tests
 {
     [TestFixture]
-    public class Phase5_ErrorHandlingTests : SQLiteTestBase
+    public class ErrorHandlingTests : SQLiteTestBase
     {
         [Test]
-        public void Test_5_1_ConnectionError_InvalidDatabasePath()
+        public void ConnectionError_InvalidDatabasePath()
         {
             // Test 5.1a: Connection Error Handling - Invalid Database Path
             // Objective: Test error handling for invalid database paths
@@ -66,7 +66,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_2_ConnectionError_OperationWithoutConnection()
+        public void ConnectionError_OperationWithoutConnection()
         {
             // Test 5.1b: Connection Error Handling - Operations Without Connection
             // Objective: Test operations executed without an active connection
@@ -107,7 +107,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_3_ConnectionError_DoubleClose()
+        public void ConnectionError_DoubleClose()
         {
             // Test 5.1c: Connection Error Handling - Double Close
             // Objective: Test closing an already closed connection
@@ -130,7 +130,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_4_SqlError_InvalidSqlSyntax()
+        public void SqlError_InvalidSqlSyntax()
         {
             // Test 5.2a: SQL Error Handling - Invalid SQL Syntax
             // Objective: Test error handling for invalid SQL syntax
@@ -160,7 +160,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_5_SqlError_NonExistentTable()
+        public void SqlError_NonExistentTable()
         {
             // Test 5.2b: SQL Error Handling - Non-Existent Table
             // Objective: Test querying tables that don't exist
@@ -190,7 +190,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_6_SqlError_InvalidColumnNames()
+        public void SqlError_InvalidColumnNames()
         {
             // Test 5.2c: SQL Error Handling - Invalid Column Names
             // Objective: Test accessing columns that don't exist
@@ -222,7 +222,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_7_SqlError_InvalidParameterTypes()
+        public void SqlError_InvalidParameterTypes()
         {
             // Test 5.2d: SQL Error Handling - Invalid Parameter Types
             // Objective: Test parameterised queries with incompatible parameter types
@@ -262,7 +262,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_8_SchemaError_NonExistentTableSchema()
+        public void SchemaError_NonExistentTableSchema()
         {
             // Test 5.3a: Schema Error Handling - Non-Existent Table Schema
             // Objective: Test schema requests for tables that don't exist
@@ -293,7 +293,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_9_SchemaError_InvalidTableRequest()
+        public void SchemaError_InvalidTableRequest()
         {
             // Test 5.3b: Schema Error Handling - Invalid TableRequest Configuration
             // Objective: Test TableRequest with invalid configurations
@@ -343,7 +343,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_10_EdgeCase_EmptyStringParameters()
+        public void EdgeCase_EmptyStringParameters()
         {
             // Test 5.4a: Edge Case - Empty String Parameters
             // Objective: Test handling of empty string parameters
@@ -378,7 +378,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_11_EdgeCase_NullParameters()
+        public void EdgeCase_NullParameters()
         {
             // Test 5.4b: Edge Case - Null Parameters
             // Objective: Test handling of null parameters
@@ -412,7 +412,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_12_EdgeCase_VeryLongSqlQuery()
+        public void EdgeCase_VeryLongSqlQuery()
         {
             // Test 5.4c: Edge Case - Very Long SQL Query
             // Objective: Test handling of extremely long SQL queries
@@ -451,7 +451,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_13_EdgeCase_SpecialCharactersInData()
+        public void EdgeCase_SpecialCharactersInData()
         {
             // Test 5.4d: Edge Case - Special Characters in Data
             // Objective: Test handling of special characters in queries and data
@@ -486,7 +486,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_5_14_EdgeCase_DatabaseFileLocking()
+        public void EdgeCase_DatabaseFileLocking()
         {
             // Test 5.4e: Edge Case - Database File Locking
             // Objective: Test behavior when database file is locked or in use

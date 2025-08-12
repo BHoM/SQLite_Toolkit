@@ -33,14 +33,14 @@ using SQLite_Toolkit.Tests.Base;
 namespace SQLite_Toolkit.Tests
 {
     /// <summary>
-    /// Phase 3: Schema Introspection Testing
+    /// Schema Introspection Tests
     /// Tests schema retrieval functionality using SchemaRequest and TableRequest
     /// </summary>
     [TestFixture]
-    public class Phase3_SchemaIntrospectionTests : SQLiteTestBase
+    public class SchemaIntrospectionTests : SQLiteTestBase
     {
         [Test]
-        public void Test_3_1_SchemaRequest_AllTables()
+        public void SchemaRequest_AllTables()
         {
             // Test 3.1: Schema Request - All Tables
             // Objective: Test retrieving schema for all database tables
@@ -82,7 +82,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_2_SchemaRequest_SpecificTable()
+        public void SchemaRequest_SpecificTable()
         {
             // Test 3.2: Schema Request - Specific Table
             // Objective: Test retrieving schema for specific table
@@ -128,7 +128,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_3_TableSchema_DetailedInformation()
+        public void TableSchema_DetailedInformation()
         {
             // Test 3.3: Table Schema Detailed Information
             // Objective: Test SchemaRequest for detailed schema information and TableSchema.cs functionality
@@ -171,7 +171,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_4_SchemaRequest_NonExistentTable()
+        public void SchemaRequest_NonExistentTable()
         {
             // Test 3.4: Schema Request Error Handling
             // Objective: Test error handling for non-existent table
@@ -206,7 +206,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_5_SchemaRequest_EmptyDatabase()
+        public void SchemaRequest_EmptyDatabase()
         {
             // Test 3.5: Schema Request on Empty Database
             // Objective: Test schema retrieval on database with no tables
@@ -247,7 +247,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_6_TableRequest_DataRetrieval()
+        public void TableRequest_DataRetrieval()
         {
             // Test 3.6: TableRequest for data retrieval
             // Objective: Test TableRequest functionality for retrieving table data
@@ -287,7 +287,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_7_SchemaRequest_IndexInformation()
+        public void SchemaRequest_IndexInformation()
         {
             // Test 3.7: Schema Request with Index Information
             // Objective: Test that index information is properly retrieved
@@ -333,7 +333,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_8_SchemaRequest_ConstraintInformation()
+        public void SchemaRequest_ConstraintInformation()
         {
             // Test 3.8: Schema Request with Constraint Information
             // Objective: Test that constraint information is properly retrieved
@@ -382,7 +382,7 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_3_9_TableRequest_FilteringAndPagination()
+        public void TableRequest_FilteringAndPagination()
         {
             // Test 3.9: TableRequest with filtering and pagination
             // Objective: Test TableRequest's filtering, sorting, and pagination capabilities

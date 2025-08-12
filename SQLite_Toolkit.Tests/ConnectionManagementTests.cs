@@ -36,16 +36,15 @@ using SQLite_Toolkit.Tests.Helpers;
 namespace SQLite_Toolkit.Tests
 {
     /// <summary>
-    /// Phase 1: Basic Connection and Setup Testing
-    /// Tests fundamental database connection opening/closing and file creation
+    /// Connection Management Tests
+    /// Tests fundamental database connection opening/closing, file creation, and state management
     /// </summary>
     [TestFixture]
-    public class Phase1_BasicConnectionTests : SQLiteTestBase
+    public class ConnectionManagementTests : SQLiteTestBase
     {
         [Test]
-        public void Test_1_1_DatabaseConnectionManagement()
+        public void DatabaseConnectionManagement()
         {
-            // Test 1.1: Database Connection Management
             // Objective: Verify database connection opening and closing works correctly
 
             // Arrange
@@ -80,9 +79,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_1_2_DatabaseFileCreation()
+        public void DatabaseFileCreation()
         {
-            // Test 1.2: Database File Creation
             // Objective: Verify database file is created properly
 
             // Arrange
@@ -127,9 +125,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_1_3_InMemoryDatabaseConnection()
+        public void InMemoryDatabaseConnection()
         {
-            // Test 1.3: In-Memory Database Connection
             // Objective: Verify in-memory database connections work correctly
 
             // Arrange
@@ -151,9 +148,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_1_4_ConnectionStateManagement()
+        public void ConnectionStateManagement()
         {
-            // Test 1.4: Connection State Management
             // Objective: Verify connection state is properly tracked
 
             // Arrange
@@ -179,9 +175,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_1_5_DatabaseDirectoryCreation()
+        public void DatabaseDirectoryCreation()
         {
-            // Test 1.5: Database Directory Creation
             // Objective: Verify directories are created when they don't exist
 
             // Arrange
@@ -228,9 +223,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_1_6_ConnectionWithCustomSettings()
+        public void ConnectionWithCustomSettings()
         {
-            // Test 1.6: Connection with Custom Settings
             // Objective: Verify custom SQLite settings are applied correctly
 
             // Arrange
@@ -263,9 +257,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_1_7_MultipleConnectionAttempts()
+        public void MultipleConnectionAttempts()
         {
-            // Test 1.7: Multiple Connection Attempts
             // Objective: Verify adapter handles multiple open/close cycles correctly
 
             // Arrange
@@ -293,9 +286,8 @@ namespace SQLite_Toolkit.Tests
         }
 
         [Test]
-        public void Test_1_8_ConnectionTimeout()
+        public void ConnectionTimeout()
         {
-            // Test 1.8: Connection Timeout
             // Objective: Verify connection timeout settings work correctly
 
             // Arrange
@@ -323,4 +315,4 @@ namespace SQLite_Toolkit.Tests
             TestDatabaseManager.EnsureConnectionClosed(adapter);
         }
     }
-} 
+}
