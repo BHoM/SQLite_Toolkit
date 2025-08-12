@@ -42,11 +42,8 @@ namespace BH.Engine.SQLite
         [Output("success", "True if table was created successfully, false otherwise.")]
         public static bool CreateTableFromSchema(SqliteConnection connection, TableSchema schema, Type objectType = null, bool dropIfExists = false)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create table: connection is null.");
+            if (!BH.Engine.SQLite.Query.ValidateInputParameters(connection, "create table from schema"))
                 return false;
-            }
 
             if (schema == null)
             {

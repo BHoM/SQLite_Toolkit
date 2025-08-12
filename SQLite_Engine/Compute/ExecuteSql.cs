@@ -44,11 +44,8 @@ namespace BH.Engine.SQLite
         [Output("success", "True if the SQL statement executed successfully without throwing exceptions, false if execution failed due to database errors, connection issues, or parameter problems.")]
         public static bool ExecuteSql(this SqliteConnection connection, string sql, Dictionary<string, object> parameters = null, string operationName = "SQL operation")
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError($"Cannot execute {operationName}: no database connection.");
+            if (!BH.Engine.SQLite.Query.ValidateInputParameters(connection, $"execute {operationName}"))
                 return false;
-            }
 
             if (string.IsNullOrWhiteSpace(sql))
             {

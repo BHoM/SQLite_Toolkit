@@ -43,15 +43,12 @@ namespace BH.Engine.SQLite
         [Output("success", "True if the insert executed successfully, false otherwise.")]
         public static bool ExecuteInsert(this SqliteConnection connection, string tableName, Dictionary<string, object> columnValues, string conflictClause = "OR REPLACE")
         {
+            if (!BH.Engine.SQLite.Query.ValidateInputParameters(connection, tableName, "execute insert"))
+                return false;
+
             if (columnValues == null || !columnValues.Any())
             {
                 BH.Engine.Base.Compute.RecordWarning("No column values provided for insert operation.");
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot execute insert: table name is null or empty.");
                 return false;
             }
 

@@ -47,17 +47,8 @@ namespace BH.Engine.SQLite
         [Output("success", "True if the table was created successfully with proper schema population, false if creation failed due to validation errors, database constraints, or system table issues.")]
         public static bool CreateTableForObjectType(SqliteConnection connection, Type objectType, PushConfig config = null, bool dropIfExists = false)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create table: connection is null.");
+            if (!BH.Engine.SQLite.Query.ValidateInputParameters(connection, objectType, "create table"))
                 return false;
-            }
-
-            if (objectType == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create table: object type is null.");
-                return false;
-            }
 
             try
             {
@@ -166,8 +157,6 @@ namespace BH.Engine.SQLite
                 return false;
             }
         }
-
-
 
         /***************************************************/
     }
