@@ -51,38 +51,6 @@ namespace BH.oM.SQLite.Objects
         public virtual DateTime DateCreated { get; set; } = DateTime.UtcNow;
 
         /***************************************************/
-        /**** Constructors                              ****/
-        /***************************************************/
-
-        [Description("Create an empty TypeRegistration.")]
-        public TypeRegistration()
-        {
-        }
-
-        /***************************************************/
-
-        [Description("Create a TypeRegistration with specified type name and table name.")]
-        public TypeRegistration(string fullTypeName, string tableName)
-        {
-            FullTypeName = fullTypeName;
-            TableName = tableName;
-            DateCreated = DateTime.UtcNow;
-        }
-
-        /***************************************************/
-
-        [Description("Create a TypeRegistration from a .NET Type.")]
-        public TypeRegistration(Type type, string tableName = "")
-        {
-            if (type != null)
-            {
-                FullTypeName = type.FullName ?? type.Name;
-                TableName = string.IsNullOrWhiteSpace(tableName) ? type.Name : tableName;
-                DateCreated = DateTime.UtcNow;
-            }
-        }
-
-        /***************************************************/
     }
 
     /***************************************************/
