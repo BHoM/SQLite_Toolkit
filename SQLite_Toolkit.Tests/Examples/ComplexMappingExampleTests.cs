@@ -39,10 +39,9 @@ using BH.oM.SQLite.Requests;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite;
 using BH.oM.Adapter.Commands;
+using BH.Tests.SQLite.Base;
 
-using SQLite_Toolkit.Tests.Base;
-
-namespace SQLite_Toolkit.Tests.Examples
+namespace BH.Tests.SQLite.Examples
 {
     /// <summary>
     /// Example-based tests showing advanced property mapping for complex BHoM objects.

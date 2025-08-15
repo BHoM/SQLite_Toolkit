@@ -31,9 +31,9 @@ using BH.oM.SQLite.Requests;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite;
 using BH.oM.Adapter.Commands;
-using SQLite_Toolkit.Tests.Base;
+using BH.Tests.SQLite.Base;
 
-namespace SQLite_Toolkit.Tests.Examples
+namespace BH.Tests.SQLite.Examples
 {
     /// <summary>
     /// Comprehensive examples showing all filtering capabilities of the SQLite Toolkit.

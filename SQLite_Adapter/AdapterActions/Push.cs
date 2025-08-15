@@ -107,9 +107,9 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Step 1: Ensure __Types table exists
-                if (!m_Connection.TableExists("__Types"))
+                if (!SQLiteAdapter.TableExists(m_Connection, "__Types"))
                 {
-                    BH.Engine.SQLite.Create.TypesTable(m_Connection);
+                    TypesTable(m_Connection);
                 }
 
                 // Step 2: Get or register table name for this type
@@ -121,7 +121,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Step 3: Ensure table exists (create if it doesn't)
-                if (!m_Connection.TableExists(tableName))
+                if (!SQLiteAdapter.TableExists(m_Connection, tableName))
                 {
                     bool tableCreated = BH.Adapter.SQLite.Create.TableFromType(m_Connection, objectType, config);
                     if (!tableCreated)
@@ -143,7 +143,7 @@ namespace BH.Adapter.SQLite
                 // Perform WAL checkpoint after push operation if WAL mode is enabled
                 if (m_WalModeEnabled && insertSuccess)
                 {
-                    BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                    WalCheckpoint(m_Connection, "TRUNCATE");
                 }
 
                 return result;
@@ -172,7 +172,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Check if this table is already registered to a different type
-                string existingTypeName = m_Connection.GetTypeName(config.Table);
+                string existingTypeName = SQLiteAdapter.GetTypeName(m_Connection, config.Table);
                 if (!string.IsNullOrEmpty(existingTypeName) && existingTypeName != objectType.FullName)
                 {
                     BH.Engine.Base.Compute.RecordError($"Table '{config.Table}' is already registered to type '{existingTypeName}', cannot use for type '{objectType.FullName}'.");
@@ -183,14 +183,14 @@ namespace BH.Adapter.SQLite
             }
 
             // Try to get existing table name for this type
-            string tableName = m_Connection.GetTableName(objectType.FullName);
+            string tableName = SQLiteAdapter.GetTableName(m_Connection, objectType.FullName);
             if (!string.IsNullOrEmpty(tableName))
             {
                 return tableName;
             }
 
             // Register new type and get table name
-            TypeRegistration registration = m_Connection.RegisterType(objectType);
+            TypeRegistration registration = SQLiteAdapter.RegisterType(m_Connection, objectType);
             if (registration == null)
             {
                 BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
@@ -299,7 +299,7 @@ namespace BH.Adapter.SQLite
                             object value = columnValues.ContainsKey(columnName) ? columnValues[columnName] : null;
 
                             // Convert to SQLite-compatible value
-                            object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(value);
+                            object sqliteValue = Convert.Value(value);
                             command.Parameters[$"@param{i}"].Value = sqliteValue;
                         }
 
@@ -344,7 +344,7 @@ namespace BH.Adapter.SQLite
                 // Perform WAL checkpoint after push operation if WAL mode is enabled
                 if (m_WalModeEnabled && success)
                 {
-                    BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                    WalCheckpoint(m_Connection, "TRUNCATE");
                 }
 
                 return result;
@@ -384,7 +384,7 @@ namespace BH.Adapter.SQLite
                 // Perform WAL checkpoint after push operation if WAL mode is enabled
                 if (m_WalModeEnabled && success)
                 {
-                    BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                    WalCheckpoint(m_Connection, "TRUNCATE");
                 }
 
                 return result;

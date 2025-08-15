@@ -24,13 +24,13 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using FluentAssertions;
-using BH.Engine.SQLite;
+using BH.Adapter.SQLite;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite.Examples;
 using Microsoft.Data.Sqlite;
-using SQLite_Toolkit.Tests.Base;
+using BH.Tests.SQLite.Base;
 
-namespace SQLite_Toolkit.Tests.Unit
+namespace BH.Tests.SQLite.Unit
 {
     /// <summary>
     /// Unit tests for type registration and lookup functionality
@@ -48,9 +48,9 @@ namespace SQLite_Toolkit.Tests.Unit
             testConnection.Open();
             
             // Create system tables
-            if (!testConnection.TableExists("__Types"))
+            if (!SQLiteAdapter.TableExists(testConnection, "__Types"))
             {
-                BH.Engine.SQLite.Create.TypesTable(testConnection);
+                SQLiteAdapter.TypesTable(testConnection);
             }
         }
 
@@ -70,7 +70,7 @@ namespace SQLite_Toolkit.Tests.Unit
             Type sensorType = typeof(SensorReading);
             
             // Act
-            TypeRegistration registration = testConnection.RegisterType(sensorType);
+            TypeRegistration registration = SQLiteAdapter.RegisterType(testConnection, sensorType);
             
             // Assert
             registration.Should().NotBeNull("Type registration should succeed");
@@ -89,8 +89,8 @@ namespace SQLite_Toolkit.Tests.Unit
             Type sensorType = typeof(SensorReading);
             
             // Act
-            TypeRegistration firstRegistration = testConnection.RegisterType(sensorType);
-            TypeRegistration secondRegistration = testConnection.RegisterType(sensorType);
+            TypeRegistration firstRegistration = SQLiteAdapter.RegisterType(testConnection, sensorType);
+            TypeRegistration secondRegistration = SQLiteAdapter.RegisterType(testConnection, sensorType);
             
             // Assert
             firstRegistration.Should().NotBeNull();
@@ -119,7 +119,7 @@ namespace SQLite_Toolkit.Tests.Unit
             }
             
             // Act
-            TypeRegistration materialRegistration = testConnection.RegisterType(materialType);
+            TypeRegistration materialRegistration = SQLiteAdapter.RegisterType(testConnection, materialType);
             
             // Assert
             materialRegistration.Should().NotBeNull("Type registration should succeed despite conflict");
@@ -135,10 +135,10 @@ namespace SQLite_Toolkit.Tests.Unit
             
             // Arrange
             Type sensorType = typeof(SensorReading);
-            testConnection.RegisterType(sensorType);
+            SQLiteAdapter.RegisterType(testConnection, sensorType);
             
             // Act
-            bool isRegistered = testConnection.IsTypeRegistered(sensorType);
+            bool isRegistered = SQLiteAdapter.IsTypeRegistered(testConnection, sensorType);
             
             // Assert
             isRegistered.Should().BeTrue("Registered type should be detected as registered");
@@ -153,7 +153,7 @@ namespace SQLite_Toolkit.Tests.Unit
             Type materialType = typeof(SimpleMaterial);
             
             // Act
-            bool isRegistered = testConnection.IsTypeRegistered(materialType);
+            bool isRegistered = SQLiteAdapter.IsTypeRegistered(testConnection, materialType);
             
             // Assert
             isRegistered.Should().BeFalse("Unregistered type should not be detected as registered");
@@ -166,10 +166,10 @@ namespace SQLite_Toolkit.Tests.Unit
             
             // Arrange
             Type sensorType = typeof(SensorReading);
-            TypeRegistration originalRegistration = testConnection.RegisterType(sensorType);
+            TypeRegistration originalRegistration = SQLiteAdapter.RegisterType(testConnection, sensorType);
             
             // Act
-            TypeRegistration lookupResult = testConnection.GetTypeRegistration(sensorType.FullName);
+            TypeRegistration lookupResult = SQLiteAdapter.GetTypeRegistration(testConnection, sensorType.FullName);
             
             // Assert
             lookupResult.Should().NotBeNull("Should find existing type registration");
@@ -187,7 +187,7 @@ namespace SQLite_Toolkit.Tests.Unit
             string nonExistentTypeName = "Some.NonExistent.Type";
             
             // Act
-            TypeRegistration lookupResult = testConnection.GetTypeRegistration(nonExistentTypeName);
+            TypeRegistration lookupResult = SQLiteAdapter.GetTypeRegistration(testConnection, nonExistentTypeName);
             
             // Assert
             lookupResult.Should().BeNull("Should return null for non-existent type");
@@ -200,10 +200,10 @@ namespace SQLite_Toolkit.Tests.Unit
             
             // Arrange
             Type sensorType = typeof(SensorReading);
-            TypeRegistration registration = testConnection.RegisterType(sensorType);
+            TypeRegistration registration = SQLiteAdapter.RegisterType(testConnection, sensorType);
             
             // Act
-            string tableName = testConnection.GetTableName(sensorType.FullName);
+            string tableName = SQLiteAdapter.GetTableName(testConnection, sensorType.FullName);
             
             // Assert
             tableName.Should().NotBeNullOrEmpty("Should return table name for registered type");
@@ -219,7 +219,7 @@ namespace SQLite_Toolkit.Tests.Unit
             Type materialType = typeof(SimpleMaterial);
             
             // Act
-            string tableName = testConnection.GetTableName(materialType.FullName);
+            string tableName = SQLiteAdapter.GetTableName(testConnection, materialType.FullName);
             
             // Assert
             tableName.Should().BeNull("Should return null for unregistered type");
@@ -232,10 +232,10 @@ namespace SQLite_Toolkit.Tests.Unit
             
             // Arrange
             Type sensorType = typeof(SensorReading);
-            TypeRegistration registration = testConnection.RegisterType(sensorType);
+            TypeRegistration registration = SQLiteAdapter.RegisterType(testConnection, sensorType);
             
             // Act
-            string typeName = testConnection.GetTypeName(registration.TableName);
+            string typeName = SQLiteAdapter.GetTypeName(testConnection, registration.TableName);
             
             // Assert
             typeName.Should().NotBeNullOrEmpty("Should return type name for existing table");
@@ -251,7 +251,7 @@ namespace SQLite_Toolkit.Tests.Unit
             string nonExistentTableName = "NonExistentTable";
             
             // Act
-            string typeName = testConnection.GetTypeName(nonExistentTableName);
+            string typeName = SQLiteAdapter.GetTypeName(testConnection, nonExistentTableName);
             
             // Assert
             typeName.Should().BeNull("Should return null for non-existent table");
@@ -266,11 +266,11 @@ namespace SQLite_Toolkit.Tests.Unit
             Type sensorType = typeof(SensorReading);
             Type materialType = typeof(SimpleMaterial);
             
-            TypeRegistration sensorRegistration = testConnection.RegisterType(sensorType);
-            TypeRegistration materialRegistration = testConnection.RegisterType(materialType);
+            TypeRegistration sensorRegistration = SQLiteAdapter.RegisterType(testConnection, sensorType);
+            TypeRegistration materialRegistration = SQLiteAdapter.RegisterType(testConnection, materialType);
             
             // Act
-            List<TypeRegistration> allRegistrations = testConnection.TypeRegistrations();
+            List<TypeRegistration> allRegistrations = SQLiteAdapter.TypeRegistrations(testConnection);
             
             // Assert
             allRegistrations.Should().NotBeNull("Should return list of registrations");
@@ -286,7 +286,7 @@ namespace SQLite_Toolkit.Tests.Unit
             // Test getting all type registrations from empty database
             
             // Act
-            List<TypeRegistration> allRegistrations = testConnection.TypeRegistrations();
+            List<TypeRegistration> allRegistrations = SQLiteAdapter.TypeRegistrations(testConnection);
             
             // Assert
             allRegistrations.Should().NotBeNull("Should return empty list, not null");

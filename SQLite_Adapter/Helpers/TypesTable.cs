@@ -25,44 +25,45 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Verifies the integrity of the SQLite Toolkit system tables and configuration.")]
+        [Description("Creates the __Types system table for storing type-to-table mappings.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Output("valid", "True if the system is valid and complete, false otherwise.")]
-        public static bool VerifySystemIntegrity(this SqliteConnection connection)
+        [Output("success", "True if the table was created successfully, false otherwise.")]
+        public static bool TypesTable(SqliteConnection connection)
         {
             if (connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot verify system integrity: connection is null.");
+                BH.Engine.Base.Compute.RecordError("Cannot create __Types table: connection is null.");
                 return false;
             }
 
             try
             {
-                // Check if all required system tables exist
-                string[] systemTables = { "__Types", "__Schema" };
-                foreach (string tableName in systemTables)
-                {
-                    if (!connection.TableExists(tableName))
-                    {
-                        BH.Engine.Base.Compute.RecordWarning($"System table '{tableName}' is missing.");
-                        return false;
-                    }
-                }
+                string createTableSql = @"
+                    CREATE TABLE IF NOT EXISTS __Types (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        FullTypeName TEXT NOT NULL UNIQUE,
+                        TableName TEXT NOT NULL,
+                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        LastModified DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )";
 
-                BH.Engine.Base.Compute.RecordNote("System integrity verification passed.");
-                return true;
+                using (SqliteCommand command = new SqliteCommand(createTableSql, connection))
+                {
+                    command.ExecuteNonQuery();
+                    return true;
+                }
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Error verifying system integrity: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Error creating __Types table: {ex.Message}");
                 return false;
             }
         }

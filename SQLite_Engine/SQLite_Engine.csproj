@@ -24,6 +24,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="C:\Users\pnugent\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="C:\Users\pnugent\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="C:\Users\pnugent\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="$(NuGetPackageRoot)sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll">
       <Link>e_sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -66,7 +66,7 @@ namespace BH.Adapter.SQLite
             // Perform WAL checkpoint after push operation if WAL mode is enabled
             if (m_WalModeEnabled && success)
             {
-                BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                WalCheckpoint(m_Connection, "TRUNCATE");
             }
 
             return success;
@@ -95,16 +95,16 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Step 1: Ensure __Types table exists
-                if (!m_Connection.TableExists("__Types"))
+                if (!SQLiteAdapter.TableExists(m_Connection, "__Types"))
                 {
-                    BH.Engine.SQLite.Create.TypesTable(m_Connection);
+                    TypesTable(m_Connection);
                 }
 
                 // Step 2: Get or register table name for this type
-                string tableName = m_Connection.GetTableName(objectType.FullName);
+                string tableName = SQLiteAdapter.GetTableName(m_Connection, objectType.FullName);
                 if (string.IsNullOrEmpty(tableName))
                 {
-                    TypeRegistration registration = m_Connection.RegisterType(objectType);
+                    TypeRegistration registration = SQLiteAdapter.RegisterType(m_Connection, objectType);
                     if (registration == null)
                     {
                         BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
@@ -119,7 +119,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Step 3: Ensure table exists (create if it doesn't)
-                if (!m_Connection.TableExists(tableName))
+                if (!SQLiteAdapter.TableExists(m_Connection, tableName))
                 {
                     bool tableCreated = BH.Adapter.SQLite.Create.TableFromType(m_Connection, objectType, config);
                     if (!tableCreated)

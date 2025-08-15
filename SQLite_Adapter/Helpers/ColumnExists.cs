@@ -21,61 +21,68 @@
  */
 
 using BH.Engine.Base;
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Query
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Gets all available primitive property paths from a BHoM object using BHoM's GetAllPropertyFullNames method.")]
-        [Input("obj", "The BHoM object to analyse.")]
-        [Input("maxDepth", "Maximum property nesting level to explore. Default is 3 for performance.")]
-        [Output("propertyPaths", "List of primitive property paths available on the object.")]
-        public static List<string> GetBHoMPropertyPaths(this IBHoMObject obj, int maxDepth = 3)
+        [Description("Checks if a specific column exists in the given table.")]
+        [Input("connection", "The SQLite database connection to use.")]
+        [Input("tableName", "Name of the table to check.")]
+        [Input("columnName", "Name of the column to check for.")]
+        [Output("exists", "True if the column exists in the table, false otherwise.")]
+        public static bool ColumnExists(SqliteConnection connection, string tableName, string columnName)
         {
-            List<string> propertyPaths = new List<string>();
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check column existence: connection is null.");
+                return false;
+            }
 
-            if (obj == null)
-                return propertyPaths;
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check column existence: table name is null or empty.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(columnName))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check column existence: column name is null or empty.");
+                return false;
+            }
 
             try
             {
-                // Use BHoM's GetAllPropertyFullNames to get all property paths
-                HashSet<string> allPropertyFullNames = obj.GetAllPropertyFullNames(maxDepth);
-                
-                // Filter to only include paths that end with primitive properties
-                foreach (string fullPath in allPropertyFullNames)
+                using (SqliteCommand command = new SqliteCommand($"PRAGMA table_info(\"{tableName}\")", connection))
                 {
-                    // Extract the property path part (remove the type prefix)
-                    string[] parts = fullPath.Split('.');
-                    if (parts.Length >= 2)
+                    using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        string propertyPath = string.Join(".", parts.Skip(1));
-                        
-                        // Check if the final property type is primitive
-                        Type finalPropertyType = obj.GetType().GetPropertyType(propertyPath);
-                        if (finalPropertyType != null && finalPropertyType.IsPrimitive())
+                        while (reader.Read())
                         {
-                            propertyPaths.Add(propertyPath);
+                            string existingColumnName = reader.GetString(1); // Column name is at index 1
+                            if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
                         }
                     }
                 }
+
+                return false;
             }
             catch (Exception ex)
             {
-                Engine.Base.Compute.RecordWarning($"Error getting property paths from object of type '{obj.GetType().Name}': {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to check if column '{columnName}' exists in table '{tableName}': {ex.Message}");
+                return false;
             }
-
-            return propertyPaths;
         }
 
         /***************************************************/

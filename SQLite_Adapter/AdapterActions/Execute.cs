@@ -374,7 +374,7 @@ namespace BH.Adapter.SQLite
                     // Perform WAL checkpoint if WAL mode is enabled
                     if (m_WalModeEnabled)
                     {
-                        BH.Engine.SQLite.Compute.WalCheckpoint(m_Connection, "TRUNCATE");
+                        WalCheckpoint(m_Connection, "TRUNCATE");
                     }
 
                     // Run optimisation commands if requested
@@ -441,7 +441,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Initialise the complete toolkit system including all system tables
-                bool systemInitialised = connection.InitialiseToolkitSystem();
+                bool systemInitialised = SQLiteAdapter.InitialiseToolkitSystem(connection);
 
                 if (systemInitialised)
                     BH.Engine.Base.Compute.RecordNote("System tables initialised successfully.");

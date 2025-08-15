@@ -27,9 +27,9 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -39,7 +39,7 @@ namespace BH.Engine.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("tableSchema", "The table schema to document in the __Schema table.")]
         [Output("success", "True if schema information was recorded successfully, false otherwise.")]
-        public static bool PopulateSchemaTable(this SqliteConnection connection, TableSchema tableSchema)
+        public static bool PopulateSchemaTable(SqliteConnection connection, TableSchema tableSchema)
         {
             if (connection == null)
             {
@@ -56,7 +56,7 @@ namespace BH.Engine.SQLite
             try
             {
                 // Ensure __Schema table exists
-                bool schemaTableExists = BH.Engine.SQLite.Create.SchemaTable(connection);
+                bool schemaTableExists = SQLiteAdapter.SchemaTable(connection);
                 if (!schemaTableExists)
                 {
                     BH.Engine.Base.Compute.RecordError("Failed to ensure __Schema table exists.");

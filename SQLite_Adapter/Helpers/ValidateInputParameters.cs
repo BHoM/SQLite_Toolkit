@@ -25,9 +25,9 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Query
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/

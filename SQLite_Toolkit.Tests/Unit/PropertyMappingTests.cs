@@ -39,7 +39,7 @@ using BH.Engine.Spatial;
 using System.Collections.Generic;
 
 
-namespace SQLite_Toolkit.Tests.Unit
+namespace BH.Tests.SQLite.Unit
 {
     /// <summary>
     /// Unit tests for property mapping functionality including the three-tier strategy

@@ -21,39 +21,57 @@
  */
 
 using BH.oM.Base.Attributes;
-using BH.oM.SQLite.Objects;
 using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Query
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Gets the table name for a given .NET Type.")]
+        [Description("Initialises the complete SQLite Toolkit system including all system tables.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Input("type", "The .NET Type to get the table name for.")]
-        [Output("tableName", "The table name if registered, null otherwise.")]
-        public static string GetTableName(this SqliteConnection connection, Type type)
+        [Output("success", "True if the system was initialised successfully, false otherwise.")]
+        public static bool InitialiseToolkitSystem(SqliteConnection connection)
         {
-            TypeRegistration registration = connection.GetTypeRegistration(type);
-            return registration?.TableName;
-        }
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot initialize toolkit system: connection is null.");
+                return false;
+            }
 
-        /***************************************************/
+            try
+            {
+                BH.Engine.Base.Compute.RecordNote("Initializing SQLite Toolkit system...");
 
-        [Description("Gets the table name for a given full type name.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("fullTypeName", "The full type name including namespace.")]
-        [Output("tableName", "The table name if registered, null otherwise.")]
-        public static string GetTableName(this SqliteConnection connection, string fullTypeName)
-        {
-            TypeRegistration registration = connection.GetTypeRegistration(fullTypeName);
-            return registration?.TableName;
+                // Create all system tables
+                bool systemTablesCreated = SQLiteAdapter.AllSystemTables(connection);
+                if (!systemTablesCreated)
+                {
+                    BH.Engine.Base.Compute.RecordError("Failed to create system tables.");
+                    return false;
+                }
+
+                // Verify system integrity
+                bool systemValid = SQLiteAdapter.VerifySystemIntegrity(connection);
+                if (!systemValid)
+                {
+                    BH.Engine.Base.Compute.RecordError("System integrity check failed.");
+                    return false;
+                }
+
+                BH.Engine.Base.Compute.RecordNote("SQLite Toolkit system initialized successfully.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Error initializing toolkit system: {ex.Message}");
+                return false;
+            }
         }
 
         /***************************************************/

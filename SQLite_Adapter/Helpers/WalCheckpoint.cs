@@ -25,9 +25,9 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -41,13 +41,13 @@ namespace BH.Engine.SQLite
         {
             if (connection == null)
             {
-                Base.Compute.RecordError("Cannot perform WAL checkpoint: connection is null.");
+                BH.Engine.Base.Compute.RecordError("Cannot perform WAL checkpoint: connection is null.");
                 return false;
             }
 
             if (connection.State != System.Data.ConnectionState.Open)
             {
-                Base.Compute.RecordError("Cannot perform WAL checkpoint: connection is not open.");
+                BH.Engine.Base.Compute.RecordError("Cannot perform WAL checkpoint: connection is not open.");
                 return false;
             }
 
@@ -62,7 +62,7 @@ namespace BH.Engine.SQLite
 
                     if (!string.Equals(journalMode, "wal", StringComparison.OrdinalIgnoreCase))
                     {
-                        Base.Compute.RecordNote("WAL checkpoint skipped: database is not in WAL mode.");
+                        BH.Engine.Base.Compute.RecordNote("WAL checkpoint skipped: database is not in WAL mode.");
                         return true; // Not an error, just not needed
                     }
                 }
@@ -74,16 +74,16 @@ namespace BH.Engine.SQLite
                     command.ExecuteNonQuery();
                 }
 
-                Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
+                BH.Engine.Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
                 return true;
             }
             catch (Exception ex)
             {
-                Base.Compute.RecordError($"WAL checkpoint failed: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"WAL checkpoint failed: {ex.Message}");
                 return false;
             }
         }
 
         /***************************************************/
     }
-} 
+}

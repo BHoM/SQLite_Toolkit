@@ -20,50 +20,46 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.Engine.Base;
 using BH.oM.Base.Attributes;
 using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Create
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates the __Types system table for storing type-to-table mappings.")]
+        [Description("Checks if a table exists in the database.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Output("success", "True if the table was created successfully, false otherwise.")]
-        public static bool TypesTable(SqliteConnection connection)
+        [Input("tableName", "The table name to check.")]
+        [Output("exists", "True if the table exists, false otherwise.")]
+        public static bool TableExists(SqliteConnection connection, string tableName)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create __Types table: connection is null.");
+            if (connection == null || string.IsNullOrWhiteSpace(tableName))
                 return false;
-            }
 
             try
             {
-                string createTableSql = @"
-                    CREATE TABLE IF NOT EXISTS __Types (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        FullTypeName TEXT NOT NULL UNIQUE,
-                        TableName TEXT NOT NULL,
-                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        LastModified DATETIME DEFAULT CURRENT_TIMESTAMP
-                    )";
+                string checkSql = @"
+                    SELECT COUNT(*) 
+                    FROM sqlite_master 
+                    WHERE type='table' AND name=@TableName";
 
-                using (SqliteCommand command = new SqliteCommand(createTableSql, connection))
+                using (var command = new SqliteCommand(checkSql, connection))
                 {
-                    command.ExecuteNonQuery();
-                    return true;
+                    command.Parameters.AddWithValue("@TableName", tableName);
+                    long count = (long)command.ExecuteScalar();
+                    return count > 0;
                 }
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Error creating __Types table: {ex.Message}");
+                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
                 return false;
             }
         }

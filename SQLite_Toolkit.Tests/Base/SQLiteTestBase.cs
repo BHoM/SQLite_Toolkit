@@ -30,9 +30,9 @@ using BH.oM.SQLite.Requests;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite;
 using BH.oM.Adapter.Commands;
-using SQLite_Toolkit.Tests.Helpers;
+using BH.Tests.SQLite.Helpers;
 
-namespace SQLite_Toolkit.Tests.Base
+namespace BH.Tests.SQLite.Base
 {
     /// <summary>
     /// Base test class providing common functionality for SQLite testing

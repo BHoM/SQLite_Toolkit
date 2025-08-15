@@ -25,9 +25,9 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Query
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -37,7 +37,7 @@ namespace BH.Engine.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("tableName", "The table name to look up.")]
         [Output("typeName", "The full .NET type name if found, null otherwise.")]
-        public static string GetTypeName(this SqliteConnection connection, string tableName)
+        public static string GetTypeName(SqliteConnection connection, string tableName)
         {
             if (connection == null || string.IsNullOrWhiteSpace(tableName))
                 return null;

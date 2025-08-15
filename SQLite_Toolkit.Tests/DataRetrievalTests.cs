@@ -30,9 +30,9 @@ using BH.oM.SQLite.Objects;
 using BH.oM.SQLite.Requests;
 using BH.oM.SQLite;
 using BH.oM.Base;
-using SQLite_Toolkit.Tests.Base;
+using BH.Tests.SQLite.Base;
 
-namespace SQLite_Toolkit.Tests
+namespace BH.Tests.SQLite.Functionality
 {
     [TestFixture]
     public class DataRetrievalTests : SQLiteTestBase

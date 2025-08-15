@@ -25,9 +25,9 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public static partial class Convert
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -36,7 +36,7 @@ namespace BH.Engine.SQLite
         [Description("Converts a .NET object to an appropriate value for SQLite parameter binding.")]
         [Input("value", "The .NET object to convert.")]
         [Output("sqliteValue", "The converted value suitable for SQLite, or DBNull if conversion failed.")]
-        public static object ConvertToSqliteValue(object value)
+        public static object Value(object value)
         {
             if (value == null)
                 return DBNull.Value;
@@ -46,8 +46,8 @@ namespace BH.Engine.SQLite
             // Handle nullable types
             if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                object underlyingValue = Convert.ChangeType(value, Nullable.GetUnderlyingType(valueType));
-                return ConvertToSqliteValue(underlyingValue);
+                object underlyingValue = System.Convert.ChangeType(value, Nullable.GetUnderlyingType(valueType));
+                return Value(underlyingValue);
             }
 
             // Direct SQLite compatible types
@@ -59,13 +59,13 @@ namespace BH.Engine.SQLite
             // Convert integers to long (SQLite INTEGER)
             if (value is int || value is short || value is byte)
             {
-                return Convert.ToInt64(value);
+                return System.Convert.ToInt64(value);
             }
 
             // Convert floating point to double (SQLite REAL)
             if (value is float || value is decimal)
             {
-                return Convert.ToDouble(value);
+                return System.Convert.ToDouble(value);
             }
 
             // Convert boolean to integer
@@ -90,11 +90,11 @@ namespace BH.Engine.SQLite
             // Convert enums to their underlying value
             if (valueType.IsEnum)
             {
-                return Convert.ToInt64(value);
+                return System.Convert.ToInt64(value);
             }
 
             // Fallback: convert to string
-            BH.Engine.Base.Compute.RecordWarning($"Converting unknown type '{valueType.Name}' to string for SQLite parameter.");
+            Engine.Base.Compute.RecordWarning($"Converting unknown type '{valueType.Name}' to string for SQLite parameter.");
             return value.ToString();
         }
 

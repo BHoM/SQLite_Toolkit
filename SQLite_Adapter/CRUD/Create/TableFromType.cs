@@ -64,7 +64,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Ensure type management table exists
-                if (!connection.TableExists("__Types"))
+                if (!SQLiteAdapter.TableExists(connection, "__Types"))
                 {
                     BH.Engine.Base.Compute.RecordError("Failed to ensure __Types table exists.");
                     return false;
@@ -86,11 +86,11 @@ namespace BH.Adapter.SQLite
                     tableName = config.Table;
                     
                     // Ensure the type is registered with the custom table name
-                    string existingTableName = connection.GetTableName(objectType.FullName);
+                    string existingTableName = SQLiteAdapter.GetTableName(connection, objectType.FullName);
                     if (string.IsNullOrEmpty(existingTableName) || existingTableName != tableName)
                     {
                         // Register the type with the custom table name
-                        TypeRegistration registration = connection.RegisterType(objectType, tableName);
+                        TypeRegistration registration = SQLiteAdapter.RegisterType(connection, objectType, tableName);
                         if (registration == null)
                         {
                             BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} with custom table name '{tableName}'.");
@@ -101,17 +101,17 @@ namespace BH.Adapter.SQLite
                 else
                 {
                     // Use type-based table name resolution
-                    tableName = connection.GetTableName(objectType.FullName);
+                    tableName = SQLiteAdapter.GetTableName(connection, objectType.FullName);
                     if (string.IsNullOrWhiteSpace(tableName))
                     {
                         // Register new type
-                        TypeRegistration registration = connection.RegisterType(objectType);
+                        TypeRegistration registration = SQLiteAdapter.RegisterType(connection, objectType);
                         if (registration == null)
                         {
                             BH.Engine.Base.Compute.RecordError($"Failed to register object type {objectType.FullName}.");
                             return false;
                         }
-                        tableName = connection.GetTableName(objectType.FullName);
+                        tableName = SQLiteAdapter.GetTableName(connection, objectType.FullName);
                     }
                 }
 
@@ -122,7 +122,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Check if table already exists
-                bool tableExists = connection.TableExists(tableName);
+                bool tableExists = SQLiteAdapter.TableExists(connection, tableName);
                 
                 if (tableExists && !dropIfExists)
                 {
@@ -155,7 +155,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Populate the __Schema system table with column information
-                bool schemaPopulated = connection.PopulateSchemaTable(schema);
+                bool schemaPopulated = SQLiteAdapter.PopulateSchemaTable(connection, schema);
                 if (!schemaPopulated)
                 {
                     BH.Engine.Base.Compute.RecordWarning($"Failed to populate __Schema table for '{tableName}', but table was created successfully.");

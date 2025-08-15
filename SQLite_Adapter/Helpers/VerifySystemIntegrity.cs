@@ -21,27 +21,50 @@
  */
 
 using BH.oM.Base.Attributes;
-using BH.oM.SQLite.Objects;
 using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Query
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a type is already registered in the database.")]
+        [Description("Verifies the integrity of the SQLite Toolkit system tables and configuration.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Input("type", "The .NET Type to check.")]
-        [Output("isRegistered", "True if the type is registered, false otherwise.")]
-        public static bool IsTypeRegistered(this SqliteConnection connection, Type type)
+        [Output("valid", "True if the system is valid and complete, false otherwise.")]
+        public static bool VerifySystemIntegrity(SqliteConnection connection)
         {
-            TypeRegistration registration = connection.GetTypeRegistration(type);
-            return registration != null;
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot verify system integrity: connection is null.");
+                return false;
+            }
+
+            try
+            {
+                // Check if all required system tables exist
+                string[] systemTables = { "__Types", "__Schema" };
+                foreach (string tableName in systemTables)
+                {
+                    if (!SQLiteAdapter.TableExists(connection, tableName))
+                    {
+                        BH.Engine.Base.Compute.RecordWarning($"System table '{tableName}' is missing.");
+                        return false;
+                    }
+                }
+
+                BH.Engine.Base.Compute.RecordNote("System integrity verification passed.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"Error verifying system integrity: {ex.Message}");
+                return false;
+            }
         }
 
         /***************************************************/

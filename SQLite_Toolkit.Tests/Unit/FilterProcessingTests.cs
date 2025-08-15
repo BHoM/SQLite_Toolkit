@@ -25,12 +25,11 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using FluentAssertions;
-using BH.Engine.SQLite;
 using BH.oM.SQLite.Requests;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite;
 
-namespace SQLite_Toolkit.Tests.Unit
+namespace BH.Tests.SQLite.Unit
 {
     /// <summary>
     /// Unit tests for filter processing and SQL query generation

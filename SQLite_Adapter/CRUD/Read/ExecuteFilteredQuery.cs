@@ -21,7 +21,6 @@
  */
 
 using BH.oM.SQLite.Objects;
-using BH.Engine.SQLite;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -52,7 +51,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Check if table exists
-                if (!m_Connection.TableExists(tableName))
+                if (!SQLiteAdapter.TableExists(m_Connection, tableName))
                 {
                     result.IsSuccess = false;
                     result.ErrorMessage = $"Table '{tableName}' does not exist in the database.";
@@ -170,7 +169,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Convert value to appropriate SQLite type
-                object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(paramValue);
+                object sqliteValue = Convert.Value(paramValue);
                 
                 command.Parameters.AddWithValue(paramName, sqliteValue);
             }

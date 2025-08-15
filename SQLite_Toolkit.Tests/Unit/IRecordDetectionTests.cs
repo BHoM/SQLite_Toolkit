@@ -37,7 +37,7 @@ using BH.Engine.Spatial;
 using BH.oM.Base;
 
 
-namespace SQLite_Toolkit.Tests.Unit
+namespace BH.Tests.SQLite.Unit
 {
     /// <summary>
     /// Unit tests for IRecord interface detection and validation

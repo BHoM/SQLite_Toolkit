@@ -35,7 +35,7 @@ using BH.oM.Geometry;
 using BH.Engine.Structure;
 using BH.Engine.Spatial;
 
-namespace SQLite_Toolkit.Tests.Unit
+namespace BH.Tests.SQLite.Unit
 {
     /// <summary>
     /// Unit tests for validation methods including property paths and schema validation

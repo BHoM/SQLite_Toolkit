@@ -26,9 +26,9 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Create
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -39,7 +39,7 @@ namespace BH.Engine.SQLite
         [Input("type", "The .NET Type object from which to derive the table name. The simple type name (without namespace) forms the basis for the generated table name.")]
         [Input("connection", "Optional active SQLite database connection used for uniqueness verification against the __Types system table. If not provided, returns the basic type name without conflict checking.")]
         [Output("tableName", "A unique, SQL-compliant table name for the specified type. If conflicts exist, a numeric suffix is appended (e.g., 'MyClass_1', 'MyClass_2') to ensure uniqueness.")]
-        public static string TableName(this Type type, SqliteConnection connection = null)
+        public static string TableName(Type type, SqliteConnection connection = null)
         {
             if (type == null)
                 return "";

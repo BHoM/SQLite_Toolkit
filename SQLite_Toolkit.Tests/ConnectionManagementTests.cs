@@ -30,10 +30,10 @@ using BH.oM.SQLite.Configs;
 using BH.oM.SQLite;
 using BH.oM.Adapter.Commands;
 using BH.oM.Base;
-using SQLite_Toolkit.Tests.Base;
-using SQLite_Toolkit.Tests.Helpers;
+using BH.Tests.SQLite.Base;
+using BH.Tests.SQLite.Helpers;
 
-namespace SQLite_Toolkit.Tests
+namespace BH.Tests.SQLite.Functionality
 {
     /// <summary>
     /// Connection Management Tests

@@ -65,7 +65,7 @@ namespace BH.Adapter.SQLite
                     {
                         foreach (KeyValuePair<string, object> parameter in parameters)
                         {
-                            object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(parameter.Value);
+                            object sqliteValue = Convert.Value(parameter.Value);
                             command.Parameters.AddWithValue(parameter.Key, sqliteValue);
                         }
                     }
@@ -112,7 +112,7 @@ namespace BH.Adapter.SQLite
                     {
                         for (int i = 0; i < parameterValues.Count; i++)
                         {
-                            object sqliteValue = BH.Engine.SQLite.Compute.ConvertToSqliteValue(parameterValues[i]);
+                            object sqliteValue = Convert.Value(parameterValues[i]);
                             command.Parameters.Add($"@param{i}", Microsoft.Data.Sqlite.SqliteType.Text);
                             command.Parameters[$"@param{i}"].Value = sqliteValue;
                         }

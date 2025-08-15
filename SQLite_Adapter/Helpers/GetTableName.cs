@@ -21,57 +21,39 @@
  */
 
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Objects;
 using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Create
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates the __Schema system table for storing database schema metadata.")]
+        [Description("Gets the table name for a given .NET Type.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Output("success", "True if the table was created successfully, false otherwise.")]
-        public static bool SchemaTable(SqliteConnection connection)
+        [Input("type", "The .NET Type to get the table name for.")]
+        [Output("tableName", "The table name if registered, null otherwise.")]
+        public static string GetTableName(SqliteConnection connection, Type type)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create __Schema table: connection is null.");
-                return false;
-            }
+            TypeRegistration registration = SQLiteAdapter.GetTypeRegistration(connection, type);
+            return registration?.TableName;
+        }
 
-            try
-            {
-                string createTableSql = @"
-                    CREATE TABLE IF NOT EXISTS __Schema (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        TableName TEXT NOT NULL,
-                        ColumnName TEXT NOT NULL,
-                        DataType TEXT NOT NULL,
-                        NetTypeName TEXT,
-                        IsNullable BOOLEAN DEFAULT 1,
-                        IsPrimaryKey BOOLEAN DEFAULT 0,
-                        DefaultValue TEXT,
-                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        UNIQUE(TableName, ColumnName)
-                    )";
+        /***************************************************/
 
-                using (SqliteCommand command = new SqliteCommand(createTableSql, connection))
-                {
-                    command.ExecuteNonQuery();
-                    BH.Engine.Base.Compute.RecordNote("Successfully created __Schema system table.");
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                BH.Engine.Base.Compute.RecordError($"Error creating __Schema table: {ex.Message}");
-                return false;
-            }
+        [Description("Gets the table name for a given full type name.")]
+        [Input("connection", "Active SQLite database connection.")]
+        [Input("fullTypeName", "The full type name including namespace.")]
+        [Output("tableName", "The table name if registered, null otherwise.")]
+        public static string GetTableName(SqliteConnection connection, string fullTypeName)
+        {
+            TypeRegistration registration = SQLiteAdapter.GetTypeRegistration(connection, fullTypeName);
+            return registration?.TableName;
         }
 
         /***************************************************/

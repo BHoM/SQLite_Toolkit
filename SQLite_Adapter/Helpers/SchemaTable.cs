@@ -20,51 +20,59 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
 using BH.oM.Base.Attributes;
 using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Query
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
+        [Description("Creates the __Schema system table for storing database schema metadata.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        public static bool TableExists(this SqliteConnection connection, string tableName)
+        [Output("success", "True if the table was created successfully, false otherwise.")]
+        public static bool SchemaTable(SqliteConnection connection)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot create __Schema table: connection is null.");
                 return false;
+            }
 
             try
             {
-                string checkSql = @"
-                    SELECT COUNT(*) 
-                    FROM sqlite_master 
-                    WHERE type='table' AND name=@TableName";
+                string createTableSql = @"
+                    CREATE TABLE IF NOT EXISTS __Schema (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        TableName TEXT NOT NULL,
+                        ColumnName TEXT NOT NULL,
+                        DataType TEXT NOT NULL,
+                        NetTypeName TEXT,
+                        IsNullable BOOLEAN DEFAULT 1,
+                        IsPrimaryKey BOOLEAN DEFAULT 0,
+                        DefaultValue TEXT,
+                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(TableName, ColumnName)
+                    )";
 
-                using (var command = new SqliteCommand(checkSql, connection))
+                using (SqliteCommand command = new SqliteCommand(createTableSql, connection))
                 {
-                    command.Parameters.AddWithValue("@TableName", tableName);
-                    long count = (long)command.ExecuteScalar();
-                    return count > 0;
+                    command.ExecuteNonQuery();
+                    BH.Engine.Base.Compute.RecordNote("Successfully created __Schema system table.");
+                    return true;
                 }
             }
             catch (Exception ex)
             {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Error creating __Schema table: {ex.Message}");
                 return false;
             }
         }
-
-
 
         /***************************************************/
     }

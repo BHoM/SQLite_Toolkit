@@ -28,9 +28,9 @@ using FluentAssertions;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Requests;
-using SQLite_Toolkit.Tests.Base;
+using BH.Tests.SQLite.Base;
 
-namespace SQLite_Toolkit.Tests
+namespace BH.Tests.SQLite.Functionality
 {
     /// <summary>
     /// Schema Introspection Tests

@@ -25,9 +25,9 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Create
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -47,7 +47,7 @@ namespace BH.Engine.SQLite
             try
             {
                 // Check if __Types table exists before creating
-                bool typesExists = connection.TableExists("__Types");
+                bool typesExists = SQLiteAdapter.TableExists(connection, "__Types");
                 bool typesSuccess;
                 
                 if (typesExists)
@@ -57,7 +57,7 @@ namespace BH.Engine.SQLite
                 }
                 else
                 {
-                    typesSuccess = TypesTable(connection);
+                    typesSuccess = SQLiteAdapter.TypesTable(connection);
                     if (typesSuccess)
                     {
                         BH.Engine.Base.Compute.RecordNote("Successfully created system table '__Types'.");
@@ -65,7 +65,7 @@ namespace BH.Engine.SQLite
                 }
 
                 // Check if __Schema table exists before creating
-                bool schemaExists = connection.TableExists("__Schema");
+                bool schemaExists = SQLiteAdapter.TableExists(connection, "__Schema");
                 bool schemaSuccess;
                 
                 if (schemaExists)
@@ -75,7 +75,7 @@ namespace BH.Engine.SQLite
                 }
                 else
                 {
-                    schemaSuccess = SchemaTable(connection);
+                    schemaSuccess = SQLiteAdapter.SchemaTable(connection);
                     if (schemaSuccess)
                     {
                         BH.Engine.Base.Compute.RecordNote("Successfully created system table '__Schema'.");

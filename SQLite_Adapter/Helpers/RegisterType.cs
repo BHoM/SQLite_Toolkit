@@ -27,9 +27,9 @@ using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
@@ -41,7 +41,7 @@ namespace BH.Engine.SQLite
         [Input("type", "The .NET Type object to register for database storage. The full type name including namespace will be stored for precise type resolution.")]
         [Input("tableName", "Optional custom database table name for this type. If not specified or empty, generates a unique table name based on the type name with conflict resolution.")]
         [Output("registration", "The TypeRegistration object containing the assigned ID, full type name, table name and creation timestamp, or null if registration fails due to database errors.")]
-        public static TypeRegistration RegisterType(this SqliteConnection connection, Type type, string tableName = "")
+        public static TypeRegistration RegisterType(SqliteConnection connection, Type type, string tableName = "")
         {
             if (connection == null || type == null)
             {
@@ -53,14 +53,14 @@ namespace BH.Engine.SQLite
             string finalTableName;
             
             if (string.IsNullOrWhiteSpace(tableName))
-                finalTableName = type.TableName(connection);
+                finalTableName = SQLiteAdapter.TableName(type, connection);
             else
                 finalTableName = tableName;
 
             try
             {
                 // Check if type is already registered
-                var existing = connection.GetTypeRegistration(fullTypeName);
+                var existing = SQLiteAdapter.GetTypeRegistration(connection, fullTypeName);
                 if (existing != null)
                 {
                     Engine.Base.Compute.RecordNote($"Type {fullTypeName} is already registered with table {existing.TableName}.");

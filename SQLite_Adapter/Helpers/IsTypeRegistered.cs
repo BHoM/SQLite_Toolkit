@@ -21,57 +21,27 @@
  */
 
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Objects;
 using Microsoft.Data.Sqlite;
 using System;
 using System.ComponentModel;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public partial class SQLiteAdapter
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Initialises the complete SQLite Toolkit system including all system tables.")]
+        [Description("Checks if a type is already registered in the database.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Output("success", "True if the system was initialised successfully, false otherwise.")]
-        public static bool InitialiseToolkitSystem(this SqliteConnection connection)
+        [Input("type", "The .NET Type to check.")]
+        [Output("isRegistered", "True if the type is registered, false otherwise.")]
+        public static bool IsTypeRegistered(SqliteConnection connection, Type type)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot initialize toolkit system: connection is null.");
-                return false;
-            }
-
-            try
-            {
-                BH.Engine.Base.Compute.RecordNote("Initializing SQLite Toolkit system...");
-
-                // Create all system tables
-                bool systemTablesCreated = BH.Engine.SQLite.Create.AllSystemTables(connection);
-                if (!systemTablesCreated)
-                {
-                    BH.Engine.Base.Compute.RecordError("Failed to create system tables.");
-                    return false;
-                }
-
-                // Verify system integrity
-                bool systemValid = VerifySystemIntegrity(connection);
-                if (!systemValid)
-                {
-                    BH.Engine.Base.Compute.RecordError("System integrity check failed.");
-                    return false;
-                }
-
-                BH.Engine.Base.Compute.RecordNote("SQLite Toolkit system initialized successfully.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                BH.Engine.Base.Compute.RecordError($"Error initializing toolkit system: {ex.Message}");
-                return false;
-            }
+            TypeRegistration registration = SQLiteAdapter.GetTypeRegistration(connection, type);
+            return registration != null;
         }
 
         /***************************************************/
