@@ -124,26 +124,10 @@ namespace BH.Tests.SQLite.Base
             return result.Item2;
         }
 
-        /// <summary>
-        /// Executes a custom SQL command against the test database
-        /// </summary>
-        /// <param name="sql">SQL command to execute</param>
-        /// <param name="parameters">Optional parameters for the SQL command</param>
-        /// <returns>Results from the SQL execution</returns>
-        protected IEnumerable<object> ExecuteCustomSql(string sql, Dictionary<string, object>? parameters = null)
-        {
-            var request = new CustomSqlRequest()
-            {
-                SqlQuery = sql,
-                Parameters = parameters ?? new Dictionary<string, object>(),
-                IsReadOnly = sql.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase)
-            };
 
-            return TestAdapter.Pull(request);
-        }
 
         /// <summary>
-        /// Creates a test table using the Engine's Table creation functionality
+        /// Creates a test table using the Push method with TableSchema
         /// </summary>
         /// <param name="tableName">Name of the table to create</param>
         /// <param name="columns">Column definitions for the table</param>
@@ -156,13 +140,15 @@ namespace BH.Tests.SQLite.Base
                 Columns = columns
             };
 
-            string createSql = BH.Engine.SQLite.Compute.Table(tableSchema);
-
-            if (string.IsNullOrEmpty(createSql))
+            try
+            {
+                List<object> result = TestAdapter.Push(new List<TableSchema> { tableSchema });
+                return result.Count > 0;
+            }
+            catch (Exception)
+            {
                 return false;
-
-            var results = ExecuteCustomSql(createSql);
-            return true; // If no exception was thrown, assume success
+            }
         }
 
         /// <summary>
@@ -212,57 +198,104 @@ namespace BH.Tests.SQLite.Base
         }
 
         /// <summary>
-        /// Inserts test data into a table
+        /// Inserts test data into a table using Table object with data rows
         /// </summary>
         /// <param name="tableName">Name of the table to insert data into</param>
         /// <param name="recordCount">Number of test records to insert</param>
         /// <returns>True if data was inserted successfully</returns>
         protected bool InsertTestData(string tableName = "TestTable", int recordCount = 5)
         {
-            for (int i = 1; i <= recordCount; i++)
+            try
             {
-                string sql = $"INSERT INTO {tableName} (Name, Value) VALUES (@name, @value)";
-                var parameters = new Dictionary<string, object>()
+                // Create data rows
+                List<Dictionary<string, object>> rows = new List<Dictionary<string, object>>();
+                for (int i = 1; i <= recordCount; i++)
                 {
-                    { "@name", $"Test Record {i}" },
-                    { "@value", i * 100.0 + (i * 0.5) }
+                    rows.Add(new Dictionary<string, object>()
+                    {
+                        { "Name", $"Test Record {i}" },
+                        { "Value", i * 100.0 + (i * 0.5) }
+                    });
+                }
+
+                // Create a Table object with the data (assume table already exists)
+                var table = new Table()
+                {
+                    Schema = new TableSchema() { Name = tableName },
+                    Rows = rows,
+                    CreateTableIfNotExists = false // Assume table exists
                 };
 
-                ExecuteCustomSql(sql, parameters);
+                List<object> result = TestAdapter.Push(new List<Table> { table });
+                return result.Count > 0;
             }
-
-            return true;
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
-        /// Verifies that a table exists in the database
+        /// Verifies that a table exists in the database using EqualityFilterRequest
         /// </summary>
         /// <param name="tableName">Name of the table to check</param>
         /// <returns>True if table exists</returns>
         protected bool VerifyTableExists(string tableName)
         {
-            string sql = "SELECT name FROM sqlite_master WHERE type='table' AND name=@tableName";
-            var parameters = new Dictionary<string, object>()
+            try
             {
-                { "@tableName", tableName }
-            };
+                EqualityFilterRequest tableCheckRequest = new EqualityFilterRequest()
+                {
+                    TableName = "sqlite_master",
+                    ColumnFilters = new List<ColumnFilter>
+                    {
+                        new ColumnFilter()
+                        {
+                            ColumnName = "type",
+                            Values = new List<object> { "table" }
+                        },
+                        new ColumnFilter()
+                        {
+                            ColumnName = "name",
+                            Values = new List<object> { tableName }
+                        }
+                    },
+                    Logic = LogicalOperator.And
+                };
 
-            var results = ExecuteCustomSql(sql, parameters);
-            return results.Any();
+                IEnumerable<object> results = TestAdapter.Pull(tableCheckRequest);
+                QueryResult queryResult = results.FirstOrDefault() as QueryResult;
+                return queryResult?.IsSuccess == true && queryResult.Data?.Count > 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
-        /// Gets the count of records in a table
+        /// Gets the count of records in a table by pulling all records
         /// </summary>
         /// <param name="tableName">Name of the table to count</param>
         /// <returns>Number of records in the table</returns>
         protected int GetTableRecordCount(string tableName)
         {
-            string sql = $"SELECT COUNT(*) FROM {tableName}";
-            var results = ExecuteCustomSql(sql);
+            try
+            {
+                EqualityFilterRequest getAllRequest = new EqualityFilterRequest()
+                {
+                    TableName = tableName,
+                    ColumnFilters = new List<ColumnFilter>() // Empty filters means get all records
+                };
 
-            // Results should contain a single QueryResult with the count
-            return results.Count();
+                IEnumerable<object> results = TestAdapter.Pull(getAllRequest);
+                QueryResult queryResult = results.FirstOrDefault() as QueryResult;
+                return queryResult?.IsSuccess == true ? queryResult.Data?.Count ?? 0 : 0;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
         }
 
         /// <summary>

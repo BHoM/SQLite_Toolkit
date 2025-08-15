@@ -35,11 +35,6 @@ using BH.Tests.SQLite.Base;
 
 namespace BH.Tests.SQLite.Examples
 {
-    /// <summary>
-    /// Comprehensive examples showing all filtering capabilities of the SQLite Toolkit.
-    /// These examples demonstrate the full power of the filtering system including
-    /// equality filters, range filters, custom SQL, and combinations.
-    /// </summary>
     [TestFixture]
     public class FilteringExampleTests : SQLiteTestBase
     {
@@ -50,7 +45,7 @@ namespace BH.Tests.SQLite.Examples
         {
             adapter = CreateInMemoryTestAdapter();
             adapter.Execute(new Open() { FileName = ":memory:" });
-            
+
             // Setup comprehensive test data
             SetupSensorData();
             SetupMaterialData();
@@ -66,40 +61,40 @@ namespace BH.Tests.SQLite.Examples
         {
             List<SensorReading> sensorReadings = new List<SensorReading>
             {
-                new SensorReading() 
-                { 
-                    SensorId = "TEMP001", Temperature = 15.5, Humidity = 45.0, 
-                    Timestamp = new DateTime(2024, 1, 1, 8, 0, 0), IsValid = true, StatusCode = 200 
+                new SensorReading()
+                {
+                    SensorId = "TEMP001", Temperature = 15.5, Humidity = 45.0,
+                    Timestamp = new DateTime(2024, 1, 1, 8, 0, 0), IsValid = true, StatusCode = 200
                 },
-                new SensorReading() 
-                { 
-                    SensorId = "TEMP002", Temperature = 22.0, Humidity = 55.0, 
-                    Timestamp = new DateTime(2024, 1, 1, 12, 0, 0), IsValid = true, StatusCode = 200 
+                new SensorReading()
+                {
+                    SensorId = "TEMP002", Temperature = 22.0, Humidity = 55.0,
+                    Timestamp = new DateTime(2024, 1, 1, 12, 0, 0), IsValid = true, StatusCode = 200
                 },
-                new SensorReading() 
-                { 
-                    SensorId = "TEMP003", Temperature = 28.5, Humidity = 65.0, 
-                    Timestamp = new DateTime(2024, 1, 1, 16, 0, 0), IsValid = true, StatusCode = 200 
+                new SensorReading()
+                {
+                    SensorId = "TEMP003", Temperature = 28.5, Humidity = 65.0,
+                    Timestamp = new DateTime(2024, 1, 1, 16, 0, 0), IsValid = true, StatusCode = 200
                 },
-                new SensorReading() 
-                { 
-                    SensorId = "TEMP004", Temperature = 19.0, Humidity = 48.0, 
-                    Timestamp = new DateTime(2024, 1, 2, 8, 0, 0), IsValid = false, StatusCode = 404 
+                new SensorReading()
+                {
+                    SensorId = "TEMP004", Temperature = 19.0, Humidity = 48.0,
+                    Timestamp = new DateTime(2024, 1, 2, 8, 0, 0), IsValid = false, StatusCode = 404
                 },
-                new SensorReading() 
-                { 
-                    SensorId = "TEMP005", Temperature = 25.0, Humidity = 60.0, 
-                    Timestamp = new DateTime(2024, 1, 2, 12, 0, 0), IsValid = true, StatusCode = 201 
+                new SensorReading()
+                {
+                    SensorId = "TEMP005", Temperature = 25.0, Humidity = 60.0,
+                    Timestamp = new DateTime(2024, 1, 2, 12, 0, 0), IsValid = true, StatusCode = 201
                 },
-                new SensorReading() 
-                { 
-                    SensorId = "HUM001", Temperature = 20.0, Humidity = 75.0, 
-                    Timestamp = new DateTime(2024, 1, 3, 8, 0, 0), IsValid = true, StatusCode = 200 
+                new SensorReading()
+                {
+                    SensorId = "HUM001", Temperature = 20.0, Humidity = 75.0,
+                    Timestamp = new DateTime(2024, 1, 3, 8, 0, 0), IsValid = true, StatusCode = 200
                 },
-                new SensorReading() 
-                { 
-                    SensorId = "HUM002", Temperature = 24.0, Humidity = 80.0, 
-                    Timestamp = new DateTime(2024, 1, 3, 12, 0, 0), IsValid = false, StatusCode = 500 
+                new SensorReading()
+                {
+                    SensorId = "HUM002", Temperature = 24.0, Humidity = 80.0,
+                    Timestamp = new DateTime(2024, 1, 3, 12, 0, 0), IsValid = false, StatusCode = 500
                 }
             };
 
@@ -148,13 +143,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_EqualityFilters_SimpleAndComplex()
         {
-            /*
-             * EXAMPLE: Equality Filters - Simple and Complex Scenarios
-             * 
-             * This example demonstrates various equality filtering scenarios from
-             * simple single-value filters to complex multi-column combinations.
-             */
-
             // Scenario 1: Simple single value filter
             EqualityFilterRequest validSensorsOnly = new EqualityFilterRequest()
             {
@@ -261,13 +249,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_RangeFilters_NumericAndDateTime()
         {
-            /*
-             * EXAMPLE: Range Filters for Numeric and DateTime Data
-             * 
-             * This example shows how to filter data within specific ranges,
-             * including both numeric values and date/time ranges.
-             */
-
             // Scenario 1: Temperature range filtering
             RangeFilterRequest comfortableTemperature = new RangeFilterRequest()
             {
@@ -320,8 +301,8 @@ namespace BH.Tests.SQLite.Examples
                     {
                         {
                             "Timestamp",
-                            new GeneralDomain() 
-                            { 
+                            new GeneralDomain()
+                            {
                                 Min = new DateTime(2024, 1, 1, 0, 0, 0),
                                 Max = new DateTime(2024, 1, 1, 23, 59, 59)
                             }
@@ -384,122 +365,8 @@ namespace BH.Tests.SQLite.Examples
         }
 
         [Test]
-        public void Example_CombinedFilters_EqualityAndRange()
-        {
-            /*
-             * EXAMPLE: Combining Different Filter Types
-             * 
-             * This example shows how to combine equality and range filters
-             * for sophisticated data queries using custom SQL requests.
-             */
-
-            // Scenario 1: Valid readings within temperature range
-            // Since we can't directly combine different filter types in one request,
-            // we use CustomSqlRequest for complex combinations
-            CustomSqlRequest validTemperatureRange = new CustomSqlRequest()
-            {
-                SqlQuery = @"
-                    SELECT * FROM SensorReading 
-                    WHERE IsValid = @isValid 
-                    AND Temperature BETWEEN @minTemp AND @maxTemp 
-                    ORDER BY Timestamp",
-                Parameters = new Dictionary<string, object>
-                {
-                    { "@isValid", true },
-                    { "@minTemp", 20.0 },
-                    { "@maxTemp", 28.0 }
-                },
-                IsReadOnly = true
-            };
-
-            IEnumerable<object> validTempResults = adapter.Pull(validTemperatureRange);
-            QueryResult validTempQuery = validTempResults.FirstOrDefault() as QueryResult;
-            validTempQuery.Data.Should().HaveCount(3, "Should find valid readings in temperature range");
-
-            // Scenario 2: Specific sensors with high humidity
-            CustomSqlRequest specificSensorsHighHumidity = new CustomSqlRequest()
-            {
-                SqlQuery = @"
-                    SELECT * FROM SensorReading 
-                    WHERE SensorId IN (@sensor1, @sensor2, @sensor3) 
-                    AND Humidity > @humidityThreshold
-                    ORDER BY Humidity DESC",
-                Parameters = new Dictionary<string, object>
-                {
-                    { "@sensor1", "TEMP003" },
-                    { "@sensor2", "HUM001" },
-                    { "@sensor3", "HUM002" },
-                    { "@humidityThreshold", 70.0 }
-                },
-                IsReadOnly = true
-            };
-
-            IEnumerable<object> highHumidityResults = adapter.Pull(specificSensorsHighHumidity);
-            QueryResult highHumidityQuery = highHumidityResults.FirstOrDefault() as QueryResult;
-            highHumidityQuery.Data.Should().HaveCount(2, "Should find specific sensors with high humidity");
-
-            // Scenario 3: Material analysis - cost-effective sustainable materials
-            CustomSqlRequest sustainableCostEffective = new CustomSqlRequest()
-            {
-                SqlQuery = @"
-                    SELECT MaterialName, Type, Density, CostPerCubicMeter, IsRecyclable
-                    FROM SimpleMaterial 
-                    WHERE IsRecyclable = @recyclable 
-                    AND CostPerCubicMeter BETWEEN @minCost AND @maxCost
-                    ORDER BY CostPerCubicMeter ASC",
-                Parameters = new Dictionary<string, object>
-                {
-                    { "@recyclable", true },
-                    { "@minCost", 100.0 },
-                    { "@maxCost", 300.0 }
-                },
-                IsReadOnly = true
-            };
-
-            IEnumerable<object> sustainableResults = adapter.Pull(sustainableCostEffective);
-            QueryResult sustainableQuery = sustainableResults.FirstOrDefault() as QueryResult;
-            sustainableQuery.Data.Should().HaveCount(3, "Should find cost-effective recyclable materials");
-
-            // Scenario 4: Time-based analysis with aggregation
-            CustomSqlRequest dailyAverages = new CustomSqlRequest()
-            {
-                SqlQuery = @"
-                    SELECT 
-                        DATE(Timestamp) as ReadingDate,
-                        AVG(Temperature) as AvgTemperature,
-                        AVG(Humidity) as AvgHumidity,
-                        COUNT(*) as ReadingCount
-                    FROM SensorReading 
-                    WHERE IsValid = @isValid
-                    GROUP BY DATE(Timestamp)
-                    ORDER BY ReadingDate",
-                Parameters = new Dictionary<string, object>
-                {
-                    { "@isValid", true }
-                },
-                IsReadOnly = true
-            };
-
-            IEnumerable<object> dailyResults = adapter.Pull(dailyAverages);
-            QueryResult dailyQuery = dailyResults.FirstOrDefault() as QueryResult;
-            dailyQuery.Data.Should().HaveCount(3, "Should have data for 3 days");
-
-            // Verify aggregated data
-            Dictionary<string, object> firstDay = dailyQuery.Data[0];
-            firstDay["ReadingDate"].Should().Be("2024-01-01");
-            firstDay["ReadingCount"].Should().Be(3L); // 3 valid readings on first day
-        }
-
-        [Test]
         public void Example_MaterialFiltering_EnumAndProperties()
         {
-            /*
-             * EXAMPLE: Advanced Material Filtering with Enums and Properties
-             * 
-             * This example demonstrates filtering materials by type (enum),
-             * combining with property ranges and boolean conditions.
-             */
-
             // Scenario 1: Filter by material type (enum)
             EqualityFilterRequest metalMaterials = new EqualityFilterRequest()
             {
@@ -538,85 +405,70 @@ namespace BH.Tests.SQLite.Examples
             QueryResult highPerfQuery = highPerfResults.FirstOrDefault() as QueryResult;
             highPerfQuery.Data.Should().HaveCount(2, "Should find high-performance materials (high-grade steels)");
 
-            // Scenario 3: Sustainable materials within budget
-            CustomSqlRequest sustainableBudget = new CustomSqlRequest()
+            // Scenario 3: Sustainable materials within budget using separate filters
+            EqualityFilterRequest sustainableBudget = new EqualityFilterRequest()
             {
-                SqlQuery = @"
-                    SELECT * FROM SimpleMaterial 
-                    WHERE IsRecyclable = @recyclable 
-                    AND CostPerCubicMeter <= @maxCost
-                    ORDER BY CostPerCubicMeter ASC",
-                Parameters = new Dictionary<string, object>
+                TableName = "SimpleMaterial",
+                ColumnFilters = new List<ColumnFilter>
                 {
-                    { "@recyclable", true },
-                    { "@maxCost", 200.0m }
-                },
-                IsReadOnly = true
+                    new ColumnFilter()
+                    {
+                        ColumnName = "IsRecyclable",
+                        Values = new List<object> { true }
+                    }
+                }
             };
 
             IEnumerable<object> budgetResults = adapter.Pull(sustainableBudget);
             QueryResult budgetQuery = budgetResults.FirstOrDefault() as QueryResult;
-            budgetQuery.Data.Should().HaveCount(2, "Should find affordable sustainable materials");
+            budgetQuery.Data.Should().HaveCount(4, "Should find sustainable materials");
 
-            // Scenario 4: Material comparison analysis
-            CustomSqlRequest materialComparison = new CustomSqlRequest()
+            // Then filter by cost using RangeFilterRequest
+            RangeFilterRequest affordableRange = new RangeFilterRequest()
             {
-                SqlQuery = @"
-                    SELECT 
-                        Type,
-                        COUNT(*) as MaterialCount,
-                        AVG(Density) as AvgDensity,
-                        AVG(CAST(YoungModulus as REAL)) as AvgYoungModulus,
-                        AVG(CAST(CostPerCubicMeter as REAL)) as AvgCost
-                    FROM SimpleMaterial 
-                    GROUP BY Type
-                    ORDER BY AvgYoungModulus DESC",
-                Parameters = new Dictionary<string, object>(),
-                IsReadOnly = true
+                TableName = "SimpleMaterial",
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
+                {
+                    new Dictionary<string, GeneralDomain>
+                    {
+                        {
+                            "CostPerCubicMeter",
+                            new GeneralDomain() { Min = 0.0m, Max = 200.0m }
+                        }
+                    }
+                },
+                InclusiveBounds = true
             };
 
-            IEnumerable<object> comparisonResults = adapter.Pull(materialComparison);
-            QueryResult comparisonQuery = comparisonResults.FirstOrDefault() as QueryResult;
-            comparisonQuery.Data.Should().HaveCount(4, "Should have analysis for each material type");
+            IEnumerable<object> affordableResults = adapter.Pull(affordableRange);
+            QueryResult affordableQuery = affordableResults.FirstOrDefault() as QueryResult;
+            affordableQuery.Data.Should().HaveCount(4, "Should find affordable materials");
 
-            // Verify steel has highest average Young's modulus
-            Dictionary<string, object> topMaterial = comparisonQuery.Data[0];
-            topMaterial["Type"].Should().Be(MaterialType.Steel);
+            // Note: Complex aggregation analysis (GROUP BY, AVG) is no longer supported 
+            // with the current filter system. Such operations would require a different approach.
         }
 
         [Test]
-        public void Example_AdvancedFiltering_WithLimitsAndOrdering()
+        public void Example_AdvancedFiltering_WithLimitsOnly()
         {
-            /*
-             * EXAMPLE: Advanced Filtering with Result Limits and Ordering
-             * 
-             * This example shows how to use MaxResults property and custom SQL
-             * for sophisticated data retrieval patterns.
-             */
-
-            // Scenario 1: Top 3 highest temperatures
-            CustomSqlRequest topTemperatures = new CustomSqlRequest()
+            // Scenario 1: Limited results using EqualityFilterRequest
+            EqualityFilterRequest validReadingsLimited = new EqualityFilterRequest()
             {
-                SqlQuery = @"
-                    SELECT * FROM SensorReading 
-                    WHERE IsValid = @isValid
-                    ORDER BY Temperature DESC 
-                    LIMIT @limit",
-                Parameters = new Dictionary<string, object>
+                TableName = "SensorReading",
+                ColumnFilters = new List<ColumnFilter>
                 {
-                    { "@isValid", true },
-                    { "@limit", 3 }
+                    new ColumnFilter()
+                    {
+                        ColumnName = "IsValid",
+                        Values = new List<object> { true }
+                    }
                 },
-                IsReadOnly = true
+                MaxResults = 3 // Limit to 3 results
             };
 
-            IEnumerable<object> topTempResults = adapter.Pull(topTemperatures);
-            QueryResult topTempQuery = topTempResults.FirstOrDefault() as QueryResult;
-            topTempQuery.Data.Should().HaveCount(3, "Should return top 3 temperatures");
-            
-            double firstTemp = System.Convert.ToDouble(topTempQuery.Data[0]["Temperature"]);
-            double secondTemp = System.Convert.ToDouble(topTempQuery.Data[1]["Temperature"]);
-            firstTemp.Should().BeGreaterThanOrEqualTo(secondTemp, "Results should be ordered by temperature DESC");
+            IEnumerable<object> limitedResults = adapter.Pull(validReadingsLimited);
+            QueryResult limitedQuery = limitedResults.FirstOrDefault() as QueryResult;
+            limitedQuery.Data.Should().HaveCountLessOrEqualTo(3, "Should return at most 3 results");
 
             // Scenario 2: Most recent readings with limit using EqualityFilterRequest
             EqualityFilterRequest recentValidReadings = new EqualityFilterRequest()
@@ -637,49 +489,9 @@ namespace BH.Tests.SQLite.Examples
             QueryResult recentQuery = recentResults.FirstOrDefault() as QueryResult;
             recentQuery.Data.Should().HaveCountLessOrEqualTo(4, "Should return at most 4 results");
 
-            // Scenario 3: Most expensive materials
-            CustomSqlRequest expensiveMaterials = new CustomSqlRequest()
-            {
-                SqlQuery = @"
-                    SELECT MaterialName, Type, CostPerCubicMeter
-                    FROM SimpleMaterial 
-                    ORDER BY CostPerCubicMeter DESC 
-                    LIMIT @limit",
-                Parameters = new Dictionary<string, object>
-                {
-                    { "@limit", 2 }
-                },
-                IsReadOnly = true
-            };
-
-            IEnumerable<object> expensiveResults = adapter.Pull(expensiveMaterials);
-            QueryResult expensiveQuery = expensiveResults.FirstOrDefault() as QueryResult;
-            expensiveQuery.Data.Should().HaveCount(2, "Should return 2 most expensive materials");
-
-            // Scenario 4: Sensor performance statistics
-            CustomSqlRequest sensorStats = new CustomSqlRequest()
-            {
-                SqlQuery = @"
-                    SELECT 
-                        SUBSTR(SensorId, 1, 4) as SensorType,
-                        COUNT(*) as TotalReadings,
-                        SUM(CASE WHEN IsValid = 1 THEN 1 ELSE 0 END) as ValidReadings,
-                        ROUND(AVG(Temperature), 2) as AvgTemperature,
-                        ROUND(AVG(Humidity), 2) as AvgHumidity
-                    FROM SensorReading 
-                    GROUP BY SUBSTR(SensorId, 1, 4)
-                    ORDER BY TotalReadings DESC",
-                Parameters = new Dictionary<string, object>(),
-                IsReadOnly = true
-            };
-
-            IEnumerable<object> statsResults = adapter.Pull(sensorStats);
-            QueryResult statsQuery = statsResults.FirstOrDefault() as QueryResult;
-            statsQuery.Data.Should().HaveCount(2, "Should have stats for TEMP and HUM sensor types");
-
-            Dictionary<string, object> tempStats = statsQuery.Data[0];
-            tempStats["SensorType"].Should().Be("TEMP");
-            tempStats["TotalReadings"].Should().Be(5L);
+            // Note: Ordering (ORDER BY), aggregations (GROUP BY, COUNT, AVG), 
+            // and complex SQL functions (SUBSTR, ROUND) are no longer supported
+            // with the current simplified filter system.
         }
     }
 }

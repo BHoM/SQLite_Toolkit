@@ -68,14 +68,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_Bar_BasicPropertyMapping()
         {
-            /*
-             * EXAMPLE: Basic Property Mapping for Complex Objects
-             * 
-             * This example shows how to map complex BHoM objects to database tables
-             * using PushConfig with property mappings. This is the second tier of the
-             * three-tier strategy for objects that don't implement IRecord.
-             */
-
             // Step 1: Define property mappings for bars
             // We want to flatten the complex object structure into a simple table
             PushConfig barConfig = new PushConfig()
@@ -110,20 +102,20 @@ namespace BH.Tests.SQLite.Examples
                 Density = 7850.0,
                 YoungsModulus = 210000000000.0 // 210 GPa
             };
-            
+
             Steel concreteMaterial = new Steel()
             {
                 Name = "Concrete C30/37",
                 Density = 2400.0,
                 YoungsModulus = 33000000000.0 // 33 GPa
             };
-            
+
             RectangleProfile beamProfile = new RectangleProfile(0.5, 0.25, 0, new List<ICurve>());
             RectangleProfile columnProfile = new RectangleProfile(0.4, 0.4, 0, new List<ICurve>());
-            
+
             SteelSection beamSection = BH.Engine.Structure.Create.SteelSectionFromProfile(beamProfile, steelMaterial, "Beam Section");
             SteelSection columnSection = BH.Engine.Structure.Create.SteelSectionFromProfile(columnProfile, concreteMaterial, "Column Section");
-            
+
             List<Bar> bars = new List<Bar>
             {
                 new Bar()
@@ -152,10 +144,20 @@ namespace BH.Tests.SQLite.Examples
             pushedBars.Should().HaveCount(2, "Both bars should be pushed successfully");
 
             // Step 4: Verify data was mapped correctly
-            CustomSqlRequest getAllRequest = new CustomSqlRequest()
+            EqualityFilterRequest getAllRequest = new EqualityFilterRequest()
             {
-                SqlQuery = "SELECT * FROM Bars ORDER BY BarName",
-                IsReadOnly = true
+                TableName = "Bars",
+                ColumnFilters = new List<ColumnFilter>()
+                {
+                    new ColumnFilter()
+                    {
+                        ColumnName = "Name",
+                        Values = new List<object>()
+                        {
+                            "Beam-B001", "Column-C001"
+                        }
+                    }
+                }// Empty filters means get all records
             };
 
             IEnumerable<object> results = adapter.Pull(getAllRequest);
@@ -181,13 +183,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_DeeplyNestedProperties_ThermalMapping()
         {
-            /*
-             * EXAMPLE: Deeply Nested Property Mapping
-             * 
-             * This example shows how to map properties that are multiple levels deep
-             * in the object hierarchy, such as SectionProperty.Material.ThermalExpansionCoeff.
-             */
-
             // Step 1: Create config with deeply nested mappings
             PushConfig thermalConfig = new PushConfig()
             {
@@ -205,12 +200,13 @@ namespace BH.Tests.SQLite.Examples
                 Density = 7850.0,
                 YoungsModulus = 210000000000.0, // 210 GPa
                 PoissonsRatio = 0.3,
-                ThermalExpansionCoeff = 1.2e-5 // 1/K
+                ThermalExpansionCoeff = 1.2e-5,// 1/K
+                DampingRatio = 0.05
             };
-            
+
             RectangleProfile profile = new RectangleProfile(0.3, 0.2, 0, new List<ICurve>());
             SteelSection section = BH.Engine.Structure.Create.SteelSectionFromProfile(profile, thermalMaterial, "Thermal Section");
-            
+
             Bar barWithThermalData = new Bar()
             {
                 Name = "Bar-T001",
@@ -221,16 +217,23 @@ namespace BH.Tests.SQLite.Examples
             };
 
             // Step 3: Push with thermal mapping
-            List<object> pushed = adapter.Push(new List<Bar> { barWithThermalData }, 
+            List<object> pushed = adapter.Push(new List<Bar> { barWithThermalData },
                                               actionConfig: thermalConfig);
 
             pushed.Should().HaveCount(1);
 
             // Step 4: Verify deeply nested properties were mapped correctly
-            CustomSqlRequest thermalQuery = new CustomSqlRequest()
+            EqualityFilterRequest thermalQuery = new EqualityFilterRequest()
             {
-                SqlQuery = "SELECT * FROM Bar WHERE BarName = 'Bar-T001'",
-                IsReadOnly = true
+                TableName = "Bar",
+                ColumnFilters = new List<ColumnFilter>
+                {
+                    new ColumnFilter()
+                    {
+                        ColumnName = "BarName",
+                        Values = new List<object> { "Bar-T001" }
+                    }
+                }
             };
 
             IEnumerable<object> results = adapter.Pull(thermalQuery);
@@ -240,19 +243,12 @@ namespace BH.Tests.SQLite.Examples
             queryResult.Data.Should().HaveCount(1);
 
             Dictionary<string, object> barData = queryResult.Data[0];
-            barData["MaterialDamping"].Should().Be(0.0); // Default DampingRatio
+            barData["MaterialDamping"].Should().Be(0.05); // Default DampingRatio
         }
 
         [Test]
         public void Example_PrimitiveFallback_NoConfiguration()
         {
-            /*
-             * EXAMPLE: Primitive Property Fallback (Tier 3)
-             * 
-             * This example shows what happens when no PushConfig is provided for complex objects.
-             * The system falls back to the third tier: mapping only primitive properties.
-             */
-
             // Step 1: Push complex object WITHOUT any configuration
             // This triggers the primitive fallback strategy
             Steel material = new Steel()
@@ -260,16 +256,16 @@ namespace BH.Tests.SQLite.Examples
                 Name = "Steel S275",
                 Density = 7850.0
             };
-            
+
             RectangleProfile profile = new RectangleProfile(0.3, 0.2, 0, new List<ICurve>());
             SteelSection section = BH.Engine.Structure.Create.SteelSectionFromProfile(profile, material, "Basic Section");
-            
+
             Bar barNoConfig = new Bar()
             {
                 Name = "Bar-NoConfig",
                 OrientationAngle = 0.0,
                 FEAType = BarFEAType.Flexural,
-                
+
                 // These complex properties will be ignored in fallback mode
                 Start = new Node() { Position = new Point() { X = 1.0, Y = 2.0, Z = 3.0 } },
                 End = new Node() { Position = new Point() { X = 5.5, Y = 2.0, Z = 3.0 } },
@@ -282,10 +278,17 @@ namespace BH.Tests.SQLite.Examples
             pushed.Should().HaveCount(1, "Object should still be pushed using primitive fallback");
 
             // Step 3: Verify only primitive properties were stored
-            CustomSqlRequest primitiveQuery = new CustomSqlRequest()
+            EqualityFilterRequest primitiveQuery = new EqualityFilterRequest()
             {
-                SqlQuery = "SELECT * FROM Bar WHERE Name = 'Bar-NoConfig'",
-                IsReadOnly = true
+                TableName = "Bar",
+                ColumnFilters = new List<ColumnFilter>
+                {
+                    new ColumnFilter()
+                    {
+                        ColumnName = "Name",
+                        Values = new List<object> { "Bar-NoConfig" }
+                    }
+                }
             };
 
             IEnumerable<object> results = adapter.Pull(primitiveQuery);
@@ -295,7 +298,7 @@ namespace BH.Tests.SQLite.Examples
             queryResult.Data.Should().HaveCount(1);
 
             Dictionary<string, object> primitiveData = queryResult.Data[0];
-            
+
             // Verify primitive properties are present
             primitiveData["Name"].Should().Be("Bar-NoConfig");
             primitiveData["OrientationAngle"].Should().Be(0.0);
@@ -311,13 +314,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_MixedMappingStrategy_WithExclusions()
         {
-            /*
-             * EXAMPLE: Mixed Mapping Strategy with Property Exclusions
-             * 
-             * This example shows how to combine explicit property mappings with
-             * automatic primitive inclusion, while excluding specific properties.
-             */
-
             // Step 1: Create config that maps some nested properties but excludes others
             PushConfig mixedConfig = new PushConfig()
             {
@@ -334,8 +330,8 @@ namespace BH.Tests.SQLite.Examples
                     // Map essential material properties
                     { "MaterialDamping", "SectionProperty.Material.DampingRatio" }
                 },
-                ExcludedProperties = new List<string> 
-                { 
+                ExcludedProperties = new List<string>
+                {
                     "OrientationAngle", // Exclude this primitive property
                     "Release" // Exclude this complex property
                 },
@@ -349,10 +345,10 @@ namespace BH.Tests.SQLite.Examples
                 Density = 420.0,
                 YoungsModulus = 11600000000.0
             };
-            
+
             RectangleProfile profile = new RectangleProfile(0.4, 0.2, 0, new List<ICurve>());
             SteelSection section = BH.Engine.Structure.Create.SteelSectionFromProfile(profile, timberMaterial, "Mixed Section");
-            
+
             Bar mixedBar = new Bar()
             {
                 Name = "Bar-Mixed",
@@ -364,16 +360,23 @@ namespace BH.Tests.SQLite.Examples
             };
 
             // Step 3: Push with mixed configuration
-            List<object> pushed = adapter.Push(new List<Bar> { mixedBar }, 
+            List<object> pushed = adapter.Push(new List<Bar> { mixedBar },
                                               actionConfig: mixedConfig);
 
             pushed.Should().HaveCount(1);
 
             // Step 4: Verify mixed mapping results
-            CustomSqlRequest mixedQuery = new CustomSqlRequest()
+            EqualityFilterRequest mixedQuery = new EqualityFilterRequest()
             {
-                SqlQuery = "SELECT * FROM Bar WHERE Name = 'Bar-Mixed'",
-                IsReadOnly = true
+                TableName = "Bar",
+                ColumnFilters = new List<ColumnFilter>
+                {
+                    new ColumnFilter()
+                    {
+                        ColumnName = "Name",
+                        Values = new List<object> { "Bar-Mixed" }
+                    }
+                }
             };
 
             IEnumerable<object> results = adapter.Pull(mixedQuery);
@@ -406,13 +409,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_FilteringComplexMappedData()
         {
-            /*
-             * EXAMPLE: Filtering Complex Mapped Data
-             * 
-             * This example shows how to filter data that was stored using complex property mappings.
-             * You can filter on both the mapped columns and the automatically included primitives.
-             */
-
             // Step 1: Setup multiple bars with mappings
             PushConfig barConfig = new PushConfig()
             {
@@ -427,11 +423,11 @@ namespace BH.Tests.SQLite.Examples
             // Create materials
             Steel steelMaterial = new Steel() { Name = "Steel S355", Density = 7850.0 };
             Steel concreteMaterial = new Steel() { Name = "Concrete C30", Density = 2400.0 };
-            
+
             // Create sections
             RectangleProfile profile1 = new RectangleProfile(0.4, 0.2, 0, new List<ICurve>());
             RectangleProfile profile2 = new RectangleProfile(0.3, 0.3, 0, new List<ICurve>());
-            
+
             SteelSection steelSection = BH.Engine.Structure.Create.SteelSectionFromProfile(profile1, steelMaterial, "Steel Section");
             SteelSection concreteSection = BH.Engine.Structure.Create.SteelSectionFromProfile(profile2, concreteMaterial, "Concrete Section");
 
@@ -508,7 +504,7 @@ namespace BH.Tests.SQLite.Examples
             QueryResult combinedQuery = combinedResults.FirstOrDefault() as QueryResult;
 
             combinedQuery.Data.Should().HaveCount(2, "Should find both flexural bars with default damping (Bar-001 and Column-001)");
-            
+
             // Verify we found both flexural bars
             List<string> foundNames = combinedQuery.Data.Select(row => row["Name"].ToString()).OrderBy(name => name).ToList();
             foundNames.Should().Contain("Bar-001");

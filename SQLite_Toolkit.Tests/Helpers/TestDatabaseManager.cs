@@ -44,14 +44,14 @@ namespace BH.Tests.SQLite.Helpers
         public static string CreateTestDatabasePath(string testName)
         {
             EnsureTestDirectoryExists();
-            
+
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
             string fileName = $"{testName}_{timestamp}.db";
             string fullPath = Path.Combine(TestDatabaseDirectory, fileName);
-            
+
             // Track created databases for cleanup
             CreatedDatabases.Add(fullPath);
-            
+
             return fullPath;
         }
 
@@ -107,7 +107,7 @@ namespace BH.Tests.SQLite.Helpers
 
                     var header = new byte[16];
                     fs.Read(header, 0, 16);
-                    
+
                     // SQLite databases start with "SQLite format 3\0"
                     var expectedHeader = System.Text.Encoding.UTF8.GetBytes("SQLite format 3\0");
                     for (int i = 0; i < expectedHeader.Length; i++)
@@ -141,7 +141,7 @@ namespace BH.Tests.SQLite.Helpers
                 {
                     File.Delete(databasePath);
                 }
-                
+
                 // Remove from tracking list regardless
                 CreatedDatabases.Remove(databasePath);
             }
@@ -165,7 +165,7 @@ namespace BH.Tests.SQLite.Helpers
             // Close the connection
             var closeCommand = new BH.oM.Adapter.Commands.Close();
             var result = adapter.Execute(closeCommand);
-            
+
             if (!result.Item2)
             {
                 Console.WriteLine("Warning: Close command returned false");
@@ -179,7 +179,7 @@ namespace BH.Tests.SQLite.Helpers
 
             // Give SQLite a moment to release file handles
             System.Threading.Thread.Sleep(50);
-            
+
             return true;
         }
 
@@ -268,7 +268,7 @@ INSERT INTO TestTable (Name, Value) VALUES
             try
             {
                 string testDatabasesFolder = Path.Combine(GetSolutionRoot(), "TestDatabases");
-                
+
                 if (Directory.Exists(testDatabasesFolder))
                 {
                     foreach (string file in Directory.GetFiles(testDatabasesFolder, "*.db"))
@@ -298,11 +298,6 @@ INSERT INTO TestTable (Name, Value) VALUES
             }
         }
 
-        /// <summary>
-        /// Gets the root directory of the solution.
-        /// This is needed to find the TestDatabases folder relative to the project root.
-        /// </summary>
-        /// <returns>The root directory of the solution.</returns>
         private static string GetSolutionRoot()
         {
             string currentDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -313,4 +308,4 @@ INSERT INTO TestTable (Name, Value) VALUES
             return currentDir ?? AppDomain.CurrentDomain.BaseDirectory;
         }
     }
-} 
+}

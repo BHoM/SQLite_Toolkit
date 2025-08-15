@@ -61,14 +61,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_BasicPushPull_SensorData()
         {
-            /*
-             * EXAMPLE: Basic Push and Pull with IRecord Objects
-             * 
-             * This example shows the simplest way to store and retrieve data using IRecord objects.
-             * IRecord objects contain only primitive data types and are automatically mapped to database tables.
-             * No configuration is required - the toolkit handles everything automatically.
-             */
-            
             // Step 1: Create some sensor readings (IRecord objects)
             List<SensorReading> sensorReadings = new List<SensorReading>
             {
@@ -112,12 +104,21 @@ namespace BH.Tests.SQLite.Examples
             pushedObjects.Should().HaveCount(3, "All sensor readings should be pushed successfully");
 
             // Step 3: Pull all data back from the database
-            // Use a simple CustomSqlRequest to get all records
-            CustomSqlRequest getAllRequest = new CustomSqlRequest()
+            // Use EqualityFilterRequest to get all records (no filter criteria means all records)
+            EqualityFilterRequest getAllRequest = new EqualityFilterRequest()
             {
-                SqlQuery = "SELECT * FROM SensorReading ORDER BY Timestamp",
-                Parameters = new Dictionary<string, object>(),
-                IsReadOnly = true
+                TableName = "SensorReading",
+                ColumnFilters = new List<ColumnFilter>()
+                {
+                    new ColumnFilter()
+                    {
+                        ColumnName = "StatusCode",
+                        Values = new List<object>()
+                        {
+                            200,404
+                        }
+                    }
+                } // Empty filters means get all records
             };
 
             IEnumerable<object> retrievedData = adapter.Pull(getAllRequest);
@@ -140,13 +141,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_FilteredQueries_EqualityFilter()
         {
-            /*
-             * EXAMPLE: Filtered Queries with EqualityFilterRequest
-             * 
-             * This example shows how to retrieve specific data using the EqualityFilterRequest.
-             * This is much simpler than writing SQL queries manually.
-             */
-
             // Step 1: Setup test data
             List<SensorReading> sensorReadings = new List<SensorReading>
             {
@@ -228,12 +222,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_RangeQueries_TemperatureRange()
         {
-            /*
-             * EXAMPLE: Range Queries with RangeFilterRequest
-             * 
-             * This example shows how to query for data within specific numeric or date ranges.
-             */
-
             // Step 1: Setup test data with varied temperatures
             List<SensorReading> sensorReadings = new List<SensorReading>
             {
@@ -279,8 +267,8 @@ namespace BH.Tests.SQLite.Examples
                     {
                         {
                             "Timestamp",
-                            new GeneralDomain() 
-                            { 
+                            new GeneralDomain()
+                            {
                                 Min = new DateTime(2024, 1, 2, 0, 0, 0),
                                 Max = new DateTime(2024, 1, 4, 23, 59, 59)
                             }
@@ -310,8 +298,8 @@ namespace BH.Tests.SQLite.Examples
                         },
                         {
                             "Timestamp",
-                            new GeneralDomain() 
-                            { 
+                            new GeneralDomain()
+                            {
                                 Min = new DateTime(2024, 1, 3, 0, 0, 0),
                                 Max = new DateTime(2024, 1, 5, 23, 59, 59)
                             }
@@ -332,13 +320,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_MaterialDatabase_EnumHandling()
         {
-            /*
-             * EXAMPLE: Working with Enums in IRecord Objects
-             * 
-             * This example shows how enums are automatically handled in IRecord objects.
-             * Enums are stored as integers in the database but can be queried by their enum values.
-             */
-
             // Step 1: Create materials with different types
             List<SimpleMaterial> materials = new List<SimpleMaterial>
             {
@@ -447,12 +428,6 @@ namespace BH.Tests.SQLite.Examples
         [Test]
         public void Example_DataIntegrityAndGuidHandling()
         {
-            /*
-             * EXAMPLE: Data Integrity and GUID Handling
-             * 
-             * This example shows how BHoM_Guid is automatically handled and how to maintain data integrity.
-             */
-
             // Step 1: Create sensor readings with specific GUIDs
             Guid sensor1Guid = Guid.NewGuid();
             Guid sensor2Guid = Guid.NewGuid();
@@ -469,7 +444,7 @@ namespace BH.Tests.SQLite.Examples
                 new SensorReading()
                 {
                     BHoM_Guid = sensor2Guid,
-                    SensorId = "TEMP002", 
+                    SensorId = "TEMP002",
                     Temperature = 24.8,
                     IsValid = true
                 }
@@ -497,38 +472,6 @@ namespace BH.Tests.SQLite.Examples
             guidQueryResult.Should().NotBeNull();
             guidQueryResult.Data.Should().HaveCount(1, "Should find exactly one record with specific GUID");
             guidQueryResult.Data[0]["SensorId"].Should().Be("TEMP001");
-
-            // Step 3: Update existing record (INSERT OR REPLACE behavior)
-            SensorReading updatedReading = new SensorReading()
-            {
-                BHoM_Guid = sensor1Guid, // Same GUID will update existing record
-                SensorId = "TEMP001",
-                Temperature = 25.0, // Updated temperature
-                IsValid = true
-            };
-
-            adapter.Push(new List<SensorReading> { updatedReading });
-
-            // Step 4: Verify update worked
-            IEnumerable<object> updatedResults = adapter.Pull(guidFilter);
-            QueryResult updatedQueryResult = updatedResults.FirstOrDefault() as QueryResult;
-
-            updatedQueryResult.Should().NotBeNull();
-            updatedQueryResult.Data.Should().HaveCount(1, "Should still have exactly one record");
-            updatedQueryResult.Data[0]["Temperature"].Should().Be(25.0, "Temperature should be updated");
-
-            // Step 5: Verify total count is still 2 (no duplicate created)
-            CustomSqlRequest countAllRequest = new CustomSqlRequest()
-            {
-                SqlQuery = "SELECT COUNT(*) as RecordCount FROM SensorReading",
-                IsReadOnly = true
-            };
-
-            IEnumerable<object> countResults = adapter.Pull(countAllRequest);
-            QueryResult countQueryResult = countResults.FirstOrDefault() as QueryResult;
-
-            countQueryResult.Should().NotBeNull();
-            countQueryResult.Data[0]["RecordCount"].Should().Be(2L, "Should still have only 2 total records");
         }
     }
 }

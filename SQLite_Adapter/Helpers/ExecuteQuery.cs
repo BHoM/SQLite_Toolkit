@@ -89,7 +89,7 @@ namespace BH.Adapter.SQLite
                         }
 
                         // Try to get schema information for type conversion
-                        Dictionary<string, Type> columnTypes = GetTableSchemaUsingPull(tableName);
+                        Dictionary<string, Type> columnTypes = GetTableSchema(tableName);
                         if (columnTypes.Count > 0)
                         {
                             BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: Found {columnTypes.Count} column types for table '{tableName}'");

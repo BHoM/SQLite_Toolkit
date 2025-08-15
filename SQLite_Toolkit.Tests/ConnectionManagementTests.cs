@@ -27,6 +27,8 @@ using NUnit.Framework;
 using FluentAssertions;
 using BH.Adapter.SQLite;
 using BH.oM.SQLite.Configs;
+using BH.oM.SQLite.Objects;
+using BH.oM.SQLite.Requests;
 using BH.oM.SQLite;
 using BH.oM.Adapter.Commands;
 using BH.oM.Base;
@@ -63,10 +65,24 @@ namespace BH.Tests.SQLite.Functionality
             {
                 File.Exists(TestDatabasePath).Should().BeTrue("Database file should be created");
                 
-                // Test the database functionality by executing a simple query
+                // Test database functionality by attempting to query system tables
                 // This approach avoids file locking issues
-                string testQuery = "SELECT 1 as TestConnection";
-                Action testQueryAction = () => ExecuteCustomSql(testQuery);
+                Action testQueryAction = () => 
+                {
+                    EqualityFilterRequest testRequest = new EqualityFilterRequest()
+                    {
+                        TableName = "sqlite_master",
+                        ColumnFilters = new List<ColumnFilter>
+                        {
+                            new ColumnFilter()
+                            {
+                                ColumnName = "type",
+                                Values = new List<object> { "table" }
+                            }
+                        }
+                    };
+                    TestAdapter.Pull(testRequest);
+                };
                 testQueryAction.Should().NotThrow("Database should be accessible for queries");
             }
 
@@ -106,16 +122,22 @@ namespace BH.Tests.SQLite.Functionality
             FileInfo fileInfo = new FileInfo(testDbPath);
             fileInfo.Length.Should().BeGreaterThan(0, "Database file should not be empty");
             
-            // Verify it's a valid SQLite database by executing a simple query
-            string testQuery = "SELECT 1 as TestConnection";
+            // Verify it's a valid SQLite database by attempting to query system tables
             Action testQueryAction = () => 
             {
-                IEnumerable<object> queryResults = adapter.Pull(new BH.oM.SQLite.Requests.CustomSqlRequest()
+                EqualityFilterRequest testRequest = new EqualityFilterRequest()
                 {
-                    SqlQuery = testQuery,
-                    Parameters = new Dictionary<string, object>(),
-                    IsReadOnly = true
-                });
+                    TableName = "sqlite_master",
+                    ColumnFilters = new List<ColumnFilter>
+                    {
+                        new ColumnFilter()
+                        {
+                            ColumnName = "type",
+                            Values = new List<object> { "table" }
+                        }
+                    }
+                };
+                TestAdapter.Pull(testRequest);
             };
             testQueryAction.Should().NotThrow("Database should be accessible for queries");
 
@@ -199,16 +221,22 @@ namespace BH.Tests.SQLite.Functionality
             Directory.Exists(testDir).Should().BeTrue("Directory should be created automatically");
             File.Exists(testDbPath).Should().BeTrue("Database file should be created");
 
-            // Verify database functionality
-            string testQuery = "SELECT 1 as TestConnection";
+            // Verify database functionality by attempting to query system tables
             Action testQueryAction = () => 
             {
-                IEnumerable<object> queryResults = adapter.Pull(new BH.oM.SQLite.Requests.CustomSqlRequest()
+                EqualityFilterRequest testRequest = new EqualityFilterRequest()
                 {
-                    SqlQuery = testQuery,
-                    Parameters = new Dictionary<string, object>(),
-                    IsReadOnly = true
-                });
+                    TableName = "sqlite_master",
+                    ColumnFilters = new List<ColumnFilter>
+                    {
+                        new ColumnFilter()
+                        {
+                            ColumnName = "type",
+                            Values = new List<object> { "table" }
+                        }
+                    }
+                };
+                TestAdapter.Pull(testRequest);
             };
             testQueryAction.Should().NotThrow("Database should be accessible for queries");
 
@@ -248,9 +276,24 @@ namespace BH.Tests.SQLite.Functionality
             result.Item2.Should().BeTrue("Connection with custom settings should be established");
             
             // Test that we can execute a basic query to verify the connection works
-            string testQuery = "SELECT 1 as TestValue";
-            IEnumerable<object> queryResults = ExecuteCustomSql(testQuery);
-            queryResults.Should().NotBeNull("Query should execute successfully with custom settings");
+            Action testQueryAction = () => 
+            {
+                EqualityFilterRequest testRequest = new EqualityFilterRequest()
+                {
+                    TableName = "sqlite_master",
+                    ColumnFilters = new List<ColumnFilter>
+                    {
+                        new ColumnFilter()
+                        {
+                            ColumnName = "type",
+                            Values = new List<object> { "table" }
+                        }
+                    }
+                };
+                IEnumerable<object> queryResults = TestAdapter.Pull(testRequest);
+                queryResults.Should().NotBeNull("Query should execute successfully with custom settings");
+            };
+            testQueryAction.Should().NotThrow("Database should be accessible for queries with custom settings");
 
             // Clean up
             TestDatabaseManager.EnsureConnectionClosed(adapter);
@@ -278,9 +321,23 @@ namespace BH.Tests.SQLite.Functionality
             // Verify the database file is still valid after multiple cycles
             if (TestDatabasePath != ":memory:")
             {
-                // Test database functionality by executing a simple query
-                string testQuery = "SELECT 1 as TestConnection";
-                Action testQueryAction = () => ExecuteCustomSql(testQuery);
+                // Test database functionality by attempting to query system tables
+                Action testQueryAction = () => 
+                {
+                    EqualityFilterRequest testRequest = new EqualityFilterRequest()
+                    {
+                        TableName = "sqlite_master",
+                        ColumnFilters = new List<ColumnFilter>
+                        {
+                            new ColumnFilter()
+                            {
+                                ColumnName = "type",
+                                Values = new List<object> { "table" }
+                            }
+                        }
+                    };
+                    TestAdapter.Pull(testRequest);
+                };
                 testQueryAction.Should().NotThrow("Database should be accessible for queries after multiple cycles");
             }
         }
@@ -307,9 +364,24 @@ namespace BH.Tests.SQLite.Functionality
             result.Item2.Should().BeTrue("Connection should still be established even with short timeout");
             
             // Verify we can execute queries within the timeout
-            string testQuery = "SELECT 1 as TestValue";
-            IEnumerable<object> queryResults = ExecuteCustomSql(testQuery);
-            queryResults.Should().NotBeNull("Query should execute successfully within timeout");
+            Action testQueryAction = () => 
+            {
+                EqualityFilterRequest testRequest = new EqualityFilterRequest()
+                {
+                    TableName = "sqlite_master",
+                    ColumnFilters = new List<ColumnFilter>
+                    {
+                        new ColumnFilter()
+                        {
+                            ColumnName = "type",
+                            Values = new List<object> { "table" }
+                        }
+                    }
+                };
+                IEnumerable<object> queryResults = TestAdapter.Pull(testRequest);
+                queryResults.Should().NotBeNull("Query should execute successfully within timeout");
+            };
+            testQueryAction.Should().NotThrow("Database should be accessible for queries within timeout");
 
             // Clean up
             TestDatabaseManager.EnsureConnectionClosed(adapter);
