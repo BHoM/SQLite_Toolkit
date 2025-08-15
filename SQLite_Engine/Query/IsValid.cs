@@ -208,7 +208,7 @@ namespace BH.Engine.SQLite
         [Description("Validates that all data rows in a TableData object are compatible with the defined schema.")]
         [Input("tableData", "The TableData object to validate.")]
         [Output("isValid", "True if all rows are valid against the schema.")]
-        public static bool IsValid(Table tableData)
+        public static bool IsValid(this Table tableData)
         {
             if (tableData == null)
             {

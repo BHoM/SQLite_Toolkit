@@ -32,37 +32,6 @@ namespace BH.oM.SQLite.Examples
     /****               Example Classes              ****/
     /***************************************************/
 
-    [Description("Example IRecord implementation for simple sensor data. " +
-        "Contains only primitive data types and can be automatically mapped to database tables.")]
-    public class SensorReading : BHoMObject, IRecord
-    {
-        /***************************************************/
-        /**** Properties                              ****/
-        /***************************************************/
-
-        [Description("Unique identifier for the sensor device.")]
-        public virtual string SensorId { get; set; } = "";
-
-        [Description("Temperature reading in degrees Celsius.")]
-        public virtual double Temperature { get; set; } = 0.0;
-
-        [Description("Humidity reading as a percentage.")]
-        public virtual double Humidity { get; set; } = 0.0;
-
-        [Description("Timestamp when the reading was taken.")]
-        public virtual DateTime Timestamp { get; set; } = DateTime.Now;
-
-        [Description("Whether the sensor reading is valid.")]
-        public virtual bool IsValid { get; set; } = true;
-
-        [Description("Status code from the sensor device.")]
-        public virtual int StatusCode { get; set; } = 0;
-
-        /***************************************************/
-    }
-
-    /***************************************************/
-
     [Description("Example IRecord implementation for simple material properties. " +
         "Demonstrates how enums and different numeric types are handled automatically.")]
     public class SimpleMaterial : BHoMObject, IRecord
@@ -93,20 +62,6 @@ namespace BH.oM.SQLite.Examples
         public virtual decimal CostPerCubicMeter { get; set; } = 0.0m;
 
         /***************************************************/
-    }
-
-    /***************************************************/
-
-    [Description("Example enumeration for material types.")]
-    public enum MaterialType
-    {
-        Unknown = 0,
-        Steel = 1,
-        Concrete = 2,
-        Wood = 3,
-        Aluminium = 4,
-        Glass = 5,
-        Plastic = 6
     }
 
     /***************************************************/

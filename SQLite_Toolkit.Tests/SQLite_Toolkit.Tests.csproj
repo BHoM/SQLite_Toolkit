@@ -1,5 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyVersion>8.0.0.0</AssemblyVersion>
+    <Description>https://github.com/BHoM/SQLite_Toolkit</Description>
+	<IsPackable>false</IsPackable>
+	<Configurations>Debug;Release;Test</Configurations>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RootNamespace>BH.Tests.Sqlite</RootNamespace>
+  </PropertyGroup>
+  
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
