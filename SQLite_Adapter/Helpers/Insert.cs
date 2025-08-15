@@ -20,67 +20,66 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
 using BH.oM.Base.Attributes;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace BH.Adapter.SQLite
 {
     public partial class SQLiteAdapter
     {
         /***************************************************/
-        /**** Public Methods                            ****/
+        /**** Private Methods                           ****/
         /***************************************************/
 
-        [Description("Checks if a specific column exists in the given table.")]
-        [Input("connection", "The SQLite database connection to use.")]
-        [Input("tableName", "Name of the table to check.")]
-        [Input("columnName", "Name of the column to check for.")]
-        [Output("exists", "True if the column exists in the table, false otherwise.")]
-        private bool ColumnExists(SqliteConnection connection, string tableName, string columnName)
+        [Description("Executes a parameterised INSERT statement against a SQLite connection.")]
+        [Input("connection", "The SQLite connection to execute the statement against.")]
+        [Input("tableName", "The name of the table to insert into.")]
+        [Input("columnValues", "Dictionary of column names and their values to insert.")]
+        [Input("conflictClause", "Optional conflict resolution clause (e.g., 'OR REPLACE', 'OR IGNORE').")]
+        [Output("success", "True if the insert executed successfully, false otherwise.")]
+        private bool Insert(SqliteConnection connection, string tableName, Dictionary<string, object> columnValues, string conflictClause = "OR REPLACE")
         {
             if (connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot check column existence: connection is null.");
+                BH.Engine.Base.Compute.RecordError("Cannot execute insert: no database connection.");
                 return false;
             }
 
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                BH.Engine.Base.Compute.RecordError("Cannot check column existence: table name is null or empty.");
+                BH.Engine.Base.Compute.RecordError("Cannot execute insert: table name is null or empty.");
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(columnName))
+            if (columnValues == null || !columnValues.Any())
             {
-                BH.Engine.Base.Compute.RecordError("Cannot check column existence: column name is null or empty.");
+                BH.Engine.Base.Compute.RecordWarning("No column values provided for insert operation.");
                 return false;
             }
 
             try
             {
-                using (SqliteCommand command = new SqliteCommand($"PRAGMA table_info(\"{tableName}\")", connection))
+                List<string> columnNames = columnValues.Keys.ToList();
+                string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
+                string placeholders = string.Join(", ", columnNames.Select(col => $"@{col}"));
+                
+                string insertSql = $"INSERT {conflictClause} INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
+
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                foreach (KeyValuePair<string, object> columnValue in columnValues)
                 {
-                    using (SqliteDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string existingColumnName = reader.GetString(1); // Column name is at index 1
-                            if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                return true;
-                            }
-                        }
-                    }
+                    parameters[$"@{columnValue.Key}"] = columnValue.Value;
                 }
 
-                return false;
+                return Command(connection, insertSql, parameters, $"INSERT into table '{tableName}'");
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Failed to check if column '{columnName}' exists in table '{tableName}': {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to build INSERT statement for table '{tableName}': {ex.Message}");
                 return false;
             }
         }

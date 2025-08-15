@@ -37,7 +37,7 @@ namespace BH.Adapter.SQLite
         [Input("connection", "The SQLite connection to perform the checkpoint on.")]
         [Input("checkpointMode", "The checkpoint mode to use. TRUNCATE is recommended for normal operations.")]
         [Output("success", "True if the checkpoint was successful, false otherwise.")]
-        public static bool WalCheckpoint(SqliteConnection connection, string checkpointMode = "TRUNCATE")
+        private bool WalCheckpoint(SqliteConnection connection, string checkpointMode = "TRUNCATE")
         {
             if (connection == null)
             {

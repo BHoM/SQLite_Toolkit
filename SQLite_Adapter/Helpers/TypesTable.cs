@@ -36,7 +36,7 @@ namespace BH.Adapter.SQLite
         [Description("Creates the __Types system table for storing type-to-table mappings.")]
         [Input("connection", "Active SQLite database connection.")]
         [Output("success", "True if the table was created successfully, false otherwise.")]
-        public static bool TypesTable(SqliteConnection connection)
+        private bool TypesTable(SqliteConnection connection)
         {
             if (connection == null)
             {

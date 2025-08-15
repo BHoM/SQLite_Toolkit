@@ -31,7 +31,7 @@ using System.Text;
 
 namespace BH.Engine.SQLite
 {
-    public static partial class Create
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/

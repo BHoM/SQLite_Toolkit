@@ -50,7 +50,7 @@ namespace BH.Adapter.SQLite
                 filterResult.Limit = equalityRequest.MaxResults;
 
             // Execute filtered query
-            QueryResult queryResult = ExecuteFilteredQuery(equalityRequest.TableName, filterResult);
+            QueryResult queryResult = ExecuteQuery(equalityRequest.TableName, filterResult);
             result.Add(queryResult);
             
             return result;

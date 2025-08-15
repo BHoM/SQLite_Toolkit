@@ -441,7 +441,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Initialise the complete toolkit system including all system tables
-                bool systemInitialised = SQLiteAdapter.InitialiseToolkitSystem(connection);
+                bool systemInitialised = InitialiseToolkitSystem(connection);
 
                 if (systemInitialised)
                     BH.Engine.Base.Compute.RecordNote("System tables initialised successfully.");

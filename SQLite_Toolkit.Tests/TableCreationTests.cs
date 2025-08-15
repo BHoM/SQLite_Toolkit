@@ -80,7 +80,7 @@ namespace BH.Tests.SQLite.Functionality
             };
 
             // Act
-            string createSql = BH.Engine.SQLite.Create.Table(tableSchema);
+            string createSql = BH.Engine.SQLite.Compute.Table(tableSchema);
 
             // Assert
             createSql.Should().NotBeNullOrEmpty("SQL should be generated");
@@ -141,7 +141,7 @@ namespace BH.Tests.SQLite.Functionality
             };
 
             // Act
-            string createSql = BH.Engine.SQLite.Create.Table(tableSchema);
+            string createSql = BH.Engine.SQLite.Compute.Table(tableSchema);
             createSql.Should().NotBeNullOrEmpty("SQL should be generated");
 
             // Execute the SQL using CustomSqlRequest
@@ -202,7 +202,7 @@ namespace BH.Tests.SQLite.Functionality
             };
 
             // Act
-            string createSql = BH.Engine.SQLite.Create.Table(tableSchema);
+            string createSql = BH.Engine.SQLite.Compute.Table(tableSchema);
 
             // Assert
             createSql.Should().NotBeNullOrEmpty("SQL should be generated");
@@ -259,7 +259,7 @@ namespace BH.Tests.SQLite.Functionality
             };
 
             // Act
-            string createSql = BH.Engine.SQLite.Create.Table(tableSchema);
+            string createSql = BH.Engine.SQLite.Compute.Table(tableSchema);
 
             // Assert
             createSql.Should().NotBeNullOrEmpty("SQL should be generated");
@@ -323,7 +323,7 @@ namespace BH.Tests.SQLite.Functionality
             };
 
             // Act
-            string createSql = BH.Engine.SQLite.Create.Table(tableSchema);
+            string createSql = BH.Engine.SQLite.Compute.Table(tableSchema);
             createSql.Should().NotBeNullOrEmpty("SQL should be generated");
 
             // The SQL should contain both table creation and index creation
@@ -355,7 +355,7 @@ namespace BH.Tests.SQLite.Functionality
             // Objective: Test error handling for invalid table schemas
 
             // Test null schema
-            string nullSchemaSql = BH.Engine.SQLite.Create.Table(null);
+            string nullSchemaSql = BH.Engine.SQLite.Compute.Table(null);
             nullSchemaSql.Should().BeNull("SQL should be null for null schema");
 
             // Test empty table name
@@ -373,7 +373,7 @@ namespace BH.Tests.SQLite.Functionality
                 }
             };
 
-            string emptyNameSql = BH.Engine.SQLite.Create.Table(emptyNameSchema);
+            string emptyNameSql = BH.Engine.SQLite.Compute.Table(emptyNameSchema);
             emptyNameSql.Should().BeNull("SQL should be null for empty table name");
 
             // Test no columns
@@ -383,7 +383,7 @@ namespace BH.Tests.SQLite.Functionality
                 Columns = new List<Column>()
             };
 
-            string noColumnsSql = BH.Engine.SQLite.Create.Table(noColumnsSchema);
+            string noColumnsSql = BH.Engine.SQLite.Compute.Table(noColumnsSchema);
             noColumnsSql.Should().BeNull("SQL should be null for schema with no columns");
 
             // Test null columns
@@ -393,7 +393,7 @@ namespace BH.Tests.SQLite.Functionality
                 Columns = null
             };
 
-            string nullColumnsSql = BH.Engine.SQLite.Create.Table(nullColumnsSchema);
+            string nullColumnsSql = BH.Engine.SQLite.Compute.Table(nullColumnsSchema);
             nullColumnsSql.Should().BeNull("SQL should be null for schema with null columns");
         }
 
@@ -421,7 +421,7 @@ namespace BH.Tests.SQLite.Functionality
             };
 
             // Act - Create table first time
-            string createSql1 = BH.Engine.SQLite.Create.Table(tableSchema, ifNotExists: true);
+            string createSql1 = BH.Engine.SQLite.Compute.Table(tableSchema, ifNotExists: true);
             IEnumerable<object> results1 = ExecuteCustomSql(createSql1);
 
             // Assert - Table should be created
@@ -429,14 +429,14 @@ namespace BH.Tests.SQLite.Functionality
             tableExists1.Should().BeTrue("Table should exist after first creation");
 
             // Act - Create table second time with IF NOT EXISTS
-            string createSql2 = BH.Engine.SQLite.Create.Table(tableSchema, ifNotExists: true);
+            string createSql2 = BH.Engine.SQLite.Compute.Table(tableSchema, ifNotExists: true);
             IEnumerable<object> results2 = ExecuteCustomSql(createSql2);
 
             // Assert - Should not throw error
             results2.Should().NotBeNull("Second creation should not fail with IF NOT EXISTS");
 
             // Act - Create table without IF NOT EXISTS (should fail)
-            string createSql3 = BH.Engine.SQLite.Create.Table(tableSchema, ifNotExists: false);
+            string createSql3 = BH.Engine.SQLite.Compute.Table(tableSchema, ifNotExists: false);
             
             // This should return an error in the QueryResult when executed
             IEnumerable<object> results3 = ExecuteCustomSql(createSql3);
@@ -543,7 +543,7 @@ namespace BH.Tests.SQLite.Functionality
             };
 
             // Act
-            string createSql = BH.Engine.SQLite.Create.Table(complexTableSchema);
+            string createSql = BH.Engine.SQLite.Compute.Table(complexTableSchema);
             createSql.Should().NotBeNullOrEmpty("SQL should be generated for complex table");
 
             // Execute the SQL

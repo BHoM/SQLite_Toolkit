@@ -39,7 +39,7 @@ namespace BH.Adapter.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("tableSchema", "The table schema to document in the __Schema table.")]
         [Output("success", "True if schema information was recorded successfully, false otherwise.")]
-        public static bool PopulateSchemaTable(SqliteConnection connection, TableSchema tableSchema)
+        private bool PopulateSchemaTable(SqliteConnection connection, TableSchema tableSchema)
         {
             if (connection == null)
             {
@@ -56,7 +56,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Ensure __Schema table exists
-                bool schemaTableExists = SQLiteAdapter.SchemaTable(connection);
+                bool schemaTableExists = SchemaTable(connection);
                 if (!schemaTableExists)
                 {
                     BH.Engine.Base.Compute.RecordError("Failed to ensure __Schema table exists.");

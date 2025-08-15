@@ -38,9 +38,9 @@ namespace BH.Adapter.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("type", "The .NET Type to check.")]
         [Output("isRegistered", "True if the type is registered, false otherwise.")]
-        public static bool IsTypeRegistered(SqliteConnection connection, Type type)
+        private bool IsTypeRegistered(SqliteConnection connection, Type type)
         {
-            TypeRegistration registration = SQLiteAdapter.GetTypeRegistration(connection, type);
+            TypeRegistration registration = GetTypeRegistration(connection, type);
             return registration != null;
         }
 

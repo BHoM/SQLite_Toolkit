@@ -52,7 +52,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Generate CREATE TABLE SQL using the Engine method
-                string createSql = BH.Engine.SQLite.Create.Table(tableSchema, ifNotExists: true, dropIfExists: false);
+                string createSql = BH.Engine.SQLite.Compute.Table(tableSchema, ifNotExists: true, dropIfExists: false);
                 
                 if (string.IsNullOrEmpty(createSql))
                 {
@@ -61,7 +61,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Execute the SQL using the shared method
-                bool success = m_Connection.Command(createSql, (Dictionary<string, object>)null, $"CREATE TABLE {tableSchema.Name}");
+                bool success = Command(m_Connection, createSql, (Dictionary<string, object>)null, $"CREATE TABLE {tableSchema.Name}");
                 
                 if (success)
                 {

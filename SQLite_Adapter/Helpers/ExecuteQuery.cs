@@ -33,7 +33,7 @@ namespace BH.Adapter.SQLite
         /**** Private Methods                           ****/
         /***************************************************/
 
-        private QueryResult ExecuteFilteredQuery(string tableName, FilterResult filterResult)
+        private QueryResult ExecuteQuery(string tableName, FilterResult filterResult)
         {
             QueryResult result = new QueryResult
             {
@@ -51,7 +51,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Check if table exists
-                if (!SQLiteAdapter.TableExists(m_Connection, tableName))
+                if (!TableExists(m_Connection, tableName))
                 {
                     result.IsSuccess = false;
                     result.ErrorMessage = $"Table '{tableName}' does not exist in the database.";
@@ -60,7 +60,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Build the SELECT query
-                string sql = BH.Engine.SQLite.Create.SelectQuery(tableName, filterResult);
+                string sql = BH.Engine.SQLite.Compute.SelectQuery(tableName, filterResult);
                 if (string.IsNullOrEmpty(sql))
                 {
                     result.IsSuccess = false;

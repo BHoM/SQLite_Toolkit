@@ -41,7 +41,7 @@ namespace BH.Adapter.SQLite
         [Input("type", "The .NET Type object to register for database storage. The full type name including namespace will be stored for precise type resolution.")]
         [Input("tableName", "Optional custom database table name for this type. If not specified or empty, generates a unique table name based on the type name with conflict resolution.")]
         [Output("registration", "The TypeRegistration object containing the assigned ID, full type name, table name and creation timestamp, or null if registration fails due to database errors.")]
-        public static TypeRegistration RegisterType(SqliteConnection connection, Type type, string tableName = "")
+        private TypeRegistration RegisterType(SqliteConnection connection, Type type, string tableName = "")
         {
             if (connection == null || type == null)
             {
@@ -53,14 +53,14 @@ namespace BH.Adapter.SQLite
             string finalTableName;
             
             if (string.IsNullOrWhiteSpace(tableName))
-                finalTableName = SQLiteAdapter.TableName(type, connection);
+                finalTableName = TableName(type, connection);
             else
                 finalTableName = tableName;
 
             try
             {
                 // Check if type is already registered
-                var existing = SQLiteAdapter.GetTypeRegistration(connection, fullTypeName);
+                var existing = GetTypeRegistration(connection, fullTypeName);
                 if (existing != null)
                 {
                     Engine.Base.Compute.RecordNote($"Type {fullTypeName} is already registered with table {existing.TableName}.");
@@ -80,7 +80,7 @@ namespace BH.Adapter.SQLite
                     INSERT INTO __Types (FullTypeName, TableName, DateCreated) 
                     VALUES (@FullTypeName, @TableName, @DateCreated)";
 
-                using (var command = new SqliteCommand(insertSql, connection))
+                using (SqliteCommand command = new SqliteCommand(insertSql, connection))
                 {
                     command.Parameters.AddWithValue("@FullTypeName", registration.FullTypeName);
                     command.Parameters.AddWithValue("@TableName", registration.TableName);

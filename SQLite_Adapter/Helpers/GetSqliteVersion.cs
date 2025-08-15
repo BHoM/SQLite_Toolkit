@@ -36,7 +36,7 @@ namespace BH.Adapter.SQLite
         [Description("Gets the SQLite version from an active database connection.")]
         [Input("connection", "Active SQLite database connection.")]
         [Output("version", "The SQLite version string, or 'Unknown' if query fails.")]
-        public static string GetSqliteVersion(SqliteConnection connection)
+        private string GetSqliteVersion(SqliteConnection connection)
         {
             if (connection == null || connection.State != System.Data.ConnectionState.Open)
             {

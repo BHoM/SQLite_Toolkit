@@ -37,7 +37,7 @@ namespace BH.Adapter.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("tableName", "The table name to look up.")]
         [Output("typeName", "The full .NET type name if found, null otherwise.")]
-        public static string GetTypeName(SqliteConnection connection, string tableName)
+        private string GetTypeName(SqliteConnection connection, string tableName)
         {
             if (connection == null || string.IsNullOrWhiteSpace(tableName))
                 return null;

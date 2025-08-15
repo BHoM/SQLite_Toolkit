@@ -22,67 +22,42 @@
 
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Objects;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 
 namespace BH.Engine.SQLite
 {
-    public static partial class Create
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Builds a complete SELECT query from a FilterResult and table information.")]
-        [Input("tableName", "The name of the table to query.")]
-        [Input("filterResult", "The filter result containing WHERE clause and parameters. Can be null for no filtering.")]
-        [Input("selectColumns", "List of column names to select. If empty, selects all columns (*).")]
-        [Input("orderBy", "Optional ORDER BY clause (without the 'ORDER BY' keyword).")]
-        [Output("sql", "Complete SQL SELECT statement, or null if construction failed.")]
-        public static string SelectQuery(string tableName, FilterResult filterResult = null, List<string> selectColumns = null, string orderBy = "")
+        [Description("Builds a parameterised DELETE query from a FilterResult and table information.")]
+        [Input("tableName", "The name of the table to delete from.")]
+        [Input("filterResult", "The filter result containing WHERE clause and parameters. Required for safety.")]
+        [Output("sql", "Complete SQL DELETE statement, or null if construction failed.")]
+        public static string DeleteQuery(string tableName, FilterResult filterResult)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                BH.Engine.Base.Compute.RecordError("Cannot build SELECT query: table name is null or empty.");
+                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: table name is null or empty.");
+                return null;
+            }
+
+            if (filterResult == null || string.IsNullOrWhiteSpace(filterResult.WhereClause))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: filter result with WHERE clause is required for safety.");
                 return null;
             }
 
             StringBuilder sql = new StringBuilder();
 
-            // SELECT clause
-            sql.Append("SELECT ");
-            if (selectColumns != null && selectColumns.Any())
-            {
-                List<string> quotedColumns = selectColumns.Select(col => $"\"{col}\"").ToList();
-                sql.Append(string.Join(", ", quotedColumns));
-            }
-            else
-            {
-                sql.Append("*");
-            }
+            // DELETE FROM clause
+            sql.Append($"DELETE FROM \"{tableName}\"");
 
-            // FROM clause
-            sql.Append($" FROM \"{tableName}\"");
-
-            // WHERE clause
-            if (filterResult != null && !string.IsNullOrWhiteSpace(filterResult.WhereClause))
-            {
-                sql.Append($" WHERE {filterResult.WhereClause}");
-            }
-
-            // ORDER BY clause
-            if (!string.IsNullOrWhiteSpace(orderBy))
-            {
-                sql.Append($" ORDER BY {orderBy}");
-            }
-
-            // LIMIT clause
-            if (filterResult != null && filterResult.Limit > 0)
-            {
-                sql.Append($" LIMIT {filterResult.Limit}");
-            }
+            // WHERE clause (required)
+            sql.Append($" WHERE {filterResult.WhereClause}");
 
             return sql.ToString();
         }

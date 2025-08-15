@@ -36,7 +36,7 @@ namespace BH.Adapter.SQLite
         [Description("Initialises the complete SQLite Toolkit system including all system tables.")]
         [Input("connection", "Active SQLite database connection.")]
         [Output("success", "True if the system was initialised successfully, false otherwise.")]
-        public static bool InitialiseToolkitSystem(SqliteConnection connection)
+        private bool InitialiseToolkitSystem(SqliteConnection connection)
         {
             if (connection == null)
             {
@@ -49,7 +49,7 @@ namespace BH.Adapter.SQLite
                 BH.Engine.Base.Compute.RecordNote("Initializing SQLite Toolkit system...");
 
                 // Create all system tables
-                bool systemTablesCreated = SQLiteAdapter.AllSystemTables(connection);
+                bool systemTablesCreated = AllSystemTables(connection);
                 if (!systemTablesCreated)
                 {
                     BH.Engine.Base.Compute.RecordError("Failed to create system tables.");
@@ -57,7 +57,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Verify system integrity
-                bool systemValid = SQLiteAdapter.VerifySystemIntegrity(connection);
+                bool systemValid = VerifySystemIntegrity(connection);
                 if (!systemValid)
                 {
                     BH.Engine.Base.Compute.RecordError("System integrity check failed.");

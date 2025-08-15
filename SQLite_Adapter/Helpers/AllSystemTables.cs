@@ -36,7 +36,7 @@ namespace BH.Adapter.SQLite
         [Description("Creates all system tables required for the SQLite Toolkit.")]
         [Input("connection", "Active SQLite database connection.")]
         [Output("success", "True if all system tables were created successfully, false otherwise.")]
-        public static bool AllSystemTables(SqliteConnection connection)
+        private bool AllSystemTables(SqliteConnection connection)
         {
             if (connection == null)
             {
@@ -47,7 +47,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Check if __Types table exists before creating
-                bool typesExists = SQLiteAdapter.TableExists(connection, "__Types");
+                bool typesExists = TableExists(connection, "__Types");
                 bool typesSuccess;
                 
                 if (typesExists)
@@ -57,7 +57,7 @@ namespace BH.Adapter.SQLite
                 }
                 else
                 {
-                    typesSuccess = SQLiteAdapter.TypesTable(connection);
+                    typesSuccess = TypesTable(connection);
                     if (typesSuccess)
                     {
                         BH.Engine.Base.Compute.RecordNote("Successfully created system table '__Types'.");
@@ -65,7 +65,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Check if __Schema table exists before creating
-                bool schemaExists = SQLiteAdapter.TableExists(connection, "__Schema");
+                bool schemaExists = TableExists(connection, "__Schema");
                 bool schemaSuccess;
                 
                 if (schemaExists)
@@ -75,7 +75,7 @@ namespace BH.Adapter.SQLite
                 }
                 else
                 {
-                    schemaSuccess = SQLiteAdapter.SchemaTable(connection);
+                    schemaSuccess = SchemaTable(connection);
                     if (schemaSuccess)
                     {
                         BH.Engine.Base.Compute.RecordNote("Successfully created system table '__Schema'.");

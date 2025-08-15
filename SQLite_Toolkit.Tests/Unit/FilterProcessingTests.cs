@@ -370,7 +370,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            string selectQuery = BH.Engine.SQLite.Create.SelectQuery(tableName, filter);
+            string selectQuery = BH.Engine.SQLite.Compute.SelectQuery(tableName, filter);
             
             // Assert
             selectQuery.Should().NotBeNullOrEmpty("Should generate SELECT query");
@@ -394,7 +394,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            string deleteQuery = BH.Engine.SQLite.Create.DeleteQuery(tableName, filter);
+            string deleteQuery = BH.Engine.SQLite.Compute.DeleteQuery(tableName, filter);
             
             // Assert
             deleteQuery.Should().NotBeNullOrEmpty("Should generate DELETE query");
@@ -418,7 +418,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            string countQuery = BH.Engine.SQLite.Create.CountQuery(tableName, filter);
+            string countQuery = BH.Engine.SQLite.Compute.CountQuery(tableName, filter);
             
             // Assert
             countQuery.Should().NotBeNullOrEmpty("Should generate COUNT query");

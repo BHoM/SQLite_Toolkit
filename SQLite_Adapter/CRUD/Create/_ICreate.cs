@@ -95,16 +95,16 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Step 1: Ensure __Types table exists
-                if (!SQLiteAdapter.TableExists(m_Connection, "__Types"))
+                if (!TableExists(m_Connection, "__Types"))
                 {
                     TypesTable(m_Connection);
                 }
 
                 // Step 2: Get or register table name for this type
-                string tableName = SQLiteAdapter.GetTableName(m_Connection, objectType.FullName);
+                string tableName = GetTableName(m_Connection, objectType.FullName);
                 if (string.IsNullOrEmpty(tableName))
                 {
-                    TypeRegistration registration = SQLiteAdapter.RegisterType(m_Connection, objectType);
+                    TypeRegistration registration = RegisterType(m_Connection, objectType);
                     if (registration == null)
                     {
                         BH.Engine.Base.Compute.RecordError($"Failed to register type {objectType.FullName} in __Types table.");
@@ -119,9 +119,9 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Step 3: Ensure table exists (create if it doesn't)
-                if (!SQLiteAdapter.TableExists(m_Connection, tableName))
+                if (!TableExists(m_Connection, tableName))
                 {
-                    bool tableCreated = BH.Adapter.SQLite.Create.TableFromType(m_Connection, objectType, config);
+                    bool tableCreated = Table(m_Connection, objectType, config);
                     if (!tableCreated)
                     {
                         BH.Engine.Base.Compute.RecordError($"Failed to create table '{tableName}' for type {objectType.Name}.");
@@ -179,7 +179,7 @@ namespace BH.Adapter.SQLite
                 return false;
 
             // Use the shared Insert method
-            return m_Connection.Insert(tableName, columnValues, "OR REPLACE");
+            return Insert(m_Connection, tableName, columnValues, "OR REPLACE");
         }
 
         /***************************************************/

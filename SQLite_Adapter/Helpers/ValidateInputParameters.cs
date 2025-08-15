@@ -38,7 +38,7 @@ namespace BH.Adapter.SQLite
         [Input("connection", "The SQLite database connection to validate for null reference.")]
         [Input("operationName", "Descriptive name of the operation being attempted, used in error messages to provide clear context for debugging.")]
         [Output("isValid", "True if the connection is not null and can be used for database operations, false if the connection is null and an error has been recorded.")]
-        public static bool ValidateInputParameters(SqliteConnection connection, string operationName)
+        private bool ValidateInputParameters(SqliteConnection connection, string operationName)
         {
             if (connection == null)
             {
@@ -55,7 +55,7 @@ namespace BH.Adapter.SQLite
         [Input("objectType", "The .NET Type object to validate for null reference.")]
         [Input("operationName", "Descriptive name of the operation being attempted, used in error messages to provide clear context for debugging.")]
         [Output("isValid", "True if the type is not null and can be used for schema generation or type analysis, false if the type is null and an error has been recorded.")]
-        public static bool ValidateInputParameters(Type objectType, string operationName)
+        private bool ValidateInputParameters(Type objectType, string operationName)
         {
             if (objectType == null)
             {
@@ -72,7 +72,7 @@ namespace BH.Adapter.SQLite
         [Input("tableName", "The table name string to validate for null, empty, or whitespace values.")]
         [Input("operationName", "Descriptive name of the operation being attempted, used in error messages to provide clear context for debugging.")]
         [Output("isValid", "True if the table name is valid and can be used in SQL operations, false if the table name is invalid and an error has been recorded.")]
-        public static bool ValidateInputParameters(string tableName, string operationName)
+        private bool ValidateInputParameters(string tableName, string operationName)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
@@ -90,7 +90,7 @@ namespace BH.Adapter.SQLite
         [Input("objectType", "The .NET Type object to validate for null reference.")]
         [Input("operationName", "Descriptive name of the operation being attempted, used in error messages to provide clear context for debugging.")]
         [Output("isValid", "True if all parameters are valid and the operation can proceed, false if any parameter is invalid and appropriate errors have been recorded.")]
-        public static bool ValidateInputParameters(SqliteConnection connection, Type objectType, string operationName)
+        private bool ValidateInputParameters(SqliteConnection connection, Type objectType, string operationName)
         {
             if (!ValidateInputParameters(connection, operationName))
                 return false;
@@ -109,7 +109,7 @@ namespace BH.Adapter.SQLite
         [Input("tableName", "The table name string to validate for null, empty, or whitespace values.")]
         [Input("operationName", "Descriptive name of the operation being attempted, used in error messages to provide clear context for debugging.")]
         [Output("isValid", "True if both connection and table name are valid for database operations, false if either parameter is invalid and appropriate errors have been recorded.")]
-        public static bool ValidateInputParameters(SqliteConnection connection, string tableName, string operationName)
+        private bool ValidateInputParameters(SqliteConnection connection, string tableName, string operationName)
         {
             if (!ValidateInputParameters(connection, operationName))
                 return false;

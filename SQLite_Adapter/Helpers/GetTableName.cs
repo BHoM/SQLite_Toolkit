@@ -38,9 +38,9 @@ namespace BH.Adapter.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("type", "The .NET Type to get the table name for.")]
         [Output("tableName", "The table name if registered, null otherwise.")]
-        public static string GetTableName(SqliteConnection connection, Type type)
+        private string GetTableName(SqliteConnection connection, Type type)
         {
-            TypeRegistration registration = SQLiteAdapter.GetTypeRegistration(connection, type);
+            TypeRegistration registration = GetTypeRegistration(connection, type);
             return registration?.TableName;
         }
 
@@ -50,9 +50,9 @@ namespace BH.Adapter.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("fullTypeName", "The full type name including namespace.")]
         [Output("tableName", "The table name if registered, null otherwise.")]
-        public static string GetTableName(SqliteConnection connection, string fullTypeName)
+        private string GetTableName(SqliteConnection connection, string fullTypeName)
         {
-            TypeRegistration registration = SQLiteAdapter.GetTypeRegistration(connection, fullTypeName);
+            TypeRegistration registration = GetTypeRegistration(connection, fullTypeName);
             return registration?.TableName;
         }
 

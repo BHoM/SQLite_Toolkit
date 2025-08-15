@@ -27,37 +27,37 @@ using System.Text;
 
 namespace BH.Engine.SQLite
 {
-    public static partial class Create
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Builds a parameterised DELETE query from a FilterResult and table information.")]
-        [Input("tableName", "The name of the table to delete from.")]
-        [Input("filterResult", "The filter result containing WHERE clause and parameters. Required for safety.")]
-        [Output("sql", "Complete SQL DELETE statement, or null if construction failed.")]
-        public static string DeleteQuery(string tableName, FilterResult filterResult)
+        [Description("Builds a COUNT query to get the number of rows matching the filter criteria.")]
+        [Input("tableName", "The name of the table to count from.")]
+        [Input("filterResult", "The filter result containing WHERE clause and parameters. Can be null to count all rows.")]
+        [Output("sql", "Complete SQL COUNT statement, or null if construction failed.")]
+        public static string CountQuery(string tableName, FilterResult filterResult = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {
-                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: table name is null or empty.");
-                return null;
-            }
-
-            if (filterResult == null || string.IsNullOrWhiteSpace(filterResult.WhereClause))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: filter result with WHERE clause is required for safety.");
+                BH.Engine.Base.Compute.RecordError("Cannot build COUNT query: table name is null or empty.");
                 return null;
             }
 
             StringBuilder sql = new StringBuilder();
 
-            // DELETE FROM clause
-            sql.Append($"DELETE FROM \"{tableName}\"");
+            // SELECT COUNT clause
+            sql.Append("SELECT COUNT(*)");
 
-            // WHERE clause (required)
-            sql.Append($" WHERE {filterResult.WhereClause}");
+            // FROM clause
+            sql.Append($" FROM \"{tableName}\"");
+
+            // WHERE clause
+            if (filterResult != null && !string.IsNullOrWhiteSpace(filterResult.WhereClause))
+            {
+                sql.Append($" WHERE {filterResult.WhereClause}");
+            }
 
             return sql.ToString();
         }

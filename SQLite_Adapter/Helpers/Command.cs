@@ -29,10 +29,10 @@ using System.Linq;
 
 namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public partial class SQLiteAdapter
     {
         /***************************************************/
-        /**** Public Methods                            ****/
+        /**** Private Methods                           ****/
         /***************************************************/
 
         [Description("Executes a parameterised SQL statement against a SQLite connection with comprehensive error handling and automatic value conversion. \n" +
@@ -42,7 +42,7 @@ namespace BH.Adapter.SQLite
         [Input("parameters", "Optional dictionary mapping parameter names to their values. Parameter names should include the '@' prefix. Values are automatically converted to SQLite-compatible types.")]
         [Input("operationName", "Optional descriptive name for the operation used in error reporting and logging. Helps identify the source of database errors during debugging.")]
         [Output("success", "True if the SQL statement executed successfully without throwing exceptions, false if execution failed due to database errors, connection issues, or parameter problems.")]
-        public static bool Command(this SqliteConnection connection, string sql, Dictionary<string, object> parameters = null, string operationName = "SQL operation")
+        private bool Command(SqliteConnection connection, string sql, Dictionary<string, object> parameters = null, string operationName = "SQL operation")
         {
             if (connection == null)
             {
@@ -89,7 +89,7 @@ namespace BH.Adapter.SQLite
         [Input("parameterValues", "List of parameter values in the order they appear in the SQL.")]
         [Input("operationName", "Optional name for the operation for error reporting.")]
         [Output("success", "True if the SQL executed successfully, false otherwise.")]
-        public static bool Command(this SqliteConnection connection, string sql, List<object> parameterValues, string operationName = "SQL operation")
+        private bool Command(SqliteConnection connection, string sql, List<object> parameterValues, string operationName = "SQL operation")
         {
             if (connection == null)
             {
@@ -131,55 +131,5 @@ namespace BH.Adapter.SQLite
 
         /***************************************************/
 
-        [Description("Executes a parameterised INSERT statement against a SQLite connection.")]
-        [Input("connection", "The SQLite connection to execute the statement against.")]
-        [Input("tableName", "The name of the table to insert into.")]
-        [Input("columnValues", "Dictionary of column names and their values to insert.")]
-        [Input("conflictClause", "Optional conflict resolution clause (e.g., 'OR REPLACE', 'OR IGNORE').")]
-        [Output("success", "True if the insert executed successfully, false otherwise.")]
-        public static bool Insert(this SqliteConnection connection, string tableName, Dictionary<string, object> columnValues, string conflictClause = "OR REPLACE")
-        {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot execute insert: no database connection.");
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot execute insert: table name is null or empty.");
-                return false;
-            }
-
-            if (columnValues == null || !columnValues.Any())
-            {
-                BH.Engine.Base.Compute.RecordWarning("No column values provided for insert operation.");
-                return false;
-            }
-
-            try
-            {
-                List<string> columnNames = columnValues.Keys.ToList();
-                string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
-                string placeholders = string.Join(", ", columnNames.Select(col => $"@{col}"));
-                
-                string insertSql = $"INSERT {conflictClause} INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
-
-                Dictionary<string, object> parameters = new Dictionary<string, object>();
-                foreach (KeyValuePair<string, object> columnValue in columnValues)
-                {
-                    parameters[$"@{columnValue.Key}"] = columnValue.Value;
-                }
-
-                return connection.Command(insertSql, parameters, $"INSERT into table '{tableName}'");
-            }
-            catch (Exception ex)
-            {
-                BH.Engine.Base.Compute.RecordError($"Failed to build INSERT statement for table '{tableName}': {ex.Message}");
-                return false;
-            }
-        }
-
-        /***************************************************/
     }
 }

@@ -36,7 +36,7 @@ namespace BH.Adapter.SQLite
         [Description("Verifies the integrity of the SQLite Toolkit system tables and configuration.")]
         [Input("connection", "Active SQLite database connection.")]
         [Output("valid", "True if the system is valid and complete, false otherwise.")]
-        public static bool VerifySystemIntegrity(SqliteConnection connection)
+        private bool VerifySystemIntegrity(SqliteConnection connection)
         {
             if (connection == null)
             {
@@ -50,7 +50,7 @@ namespace BH.Adapter.SQLite
                 string[] systemTables = { "__Types", "__Schema" };
                 foreach (string tableName in systemTables)
                 {
-                    if (!SQLiteAdapter.TableExists(connection, tableName))
+                    if (!TableExists(connection, tableName))
                     {
                         BH.Engine.Base.Compute.RecordWarning($"System table '{tableName}' is missing.");
                         return false;

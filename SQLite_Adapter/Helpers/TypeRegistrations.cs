@@ -39,7 +39,7 @@ namespace BH.Adapter.SQLite
         [Description("Gets all type registrations from the database.")]
         [Input("connection", "Active SQLite database connection.")]
         [Output("registrations", "List of all TypeRegistration objects.")]
-        public static List<TypeRegistration> TypeRegistrations(SqliteConnection connection)
+        private List<TypeRegistration> TypeRegistrations(SqliteConnection connection)
         {
             List<TypeRegistration> registrations = new List<TypeRegistration>();
 

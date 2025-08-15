@@ -38,7 +38,7 @@ namespace BH.Adapter.SQLite
         [Input("connection", "Active SQLite database connection.")]
         [Input("tableName", "The table name to check.")]
         [Output("exists", "True if the table exists, false otherwise.")]
-        public static bool TableExists(SqliteConnection connection, string tableName)
+        protected bool TableExists(SqliteConnection connection, string tableName)
         {
             if (connection == null || string.IsNullOrWhiteSpace(tableName))
                 return false;

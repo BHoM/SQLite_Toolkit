@@ -156,7 +156,7 @@ namespace BH.Tests.SQLite.Base
                 Columns = columns
             };
 
-            string createSql = BH.Engine.SQLite.Create.Table(tableSchema);
+            string createSql = BH.Engine.SQLite.Compute.Table(tableSchema);
 
             if (string.IsNullOrEmpty(createSql))
                 return false;

@@ -36,7 +36,7 @@ namespace BH.Adapter.SQLite
         [Description("Creates the __Schema system table for storing database schema metadata.")]
         [Input("connection", "Active SQLite database connection.")]
         [Output("success", "True if the table was created successfully, false otherwise.")]
-        public static bool SchemaTable(SqliteConnection connection)
+        private bool SchemaTable(SqliteConnection connection)
         {
             if (connection == null)
             {
