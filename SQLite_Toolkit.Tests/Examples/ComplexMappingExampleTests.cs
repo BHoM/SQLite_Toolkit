@@ -519,11 +519,14 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest positionFilter = new RangeFilterRequest()
             {
                 TableName = "Bar",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "StartX",
-                        new GeneralDomain() { Min = 2.0, Max = 10.0 }
+                        {
+                            "StartX",
+                            new GeneralDomain() { Min = 2.0, Max = 10.0 }
+                        }
                     }
                 }
             };

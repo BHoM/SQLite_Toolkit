@@ -272,11 +272,14 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest comfortableTemperature = new RangeFilterRequest()
             {
                 TableName = "SensorReading",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Temperature",
-                        new GeneralDomain() { Min = 20.0, Max = 25.0 }
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 20.0, Max = 25.0 }
+                        }
                     }
                 },
                 InclusiveBounds = true
@@ -290,11 +293,14 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest moderateHumidity = new RangeFilterRequest()
             {
                 TableName = "SensorReading",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Humidity",
-                        new GeneralDomain() { Min = 50.0, Max = 70.0 }
+                        {
+                            "Humidity",
+                            new GeneralDomain() { Min = 50.0, Max = 70.0 }
+                        }
                     }
                 },
                 InclusiveBounds = false // Exclusive: 50 < Humidity < 70
@@ -308,14 +314,17 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest firstDayReadings = new RangeFilterRequest()
             {
                 TableName = "SensorReading",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Timestamp",
-                        new GeneralDomain() 
-                        { 
-                            Min = new DateTime(2024, 1, 1, 0, 0, 0),
-                            Max = new DateTime(2024, 1, 1, 23, 59, 59)
+                        {
+                            "Timestamp",
+                            new GeneralDomain() 
+                            { 
+                                Min = new DateTime(2024, 1, 1, 0, 0, 0),
+                                Max = new DateTime(2024, 1, 1, 23, 59, 59)
+                            }
                         }
                     }
                 },
@@ -330,15 +339,18 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest optimalConditions = new RangeFilterRequest()
             {
                 TableName = "SensorReading",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Temperature",
-                        new GeneralDomain() { Min = 20.0, Max = 25.0 }
-                    },
-                    {
-                        "Humidity",
-                        new GeneralDomain() { Min = 50.0, Max = 65.0 }
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 20.0, Max = 25.0 }
+                        },
+                        {
+                            "Humidity",
+                            new GeneralDomain() { Min = 50.0, Max = 65.0 }
+                        }
                     }
                 },
                 Logic = LogicalOperator.And,
@@ -353,11 +365,14 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest highStrengthMaterials = new RangeFilterRequest()
             {
                 TableName = "SimpleMaterial",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "YoungModulus",
-                        new GeneralDomain() { Min = 100000000000.0, Max = 300000000000.0 } // 100-300 GPa
+                        {
+                            "YoungModulus",
+                            new GeneralDomain() { Min = 100000000000.0, Max = 300000000000.0 } // 100-300 GPa
+                        }
                     }
                 },
                 InclusiveBounds = true
@@ -507,11 +522,14 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest highPerformance = new RangeFilterRequest()
             {
                 TableName = "SimpleMaterial",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "YoungModulus",
-                        new GeneralDomain() { Min = 150000000000.0, Max = double.MaxValue } // > 150 GPa
+                        {
+                            "YoungModulus",
+                            new GeneralDomain() { Min = 150000000000.0, Max = double.MaxValue } // > 150 GPa
+                        }
                     }
                 }
             };

@@ -45,7 +45,7 @@ namespace BH.oM.SQLite.Requests
             "Key is the column name, value is a GeneralDomain with Min and Max values. \n" +
             "Supports numeric types (int, double, decimal) and DateTime. \n" +
             "Example: {'Price': new GeneralDomain(100.0, 500.0), 'DateCreated': new GeneralDomain(DateTime(2023,1,1), DateTime(2023,12,31))}")]
-        public virtual Dictionary<string, GeneralDomain> ColumnRanges { get; set; } = new Dictionary<string, GeneralDomain>();
+        public virtual List<Dictionary<string, GeneralDomain>> ColumnRanges { get; set; } = new List<Dictionary<string, GeneralDomain>>();
 
         [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
         public virtual string TableName { get; set; } = "";

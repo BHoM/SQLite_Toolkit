@@ -26,7 +26,7 @@ using System.Collections.Generic;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite;
 
-namespace SQLite_Toolkit.Tests.Helpers
+namespace BH.Tests.SQLite.Helpers
 {
     /// <summary>
     /// Helper class for managing test databases including creation, cleanup, and path management

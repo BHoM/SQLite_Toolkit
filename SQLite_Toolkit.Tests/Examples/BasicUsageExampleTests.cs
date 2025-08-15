@@ -250,11 +250,14 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest temperatureRangeFilter = new RangeFilterRequest()
             {
                 TableName = "SensorReading",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Temperature",
-                        new GeneralDomain() { Min = 20.0, Max = 30.0 }
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 20.0, Max = 30.0 }
+                        }
                     }
                 },
                 InclusiveBounds = true
@@ -270,14 +273,17 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest dateRangeFilter = new RangeFilterRequest()
             {
                 TableName = "SensorReading",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Timestamp",
-                        new GeneralDomain() 
-                        { 
-                            Min = new DateTime(2024, 1, 2, 0, 0, 0),
-                            Max = new DateTime(2024, 1, 4, 23, 59, 59)
+                        {
+                            "Timestamp",
+                            new GeneralDomain() 
+                            { 
+                                Min = new DateTime(2024, 1, 2, 0, 0, 0),
+                                Max = new DateTime(2024, 1, 4, 23, 59, 59)
+                            }
                         }
                     }
                 },
@@ -294,18 +300,21 @@ namespace SQLite_Toolkit.Tests.Examples
             RangeFilterRequest combinedRangeFilter = new RangeFilterRequest()
             {
                 TableName = "SensorReading",
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Temperature",
-                        new GeneralDomain() { Min = 22.0, Max = 32.0 }
-                    },
-                    {
-                        "Timestamp",
-                        new GeneralDomain() 
-                        { 
-                            Min = new DateTime(2024, 1, 3, 0, 0, 0),
-                            Max = new DateTime(2024, 1, 5, 23, 59, 59)
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 22.0, Max = 32.0 }
+                        },
+                        {
+                            "Timestamp",
+                            new GeneralDomain() 
+                            { 
+                                Min = new DateTime(2024, 1, 3, 0, 0, 0),
+                                Max = new DateTime(2024, 1, 5, 23, 59, 59)
+                            }
                         }
                     }
                 },

@@ -186,11 +186,14 @@ namespace SQLite_Toolkit.Tests.Unit
             // Arrange
             RangeFilterRequest request = new RangeFilterRequest()
             {
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Temperature",
-                        new GeneralDomain() { Min = 20.0, Max = 30.0 }
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 20.0, Max = 30.0 }
+                        }
                     }
                 },
                 InclusiveBounds = true
@@ -219,11 +222,14 @@ namespace SQLite_Toolkit.Tests.Unit
             // Arrange
             RangeFilterRequest request = new RangeFilterRequest()
             {
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Humidity",
-                        new GeneralDomain() { Min = 50.0, Max = 80.0 }
+                        {
+                            "Humidity",
+                            new GeneralDomain() { Min = 50.0, Max = 80.0 }
+                        }
                     }
                 },
                 InclusiveBounds = false
@@ -251,11 +257,14 @@ namespace SQLite_Toolkit.Tests.Unit
             
             RangeFilterRequest request = new RangeFilterRequest()
             {
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Timestamp",
-                        new GeneralDomain() { Min = startDate, Max = endDate }
+                        {
+                            "Timestamp",
+                            new GeneralDomain() { Min = startDate, Max = endDate }
+                        }
                     }
                 }
             };
@@ -279,15 +288,18 @@ namespace SQLite_Toolkit.Tests.Unit
             // Arrange
             RangeFilterRequest request = new RangeFilterRequest()
             {
-                ColumnRanges = new Dictionary<string, GeneralDomain>
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
                 {
+                    new Dictionary<string, GeneralDomain>
                     {
-                        "Temperature",
-                        new GeneralDomain() { Min = 20.0, Max = 30.0 }
-                    },
-                    {
-                        "Humidity",
-                        new GeneralDomain() { Min = 40.0, Max = 60.0 }
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 20.0, Max = 30.0 }
+                        },
+                        {
+                            "Humidity",
+                            new GeneralDomain() { Min = 40.0, Max = 60.0 }
+                        }
                     }
                 },
                 Logic = LogicalOperator.And

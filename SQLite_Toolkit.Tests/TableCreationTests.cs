@@ -29,10 +29,10 @@ using BH.Adapter.SQLite;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite;
 using BH.oM.Base;
-using SQLite_Toolkit.Tests.Base;
+using BH.Tests.SQLite.Base;
 using BH.oM.SQLite.Objects;
 
-namespace SQLite_Toolkit.Tests
+namespace BH.Tests.SQLite.Functionality
 {
     /// <summary>
     /// Table Creation Tests

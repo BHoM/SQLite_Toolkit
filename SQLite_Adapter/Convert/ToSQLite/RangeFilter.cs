@@ -37,8 +37,8 @@ namespace BH.Adapter.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Converts a RangeFilterRequest to a parameterised SQL WHERE clause.")]
-        [Input("filter", "The range filter request to convert.")]
+        [Description("Converts a RangeFilterRequest to a parameterised SQL WHERE clause with support for multiple range filter groups combined using logical operators.")]
+        [Input("filter", "The range filter request to convert, containing a list of column range dictionaries.")]
         [Input("parameterPrefix", "Prefix for parameter names to avoid conflicts. Default is 'rng'.")]
         [Output("result", "FilterResult containing the SQL WHERE clause and parameters, or null if conversion failed.")]
         public static FilterResult RangeFilter(RangeFilterRequest filter, string parameterPrefix = "rng")
@@ -49,60 +49,81 @@ namespace BH.Adapter.SQLite
                 return null;
             }
 
-            List<string> whereConditions = new List<string>();
+            List<string> groupConditions = new List<string>();
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             int paramIndex = 0;
 
-            foreach (KeyValuePair<string, GeneralDomain> columnRange in filter.ColumnRanges)
+            // Process each group of column ranges
+            foreach (Dictionary<string, GeneralDomain> columnRangeGroup in filter.ColumnRanges)
             {
-                string columnName = columnRange.Key;
-                GeneralDomain domain = columnRange.Value;
-
-                if (string.IsNullOrWhiteSpace(columnName) || domain == null)
+                if (columnRangeGroup == null || !columnRangeGroup.Any())
                     continue;
 
-                // Validate the domain
-                if (!BH.Engine.SQLite.Query.IsValid(domain))
+                List<string> groupWhereConditions = new List<string>();
+
+                foreach (KeyValuePair<string, GeneralDomain> columnRange in columnRangeGroup)
                 {
-                    BH.Engine.Base.Compute.RecordWarning($"Invalid domain for column '{columnName}': domain validation failed.");
-                    continue;
+                    string columnName = columnRange.Key;
+                    GeneralDomain domain = columnRange.Value;
+
+                    if (string.IsNullOrWhiteSpace(columnName) || domain == null)
+                        continue;
+
+                    // Validate the domain
+                    if (!BH.Engine.SQLite.Query.IsValid(domain))
+                    {
+                        BH.Engine.Base.Compute.RecordWarning($"Invalid domain for column '{columnName}': domain validation failed.");
+                        continue;
+                    }
+
+                    List<string> rangeConditions = new List<string>();
+
+                    // Add minimum condition
+                    if (domain.Min != null)
+                    {
+                        string minParamName = $"@{parameterPrefix}_{paramIndex++}_min";
+                        string minOperator = filter.InclusiveBounds ? ">=" : ">";
+                        rangeConditions.Add($"\"{columnName}\" {minOperator} {minParamName}");
+                        parameters[minParamName] = domain.Min;
+                    }
+
+                    // Add maximum condition
+                    if (domain.Max != null)
+                    {
+                        string maxParamName = $"@{parameterPrefix}_{paramIndex++}_max";
+                        string maxOperator = filter.InclusiveBounds ? "<=" : "<";
+                        rangeConditions.Add($"\"{columnName}\" {maxOperator} {maxParamName}");
+                        parameters[maxParamName] = domain.Max;
+                    }
+
+                    if (rangeConditions.Any())
+                    {
+                        groupWhereConditions.Add($"({string.Join(" AND ", rangeConditions)})");
+                    }
                 }
 
-                List<string> rangeConditions = new List<string>();
-
-                // Add minimum condition
-                if (domain.Min != null)
+                // Add this group's conditions as a single grouped condition
+                if (groupWhereConditions.Any())
                 {
-                    string minParamName = $"@{parameterPrefix}_{paramIndex++}_min";
-                    string minOperator = filter.InclusiveBounds ? ">=" : ">";
-                    rangeConditions.Add($"\"{columnName}\" {minOperator} {minParamName}");
-                    parameters[minParamName] = domain.Min;
-                }
-
-                // Add maximum condition
-                if (domain.Max != null)
-                {
-                    string maxParamName = $"@{parameterPrefix}_{paramIndex++}_max";
-                    string maxOperator = filter.InclusiveBounds ? "<=" : "<";
-                    rangeConditions.Add($"\"{columnName}\" {maxOperator} {maxParamName}");
-                    parameters[maxParamName] = domain.Max;
-                }
-
-                if (rangeConditions.Any())
-                {
-                    whereConditions.Add($"({string.Join(" AND ", rangeConditions)})");
+                    // Within each group, conditions are combined with AND
+                    string groupCondition = groupWhereConditions.Count == 1 
+                        ? groupWhereConditions[0] 
+                        : $"({string.Join(" AND ", groupWhereConditions)})";
+                    groupConditions.Add(groupCondition);
                 }
             }
 
-            if (!whereConditions.Any())
+            if (!groupConditions.Any())
             {
                 BH.Engine.Base.Compute.RecordWarning("No valid range conditions found in filter.");
                 return null;
             }
 
-            // Combine conditions with specified logic operator
+            // Combine group conditions with specified logic operator
             string logicOperator = filter.Logic == LogicalOperator.Or ? " OR " : " AND ";
-            string whereClause = string.Join(logicOperator, whereConditions);
+            string whereClause = groupConditions.Count == 1 
+                ? groupConditions[0] 
+                : string.Join(logicOperator, groupConditions);
 
             return new FilterResult()
             {
