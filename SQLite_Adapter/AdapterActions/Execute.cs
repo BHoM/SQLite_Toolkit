@@ -27,7 +27,9 @@ using BH.oM.Adapter;
 using BH.oM.Base;
 using BH.oM.Adapter.Commands;
 using BH.oM.SQLite;
+using BH.oM.SQLite.Commands;
 using BH.oM.SQLite.Configs;
+using BH.oM.SQLite.Objects;
 using BH.Engine.SQLite;
 using Microsoft.Data.Sqlite;
 
@@ -132,6 +134,81 @@ namespace BH.Adapter.SQLite
             {
                 m_ConnectionState = System.Data.ConnectionState.Broken;
                 BH.Engine.Base.Compute.RecordError($"Failed to close SQLite database connection: {ex.Message}");
+                output.Item2 = false;
+            }
+
+            return output;
+        }
+
+        /***************************************************/
+
+        public Output<List<object>, bool> ExecuteCommand(SQLCommand command, ActionConfig actionConfig = null)
+        {
+            Output<List<object>, bool> output = new Output<List<object>, bool>() 
+            { 
+                Item1 = new List<object>(), 
+                Item2 = false 
+            };
+
+            if (string.IsNullOrWhiteSpace(command.Command))
+            {
+                BH.Engine.Base.Compute.RecordError("SQL command text cannot be empty.");
+                return output;
+            }
+
+            // Validate SQL command for security
+            if (!BH.Engine.SQLite.Query.IsValid(command.Command, "command"))
+            {
+                BH.Engine.Base.Compute.RecordError("SQL command failed security validation. Command rejected.");
+                return output;
+            }
+
+            try
+            {
+                // Verify connection is available
+                if (m_Connection == null)
+                {
+                    BH.Engine.Base.Compute.RecordError("No active database connection. Use Open command first.");
+                    return output;
+                }
+
+                if (m_Connection.State != System.Data.ConnectionState.Open)
+                {
+                    BH.Engine.Base.Compute.RecordError("Database connection is not open. Use Open command first.");
+                    return output;
+                }
+
+                BH.Engine.Base.Compute.RecordNote($"Executing custom SQL command: {command.Command.Substring(0, Math.Min(100, command.Command.Length))}" + 
+                    (command.Command.Length > 100 ? "..." : ""));
+
+                using (SqliteCommand sqlCommand = new SqliteCommand(command.Command, m_Connection))
+                {
+                    // Execute the command and collect results
+                    using (SqliteDataReader reader = sqlCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // Create a row dictionary for each result row
+                            Dictionary<string, object> row = new Dictionary<string, object>();
+                            
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                string columnName = reader.GetName(i);
+                                object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                row[columnName] = value;
+                            }
+                            
+                            output.Item1.Add(row);
+                        }
+                    }
+                }
+
+                output.Item2 = true;
+                BH.Engine.Base.Compute.RecordNote($"SQL command executed successfully. Returned {output.Item1.Count} rows.");
+            }
+            catch (Exception ex)
+            {
+                BH.Engine.Base.Compute.RecordError($"SQL command execution failed: {ex.Message}");
                 output.Item2 = false;
             }
 

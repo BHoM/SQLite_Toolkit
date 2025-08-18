@@ -34,6 +34,7 @@ namespace BH.Engine.SQLite
 {
     public static partial class Query
     {
+
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
@@ -71,64 +72,42 @@ namespace BH.Engine.SQLite
 
         /***************************************************/
 
+        [Description("Validates that a string is safe for use in SQL queries as column name, table name, or SQL command.")]
+        [Input("value", "The string value to validate.")]
+        [Input("validationType", "Type of validation: 'column', 'table', or 'command'.")]
+        [Output("isValid", "True if the value is safe to use, false otherwise.")]
+        public static bool IsValid(string value, string validationType = "column")
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                BH.Engine.Base.Compute.RecordError($"{validationType} cannot be null or empty.");
+                return false;
+            }
+
+            string lowerValue = value.ToLowerInvariant().Trim();
+
+            switch (validationType.ToLowerInvariant())
+            {
+                case "column":
+                    return ValidateColumnName(value, lowerValue);
+                case "table":
+                    return ValidateTableName(value, lowerValue);
+                case "command":
+                    return ValidateSqlCommand(value, lowerValue);
+                default:
+                    BH.Engine.Base.Compute.RecordWarning($"Unknown validation type '{validationType}'. Defaulting to column validation.");
+                    return ValidateColumnName(value, lowerValue);
+            }
+        }
+
+        /***************************************************/
+
         [Description("Validates that a single column name is safe for use in SQL queries.")]
         [Input("columnName", "The column name to validate.")]
         [Output("isValid", "True if the column name is safe to use, false otherwise.")]
         public static bool IsValid(string columnName)
         {
-            if (string.IsNullOrWhiteSpace(columnName))
-                return false;
-
-            // Check for SQL injection patterns - look for dangerous keyword combinations and statements
-            string lowerName = columnName.ToLowerInvariant();
-            
-            // Dangerous SQL statement patterns that should never appear in column names
-            string[] dangerousPatterns = { 
-                "drop table", "drop database", "drop schema", "delete from", "insert into", 
-                "update set", "create table", "alter table", "truncate table", "exec ", "execute ",
-                "union select", "select from", "' or ", "\" or ", "; drop", "; delete", "; insert",
-                "; update", "; create", "; alter", "; truncate", "; exec", "; execute"
-            };
-            
-            foreach (string pattern in dangerousPatterns)
-            {
-                if (lowerName.Contains(pattern))
-                {
-                    BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains dangerous SQL pattern: {pattern}");
-                    return false;
-                }
-            }
-
-            // Check for SQL injection comment patterns
-            if (lowerName.Contains("--") || lowerName.Contains("/*") || lowerName.Contains("*/"))
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains SQL comment patterns.");
-                return false;
-            }
-
-            // Check for dangerous characters
-            char[] forbiddenChars = { ';', '\'', '"', '\\', '\n', '\r', '\t', ' ', '-', '.' };
-            if (columnName.IndexOfAny(forbiddenChars) >= 0)
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains forbidden characters.");
-                return false;
-            }
-
-            // Check length
-            if (columnName.Length > 999)
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' is too long (max 999 characters).");
-                return false;
-            }
-
-            // Must start with letter or underscore (not digit)
-            if (!char.IsLetter(columnName[0]) && columnName[0] != '_')
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' must start with a letter or underscore, not a digit or special character.");
-                return false;
-            }
-
-            return true;
+            return IsValid(columnName, "column");
         }
 
         /***************************************************/
@@ -159,48 +138,7 @@ namespace BH.Engine.SQLite
         [Output("isValid", "True if the table name is safe to use, false otherwise.")]
         public static bool IsValid(string tableName, bool isTableName)
         {
-            if (!isTableName)
-                return IsValid(tableName); // Use column validation for non-table names
-
-            if (string.IsNullOrWhiteSpace(tableName))
-                return false;
-
-            // Check for basic SQL injection patterns
-            string lowerName = tableName.ToLowerInvariant();
-            string[] forbiddenKeywords = { "drop", "delete", "insert", "update", "create", "alter", "truncate", "--", "/*", "*/" };
-            
-            foreach (string keyword in forbiddenKeywords)
-            {
-                if (lowerName.Contains(keyword))
-                {
-                    BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' contains forbidden keyword: {keyword}");
-                    return false;
-                }
-            }
-
-            // Check for dangerous characters
-            char[] forbiddenChars = { ';', '\'', '"', '\\', '\n', '\r', '\t', ' ', '-', '.' };
-            if (tableName.IndexOfAny(forbiddenChars) >= 0)
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' contains forbidden characters.");
-                return false;
-            }
-
-            // Check length
-            if (tableName.Length > 999)
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' is too long (max 999 characters).");
-                return false;
-            }
-
-            // Must start with letter or underscore
-            if (!char.IsLetter(tableName[0]) && tableName[0] != '_')
-            {
-                BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' must start with a letter or underscore.");
-                return false;
-            }
-
-            return true;
+            return isTableName ? IsValid(tableName, "table") : IsValid(tableName, "column");
         }
 
         /***************************************************/
@@ -284,7 +222,143 @@ namespace BH.Engine.SQLite
         }
 
         /***************************************************/
+
+        [Description("Validates that a SQL command is safe for execution by checking for dangerous patterns and injection attempts.")]
+        [Input("sqlCommand", "The SQL command text to validate.")]
+        [Output("isValid", "True if the SQL command appears safe to execute, false if potentially dangerous patterns are detected.")]
+        public static bool IsValidSqlCommand(string sqlCommand)
+        {
+            return IsValid(sqlCommand, "command");
+        }
+
+        /***************************************************/
         /**** Private Methods                           ****/
+        /***************************************************/
+
+        private static bool ValidateColumnName(string columnName, string lowerName)
+        {
+            // Check for dangerous patterns
+            foreach (string pattern in DangerousSqlPatterns)
+            {
+                if (lowerName.Contains(pattern))
+                {
+                    BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains dangerous SQL pattern: {pattern}");
+                    return false;
+                }
+            }
+
+            // Check for forbidden characters
+            if (columnName.IndexOfAny(ForbiddenChars) >= 0)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' contains forbidden characters.");
+                return false;
+            }
+
+            // Check length
+            if (columnName.Length > 999)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' is too long (max 999 characters).");
+                return false;
+            }
+
+            // Must start with letter or underscore
+            if (!char.IsLetter(columnName[0]) && columnName[0] != '_')
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' must start with a letter or underscore.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /***************************************************/
+
+        private static bool ValidateTableName(string tableName, string lowerName)
+        {
+            // Check for forbidden keywords
+            foreach (string keyword in ForbiddenKeywords)
+            {
+                if (lowerName.Contains(keyword))
+                {
+                    BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' contains forbidden keyword: {keyword}");
+                    return false;
+                }
+            }
+
+            // Check for forbidden characters
+            if (tableName.IndexOfAny(ForbiddenChars) >= 0)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' contains forbidden characters.");
+                return false;
+            }
+
+            // Check length
+            if (tableName.Length > 999)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' is too long (max 999 characters).");
+                return false;
+            }
+
+            // Must start with letter or underscore
+            if (!char.IsLetter(tableName[0]) && tableName[0] != '_')
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Table name '{tableName}' must start with a letter or underscore.");
+                return false;
+            }
+
+            return true;
+        }
+
+        /***************************************************/
+
+        private static bool ValidateSqlCommand(string sqlCommand, string lowerCommand)
+        {
+            // Check for multiple statements (potential injection)
+            if (lowerCommand.Count(c => c == ';') > 1)
+            {
+                BH.Engine.Base.Compute.RecordWarning("SQL command contains multiple statements (multiple semicolons). This may indicate SQL injection.");
+                return false;
+            }
+
+            // Check for dangerous patterns
+            foreach (string pattern in DangerousSqlPatterns)
+            {
+                if (lowerCommand.Contains(pattern))
+                {
+                    BH.Engine.Base.Compute.RecordError($"SQL command contains potentially dangerous pattern: '{pattern}'. Command rejected for security.");
+                    return false;
+                }
+            }
+
+            // Check allowed operations
+            bool isAllowedOperation = AllowedSqlStarts.Any(allowed => lowerCommand.StartsWith(allowed));
+            if (!isAllowedOperation)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"SQL command does not start with a recognized safe operation. Command: {sqlCommand.Substring(0, Math.Min(50, sqlCommand.Length))}...");
+                return false;
+            }
+
+            // Check command length
+            if (sqlCommand.Length > 10000)
+            {
+                BH.Engine.Base.Compute.RecordWarning("SQL command is excessively long (>10000 characters). This may indicate an injection attempt.");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ValidateColumnNameLength(string columnName)
+        {
+            if (columnName.Length > 999)
+            {
+                BH.Engine.Base.Compute.RecordWarning($"Column name '{columnName}' is too long (max 999 characters).");
+                return false;
+            }
+
+            return true;
+        }
+
         /***************************************************/
 
         private static bool ValidateRow(Dictionary<string, object> row, List<Column> columns)
@@ -353,5 +427,31 @@ namespace BH.Engine.SQLite
         }
 
         /***************************************************/
+        /**** Constants                                 ****/
+        /***************************************************/
+
+        // SQL Security constants
+        private static readonly string[] DangerousSqlPatterns = {
+            "; drop", "; delete", "; insert", "; update", "; create", "; alter", "; truncate",
+            "; exec", "; execute", "union select", "union all select", "' or '", "\" or \"",
+            "' or 1=1", "\" or 1=1", "' union", "\" union", "/*", "*/", "--",
+            "xp_", "sp_", "exec(", "execute(", "eval(", "script", "javascript"
+        };
+
+        private static readonly string[] AllowedSqlStarts = {
+            "select", "create table", "create index", "insert into", "update", "delete from",
+            "pragma", "with", "drop table", "drop index", "alter table"
+        };
+
+        private static readonly string[] ForbiddenKeywords = {
+            "drop", "delete", "insert", "update", "create", "alter", "truncate", "--", "/*", "*/"
+        };
+
+        private static readonly char[] ForbiddenChars = {
+            ';', '\'', '"', '\\', '\n', '\r', '\t', ' ', '-', '.'
+        };
+
+        /***************************************************/
+
     }
 }
