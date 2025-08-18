@@ -68,7 +68,7 @@ namespace BH.Engine.SQLite
                 };
 
                 // Resolve property mappings using three-tier strategy
-                System.Collections.Generic.Dictionary<string, PropertyColumnInfo> columnSchema = objectType.ResolveColumnSchema(config);
+                System.Collections.Generic.Dictionary<string, PropertyColumnInfo> columnSchema = objectType.ColumnSchema(config);
                 System.Collections.Generic.List<PropertyColumnInfo> columnMappings = columnSchema.Values.ToList();
 
                 if (columnMappings == null || !columnMappings.Any())

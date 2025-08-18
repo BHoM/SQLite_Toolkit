@@ -41,7 +41,7 @@ namespace BH.Engine.SQLite
         [Input("objectType", "The object Type to analyse.")]
         [Input("config", "Optional PushConfig with custom property mappings and exclusions.")]
         [Output("columnSchema", "Dictionary of column names and their corresponding property information.")]
-        public static Dictionary<string, PropertyColumnInfo> ResolveColumnSchema(this Type objectType, PushConfig config = null)
+        public static Dictionary<string, PropertyColumnInfo> ColumnSchema(this Type objectType, PushConfig config = null)
         {
             Dictionary<string,PropertyColumnInfo> columnSchema = new Dictionary<string, PropertyColumnInfo>();
 

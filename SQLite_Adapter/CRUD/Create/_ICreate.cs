@@ -150,7 +150,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Resolve the column schema for this object type
-                Dictionary<string, PropertyColumnInfo> columnSchema = objectType.ResolveColumnSchema(config);
+                Dictionary<string, PropertyColumnInfo> columnSchema = objectType.ColumnSchema(config);
                 if (columnSchema == null || !columnSchema.Any())
                 {
                     BH.Engine.Base.Compute.RecordWarning($"No column mappings found for type {objectType.Name}. Cannot insert data.");

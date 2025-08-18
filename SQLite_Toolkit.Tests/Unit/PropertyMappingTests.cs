@@ -57,7 +57,7 @@ namespace BH.Tests.SQLite.Unit
             PushConfig config = null; // No config needed for IRecord
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = sensorType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = sensorType.ColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("IRecord objects should generate column schema");
@@ -102,7 +102,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("Complex objects with config should generate column schema");
@@ -133,7 +133,7 @@ namespace BH.Tests.SQLite.Unit
             PushConfig config = null; // No config provided
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("Objects should generate primitive column schema as fallback");
@@ -165,7 +165,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = sensorType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = sensorType.ColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("IRecord with exclusions should still generate schema");
@@ -201,7 +201,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = barType.ColumnSchema(config);
             
             // Assert
             columnSchema.Should().NotBeNull("Should still generate schema despite invalid mappings");
@@ -230,7 +230,7 @@ namespace BH.Tests.SQLite.Unit
                 StatusCode = 200
             };
             
-            Dictionary<string, PropertyColumnInfo> columnSchema = typeof(SensorReading).ResolveColumnSchema(null);
+            Dictionary<string, PropertyColumnInfo> columnSchema = typeof(SensorReading).ColumnSchema(null);
             
             // Act
             Dictionary<string, object> columnValues = sensor.GetColumnValues(columnSchema);
@@ -286,7 +286,7 @@ namespace BH.Tests.SQLite.Unit
                 }
             };
             
-            Dictionary<string, PropertyColumnInfo> columnSchema = typeof(Bar).ResolveColumnSchema(config);
+            Dictionary<string, PropertyColumnInfo> columnSchema = typeof(Bar).ColumnSchema(config);
             
             // Act
             Dictionary<string, object> columnValues = bar.GetColumnValues(columnSchema);
