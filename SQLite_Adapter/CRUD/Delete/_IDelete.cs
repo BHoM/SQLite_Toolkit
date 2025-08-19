@@ -58,7 +58,7 @@ namespace BH.Adapter.SQLite
             DeleteConfig deleteConfig = actionConfig as DeleteConfig;
             if (deleteConfig == null)
                 deleteConfig = new DeleteConfig();
-
+            
             try
             {
                 return DeleteInternal(request, deleteConfig);

@@ -44,9 +44,9 @@ namespace BH.Adapter.SQLite
         [Output("result", "FilterResult object containing the complete SQL WHERE clause and associated parameters, or null if the filter contains no valid conditions or conversion fails.")]
         public static FilterCommand EqualityFilter(EqualityFilterRequest filter, string parameterPrefix = "eq")
         {
-            if (filter == null || filter.ColumnFilters == null || !filter.ColumnFilters.Any())
+            if (filter == null || filter.ColumnFilters == null)
             {
-                BH.Engine.Base.Compute.RecordWarning("Cannot process equality filter: filter is null or has no column filters.");
+                BH.Engine.Base.Compute.RecordWarning("Cannot process equality filter: filter is null or ColumnFilters is null.");
                 return null;
             }
 
@@ -56,8 +56,11 @@ namespace BH.Adapter.SQLite
 
             foreach (ColumnFilter columnFilter in filter.ColumnFilters)
             {
-                if (columnFilter == null || string.IsNullOrWhiteSpace(columnFilter.ColumnName) || 
-                    columnFilter.Values == null || !columnFilter.Values.Any())
+                if (columnFilter == null || string.IsNullOrWhiteSpace(columnFilter.ColumnName))
+                    continue;
+
+                // If no values provided, skip adding any WHERE conditions (returns all records)
+                if (columnFilter.Values == null || !columnFilter.Values.Any())
                     continue;
 
                 string columnName = columnFilter.ColumnName;
@@ -113,15 +116,14 @@ namespace BH.Adapter.SQLite
                 }
             }
 
-            if (!whereConditions.Any())
+            // If no conditions, return empty WHERE clause (selects all records)
+            string whereClause = "";
+            if (whereConditions.Any())
             {
-                BH.Engine.Base.Compute.RecordWarning("No valid equality conditions found in filter.");
-                return null;
+                // Combine conditions with specified logic operator
+                string logicOperator = filter.Logic == LogicalOperator.Or ? " OR " : " AND ";
+                whereClause = string.Join(logicOperator, whereConditions);
             }
-
-            // Combine conditions with specified logic operator
-            string logicOperator = filter.Logic == LogicalOperator.Or ? " OR " : " AND ";
-            string whereClause = string.Join(logicOperator, whereConditions);
 
             return new FilterCommand()
             {

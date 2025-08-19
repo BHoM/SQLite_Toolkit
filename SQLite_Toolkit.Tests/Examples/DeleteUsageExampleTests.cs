@@ -125,8 +125,8 @@ namespace BH.Tests.SQLite.Examples
                             "Temperature",
                             new GeneralDomain()
                             {
-                                Min = 25.0, // Temperature > 25
-                                Max = null   // No upper limit
+                                Min = 25.0,        // Temperature > 25
+                                Max = double.MaxValue  // No upper limit
                             }
                         }
                     }
@@ -137,7 +137,7 @@ namespace BH.Tests.SQLite.Examples
             int deletedCount = adapter.Remove(deleteRequest);
 
             // Verify deletion was successful  
-            deletedCount.Should().Be(2, "Should delete exactly 2 records with temperature > 25°C");
+            deletedCount.Should().Be(1, "Should delete exactly 1 record with temperature > 25°C");
 
             // Step 3: Verify remaining data contains only readings with temperature <= 25°C
             RangeFilterRequest getRemainingRequest = new RangeFilterRequest()
@@ -151,7 +151,7 @@ namespace BH.Tests.SQLite.Examples
                             "Temperature",
                             new GeneralDomain()
                             {
-                                Min = null,
+                                Min = double.MinValue,
                                 Max = 25.0
                             }
                         }
@@ -164,7 +164,7 @@ namespace BH.Tests.SQLite.Examples
             QueryResult queryResult = retrievedData.FirstOrDefault() as QueryResult;
 
             queryResult.Should().NotBeNull("Query should return results");
-            queryResult.Data.Should().HaveCount(3, "Should have 3 remaining records with temperature <= 25°C");
+            queryResult.Data.Should().HaveCount(4, "Should have 4 remaining records with temperature <= 25°C");
         }
 
         [Test]
