@@ -32,8 +32,8 @@ namespace BH.oM.SQLite.Examples
     /****               Example Classes              ****/
     /***************************************************/
 
-    [Description("Example IRecord implementation for simple sensor data. " +
-        "Contains only primitive data types and can be automatically mapped to database tables.")]
+    [Description("Example enum for material types. " +
+        "Demonstrates how enums are automatically mapped to database columns.")]
     /***************************************************/
     /**** Properties                              ****/
     /***************************************************/

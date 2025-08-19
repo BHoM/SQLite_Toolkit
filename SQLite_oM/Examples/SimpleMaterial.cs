@@ -22,7 +22,6 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.SQLite;
 using System;
 using System.ComponentModel;
 
@@ -32,9 +31,9 @@ namespace BH.oM.SQLite.Examples
     /****               Example Classes              ****/
     /***************************************************/
 
-    [Description("Example IRecord implementation for simple material properties. " +
+    [Description("Example object for simple material properties. " +
         "Demonstrates how enums and different numeric types are handled automatically.")]
-    public class SimpleMaterial : BHoMObject, IRecord
+    public class SimpleMaterial : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/

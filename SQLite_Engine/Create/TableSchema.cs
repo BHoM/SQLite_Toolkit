@@ -37,11 +37,9 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates an optimised table schema using the intelligent three-tier strategy to determine the most appropriate column mapping approach. \n" +
-            "Tier 1: IRecord implementations → All public properties automatically mapped to columns with type-safe conversion \n" +
-            "Tier 2: PushConfig mappings → Explicitly mapped properties plus non-excluded primitive properties for hybrid approaches \n" +
-            "Tier 3: Primitive fallback → Only database-compatible primitive properties when no other strategy applies")]
-        [Input("objectType", "The .NET Type representing objects to be stored in the table. This type determines which tier strategy is most appropriate for schema generation.")]
+        [Description("Creates an optimised table schema using unified mapping strategy to determine the most appropriate column mapping approach. \n" +
+            "Uses PushConfig mappings (property and fragment mappings) combined with primitive property detection for comprehensive schema generation.")]
+        [Input("objectType", "The .NET Type representing objects to be stored in the table. This type determines which mapping strategy is most appropriate for schema generation.")]
         [Input("tableName", "The target database table name for the schema. If empty or null, will be automatically derived from the object type name using standard naming conventions.")]
         [Input("config", "Optional PushConfig containing custom property-to-column mappings, property exclusion lists, and validation preferences. If null, uses automatic primitive property detection.")]
         [Output("tableSchema", "A complete TableSchema object containing all column definitions, data types, and constraints required for table creation, or null if schema generation fails due to type analysis errors.")]

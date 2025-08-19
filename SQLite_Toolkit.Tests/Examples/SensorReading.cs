@@ -22,7 +22,6 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.SQLite;
 using System;
 using System.ComponentModel;
 
@@ -34,7 +33,7 @@ namespace BH.oM.SQLite.Examples
 
     [Description("Example IRecord implementation for simple sensor data. " +
         "Contains only primitive data types and can be automatically mapped to database tables.")]
-    public class SensorReading : BHoMObject, IRecord
+    public class SensorReading : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/

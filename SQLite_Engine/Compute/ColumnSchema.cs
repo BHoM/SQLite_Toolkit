@@ -37,9 +37,9 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Resolves the complete column schema for an object type using the three-tier mapping strategy.")]
+        [Description("Resolves the complete column schema for an object type using unified mapping strategy.")]
         [Input("objectType", "The object Type to analyse.")]
-        [Input("config", "Optional PushConfig with custom property mappings and exclusions.")]
+        [Input("config", "Optional PushConfig with custom property mappings, fragment mappings, and exclusions.")]
         [Output("columnSchema", "Dictionary of column names and their corresponding property information.")]
         public static Dictionary<string, PropertyColumnInfo> ColumnSchema(this Type objectType, PushConfig config = null)
         {
@@ -48,47 +48,15 @@ namespace BH.Engine.SQLite
             if (objectType == null)
                 return columnSchema;
 
-            // Get excluded properties once for all tiers
+            // Get excluded properties
             List<string> excludedProperties = config?.ExcludedProperties ?? new List<string>();
 
-            // Tier 1: Check if object implements IRecord
-            if (objectType.IsIRecord())
-            {
-                Engine.Base.Compute.RecordNote($"Type '{objectType.Name}' implements IRecord. Using all properties for schema.");
-                
-                // Validate IRecord properties first, this should never be hit as an IRecord should only contain primitives 
-                if (!objectType.ValidateIRecordProperties())
-                {
-                    Engine.Base.Compute.RecordError($"IRecord type '{objectType.Name}' contains non-primitive properties. Schema resolution failed.");
-                    return columnSchema;
-                }
-
-                Dictionary<string, Type> allProperties = objectType.GetPrimitiveProperties();
-                
-                foreach (KeyValuePair<string, Type> prop in allProperties)
-                {
-                    if (!excludedProperties.Contains(prop.Key))
-                    {
-                        columnSchema[prop.Key] = new PropertyColumnInfo
-                        {
-                            ColumnName = prop.Key,
-                            PropertyPath = prop.Key,
-                            PropertyType = prop.Value,
-                            IsFromMapping = false
-                        };
-                    }
-                }
-
-                return columnSchema;
-            }
-
-            // Tier 2: Check for PushConfig mappings (including fragment mappings)
-            if ((config?.PropertyMappings != null && config.PropertyMappings.Any()) || 
-                (config?.FragmentMappings != null && config.FragmentMappings.Any()))
+            // Add combined property and fragment mappings if provided
+            if (config != null && ((config.PropertyMappings != null && config.PropertyMappings.Any()) || 
+                (config.FragmentMappings != null && config.FragmentMappings.Any())))
             {
                 Engine.Base.Compute.RecordNote($"Using PushConfig mappings for type '{objectType.Name}'.");
                 
-                // Add combined property and fragment mappings
                 Dictionary<string, MappingInfo> validMappings = config.CombinedMappings(objectType);
                 foreach (KeyValuePair<string, MappingInfo> mapping in validMappings)
                 {
@@ -102,34 +70,14 @@ namespace BH.Engine.SQLite
                         FragmentType = mapping.Value.FragmentType
                     };
                 }
-
-                // Add primitive properties (excluding those in ExcludedProperties)
-                Dictionary<string, Type> primitiveProperties = objectType.GetPrimitiveProperties();
-
-                foreach (KeyValuePair<string, Type> prop in primitiveProperties)
-                {
-                    if (!excludedProperties.Contains(prop.Key) && !columnSchema.ContainsKey(prop.Key))
-                    {
-                        columnSchema[prop.Key] = new PropertyColumnInfo
-                        {
-                            ColumnName = prop.Key,
-                            PropertyPath = prop.Key,
-                            PropertyType = prop.Value,
-                            IsFromMapping = false
-                        };
-                    }
-                }
-
-                return columnSchema;
             }
 
-            // Tier 3: Fallback to primitive properties only
-            Engine.Base.Compute.RecordNote($"Using primitive properties fallback for type '{objectType.Name}'.");
-            Dictionary<string, Type> fallbackProperties = objectType.GetPrimitiveProperties();
-            
-            foreach (KeyValuePair<string, Type> prop in fallbackProperties)
+            // Add primitive properties (excluding those in ExcludedProperties and already mapped)
+            Dictionary<string, Type> primitiveProperties = objectType.GetPrimitiveProperties();
+
+            foreach (KeyValuePair<string, Type> prop in primitiveProperties)
             {
-                if (!excludedProperties.Contains(prop.Key))
+                if (!excludedProperties.Contains(prop.Key) && !columnSchema.ContainsKey(prop.Key))
                 {
                     columnSchema[prop.Key] = new PropertyColumnInfo
                     {
