@@ -82,22 +82,24 @@ namespace BH.Engine.SQLite
                 return columnSchema;
             }
 
-            // Tier 2: Check for PushConfig mappings
-            if (config?.PropertyMappings != null && config.PropertyMappings.Any())
+            // Tier 2: Check for PushConfig mappings (including fragment mappings)
+            if ((config?.PropertyMappings != null && config.PropertyMappings.Any()) || 
+                (config?.FragmentMappings != null && config.FragmentMappings.Any()))
             {
                 Engine.Base.Compute.RecordNote($"Using PushConfig mappings for type '{objectType.Name}'.");
                 
-                // Add mapped properties
-                Dictionary<string, string> validMappings = config.ValidatePropertyMappings(objectType);
-                foreach (KeyValuePair<string, string> mapping in validMappings)
+                // Add combined property and fragment mappings
+                Dictionary<string, MappingInfo> validMappings = config.CombinedMappings(objectType);
+                foreach (KeyValuePair<string, MappingInfo> mapping in validMappings)
                 {
-                    Type propertyType = objectType.GetPropertyType(mapping.Value);
                     columnSchema[mapping.Key] = new PropertyColumnInfo
                     {
                         ColumnName = mapping.Key,
-                        PropertyPath = mapping.Value,
-                        PropertyType = propertyType,
-                        IsFromMapping = true
+                        PropertyPath = mapping.Value.PropertyPath,
+                        PropertyType = mapping.Value.PropertyType,
+                        IsFromMapping = true,
+                        IsFragmentMapping = mapping.Value.IsFragmentMapping,
+                        FragmentType = mapping.Value.FragmentType
                     };
                 }
 

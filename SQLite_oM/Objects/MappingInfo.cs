@@ -20,7 +20,6 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using System;
 using System.ComponentModel;
@@ -28,11 +27,11 @@ using System.ComponentModel;
 namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
-    /****               Public Classes               ****/
+    /**** Public Classes                            ****/
     /***************************************************/
 
-    [Description("Information about a property-to-column mapping including metadata about the mapping source.")]
-    public class PropertyColumnInfo : BHoMObject
+    [Description("Information about a property or fragment mapping for database columns.")]
+    public class MappingInfo
     {
         /***************************************************/
         /**** Properties                                ****/
@@ -41,20 +40,17 @@ namespace BH.oM.SQLite.Objects
         [Description("The database column name.")]
         public virtual string ColumnName { get; set; } = "";
 
-        [Description("The object property path (supporting dot notation).")]
+        [Description("The property path within the object or fragment.")]
         public virtual string PropertyPath { get; set; } = "";
-
-        [Description("The .NET Type of the property.")]
-        public virtual Type PropertyType { get; set; }
-
-        [Description("Whether this mapping came from PushConfig PropertyMappings (true) or automatic detection (false).")]
-        public virtual bool IsFromMapping { get; set; } = false;
 
         [Description("True if this is a fragment mapping, false for regular property mapping.")]
         public virtual bool IsFragmentMapping { get; set; } = false;
 
         [Description("The fragment type (only used when IsFragmentMapping is true).")]
         public virtual Type FragmentType { get; set; } = null;
+
+        [Description("The type of the property being mapped.")]
+        public virtual Type PropertyType { get; set; } = null;
 
         /***************************************************/
     }

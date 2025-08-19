@@ -21,6 +21,7 @@
  */
 
 using BH.oM.Adapter;
+using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using System;
 using System.Collections.Generic;
@@ -53,6 +54,16 @@ namespace BH.oM.SQLite.Configs
 
         [Description("Whether to validate property mappings before push operation. Default is true.")]
         public virtual bool ValidateMappings { get; set; } = true;
+
+        [Description("Fragment-to-column mappings for extracting properties from FragmentSet. \n" +
+            "Key is the database column name, value is the property path within the fragment (e.g., 'Id', 'Properties.Value'). \n" +
+            "Fragment types are specified in FragmentTypes dictionary.")]
+        public virtual Dictionary<string, string> FragmentMappings { get; set; } = new Dictionary<string, string>();
+
+        [Description("Fragment type specifications for FragmentMappings. \n" +
+            "Key is the database column name (matching FragmentMappings keys), value is the Type of fragment to extract from FragmentSet. \n" +
+            "Used for type-safe casting when accessing fragments.")]
+        public virtual Dictionary<string, Type> FragmentTypes { get; set; } = new Dictionary<string, Type>();
 
         /***************************************************/
     }

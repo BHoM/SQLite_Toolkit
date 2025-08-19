@@ -27,7 +27,6 @@ using BH.oM.SQLite.Objects;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace BH.Engine.SQLite
 {
@@ -55,8 +54,17 @@ namespace BH.Engine.SQLite
 
                 try
                 {
-                    // Use direct property access for BHoM objects
-                    object value = GetPropertyValueFromPath(obj, columnInfo.PropertyPath);
+                    // Create MappingInfo for unified extraction (handles both regular properties and fragments)
+                    MappingInfo mappingInfo = new MappingInfo
+                    {
+                        ColumnName = columnInfo.ColumnName,
+                        PropertyPath = columnInfo.PropertyPath,
+                        IsFragmentMapping = columnInfo.IsFragmentMapping,
+                        FragmentType = columnInfo.FragmentType,
+                        PropertyType = columnInfo.PropertyType
+                    };
+                    
+                    object value = obj.ExtractMappedValue(mappingInfo);
                     columnValues[columnName] = value;
                 }
                 catch (Exception ex)
@@ -67,41 +75,6 @@ namespace BH.Engine.SQLite
             }
 
             return columnValues;
-        }
-
-        /***************************************************/
-        /**** Private Methods                          ****/
-        /***************************************************/
-
-        private static object GetPropertyValueFromPath(object obj, string propertyPath)
-        {
-            if (obj == null || string.IsNullOrWhiteSpace(propertyPath))
-                return null;
-
-            // Handle simple property access
-            if (!propertyPath.Contains("."))
-            {
-                PropertyInfo property = obj.GetType().GetProperty(propertyPath);
-                return property?.GetValue(obj);
-            }
-
-            // Handle nested property access using dot notation
-            string[] propertyParts = propertyPath.Split('.');
-            object currentObj = obj;
-
-            foreach (string propertyName in propertyParts)
-            {
-                if (currentObj == null)
-                    return null;
-
-                PropertyInfo property = currentObj.GetType().GetProperty(propertyName);
-                if (property == null)
-                    return null;
-
-                currentObj = property.GetValue(currentObj);
-            }
-
-            return currentObj;
         }
 
         /***************************************************/
