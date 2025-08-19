@@ -37,62 +37,6 @@ namespace BH.Engine.SQLite
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Validates all property mappings in a PushConfig against a given object type.")]
-        [Input("config", "The PushConfig containing property mappings to validate.")]
-        [Input("objectType", "The object Type to validate mappings against.")]
-        [Output("validMappings", "Dictionary of valid column-to-property mappings.")]
-        public static Dictionary<string, string> PropertyMappings(this PushConfig config, Type objectType)
-        {
-            Dictionary<string, string> validMappings = new Dictionary<string, string>();
-
-            if (config?.PropertyMappings == null || objectType == null)
-                return validMappings;
-
-            foreach (KeyValuePair<string, string> mapping in config.PropertyMappings)
-            {
-                string columnName = mapping.Key;
-                string propertyPath = mapping.Value;
-
-                if (string.IsNullOrWhiteSpace(columnName) || string.IsNullOrWhiteSpace(propertyPath))
-                {
-                    Engine.Base.Compute.RecordWarning($"Invalid mapping: column '{columnName}' or property path '{propertyPath}' is empty.");
-                    continue;
-                }
-
-                // Validate that the column name is valid for SQL
-                if (!BH.Engine.SQLite.Query.IsValid(columnName))
-                {
-                    Engine.Base.Compute.RecordWarning($"Column name '{columnName}' is not valid for SQL database storage.");
-                    continue;
-                }
-
-                // Validate that the property path exists on the object type
-                if (objectType.IsValid(propertyPath))
-                {
-                    // Validate that the property type is suitable for database storage
-                    Type propertyType = objectType.GetPropertyType(propertyPath);
-                    if (propertyType != null && propertyType.IsPrimitive())
-                    {
-                        validMappings[columnName] = propertyPath;
-                    }
-                    else
-                    {
-                        Engine.Base.Compute.RecordWarning($"Property '{propertyPath}' on type '{objectType.Name}' is not suitable for database storage. " +
-                            $"Property type: {propertyType?.Name ?? "null"}");
-                    }
-                }
-                else
-                {
-                    Engine.Base.Compute.RecordWarning($"Property path '{propertyPath}' does not exist on type '{objectType.Name}'.");
-                }
-            }
-
-            Engine.Base.Compute.RecordNote($"Validated {validMappings.Count} of {config.PropertyMappings.Count} property mappings for type '{objectType.Name}'.");
-            return validMappings;
-        }
-
-        /***************************************************/
-
         [Description("Validates fragment mappings in a PushConfig, ensuring fragment types exist and property paths are valid.")]
         [Input("config", "The PushConfig containing fragment mappings to validate.")]
         [Output("validMappings", "Dictionary of valid column-to-fragment property mappings.")]
