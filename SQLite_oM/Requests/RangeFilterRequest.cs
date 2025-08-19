@@ -35,7 +35,7 @@ namespace BH.oM.SQLite.Requests
     /***************************************************/
 
     [Description("Request for filtering database records based on value ranges for numeric and DateTime columns.")]
-    public class RangeFilterRequest : BHoMObject, IRequest
+    public class RangeFilterRequest : BHoMObject, ISqlRequest
     {
         /***************************************************/
         /**** Properties                              ****/

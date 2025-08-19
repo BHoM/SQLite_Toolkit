@@ -35,7 +35,7 @@ namespace BH.oM.SQLite.Requests
     /***************************************************/
 
     [Description("Request for filtering database records based on exact column value matches with support for multiple values per column (IN clause).")]
-    public class EqualityFilterRequest : BHoMObject, IRequest
+    public class EqualityFilterRequest : BHoMObject, ISqlRequest
     {
         /***************************************************/
         /**** Properties                              ****/

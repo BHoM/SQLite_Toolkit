@@ -41,7 +41,7 @@ namespace BH.Adapter.SQLite
         [Input("filter", "The range filter request to convert, containing a list of column range dictionaries.")]
         [Input("parameterPrefix", "Prefix for parameter names to avoid conflicts. Default is 'rng'.")]
         [Output("result", "FilterResult containing the SQL WHERE clause and parameters, or null if conversion failed.")]
-        public static FilterResult RangeFilter(RangeFilterRequest filter, string parameterPrefix = "rng")
+        public static FilterCommand RangeFilter(RangeFilterRequest filter, string parameterPrefix = "rng")
         {
             if (filter == null || filter.ColumnRanges == null || !filter.ColumnRanges.Any())
             {
@@ -125,7 +125,7 @@ namespace BH.Adapter.SQLite
                 ? groupConditions[0] 
                 : string.Join(logicOperator, groupConditions);
 
-            return new FilterResult()
+            return new FilterCommand()
             {
                 WhereClause = whereClause,
                 Parameters = parameters,

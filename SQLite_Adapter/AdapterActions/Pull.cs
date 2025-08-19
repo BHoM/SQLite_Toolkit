@@ -20,12 +20,13 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Adapter;
+using BH.oM.Data.Requests;
+using BH.oM.SQLite.Objects;
+using BH.oM.SQLite.Requests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BH.oM.Data.Requests;
-using BH.oM.Adapter;
-using BH.oM.SQLite.Requests;
 
 namespace BH.Adapter.SQLite
 {
@@ -54,13 +55,31 @@ namespace BH.Adapter.SQLite
             m_LastUsed = DateTime.Now;
 
             // Handle different request types
-            if (query is EqualityFilterRequest equalityRequest)
+            if (query is ISqlRequest)
             {
-                return EqualityFilterRequest(equalityRequest);
-            }
-            else if (query is RangeFilterRequest rangeRequest)
-            {
-                return RangeFilterRequest(rangeRequest);
+                ISqlRequest sqlQuery = query as ISqlRequest;
+                // Convert filter to SQL
+                FilterCommand filterResult = query is EqualityFilterRequest ? Convert.EqualityFilter((EqualityFilterRequest)query) : Convert.RangeFilter((RangeFilterRequest)query);
+                
+                if (filterResult == null)
+                {
+                    BH.Engine.Base.Compute.RecordWarning("Failed to process range filter request.");
+                    return result;
+                }
+
+                query = query as ISqlRequest;
+
+                // Set limit if specified
+                if (sqlQuery.MaxResults > 0)
+                    filterResult.Limit = sqlQuery.MaxResults;
+
+                // Execute filtered query
+
+                QueryResult queryResult = ExecuteQuery(sqlQuery.TableName, filterResult);
+                if(queryResult != null)
+                    result.Add(queryResult);
+
+                return result;
             }
             else
             {

@@ -33,7 +33,7 @@ namespace BH.Adapter.SQLite
         /**** Private Methods                           ****/
         /***************************************************/
 
-        private QueryResult ExecuteQuery(string tableName, FilterResult filterResult)
+        private QueryResult ExecuteQuery(string tableName, FilterCommand filterResult)
         {
             QueryResult result = new QueryResult
             {
@@ -143,7 +143,7 @@ namespace BH.Adapter.SQLite
         /**** Private Helper Methods                   ****/
         /***************************************************/
 
-        private static bool ApplyFilterParameters(SqliteCommand command, FilterResult filterResult)
+        private static bool ApplyFilterParameters(SqliteCommand command, FilterCommand filterResult)
         {
             if (command == null)
             {

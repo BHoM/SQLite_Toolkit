@@ -42,7 +42,7 @@ namespace BH.Adapter.SQLite
         [Input("filter", "The equality filter request containing column-value pairs to be converted into SQL conditions. Each column can specify multiple values for IN clause generation.")]
         [Input("parameterPrefix", "Optional prefix for SQL parameter names to prevent naming conflicts when combining multiple filters. Defaults to 'eq' if not specified.")]
         [Output("result", "FilterResult object containing the complete SQL WHERE clause and associated parameters, or null if the filter contains no valid conditions or conversion fails.")]
-        public static FilterResult EqualityFilter(EqualityFilterRequest filter, string parameterPrefix = "eq")
+        public static FilterCommand EqualityFilter(EqualityFilterRequest filter, string parameterPrefix = "eq")
         {
             if (filter == null || filter.ColumnFilters == null || !filter.ColumnFilters.Any())
             {
@@ -123,7 +123,7 @@ namespace BH.Adapter.SQLite
             string logicOperator = filter.Logic == LogicalOperator.Or ? " OR " : " AND ";
             string whereClause = string.Join(logicOperator, whereConditions);
 
-            return new FilterResult()
+            return new FilterCommand()
             {
                 WhereClause = whereClause,
                 Parameters = parameters,

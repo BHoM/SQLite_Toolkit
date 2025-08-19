@@ -38,7 +38,7 @@ namespace BH.Adapter.SQLite
             List<object> result = new List<object>();
 
             // Convert filter to SQL
-            FilterResult filterResult = Convert.EqualityFilter(equalityRequest);
+            FilterCommand filterResult = Convert.EqualityFilter(equalityRequest);
             if (filterResult == null)
             {
                 BH.Engine.Base.Compute.RecordWarning("Failed to process equality filter request.");

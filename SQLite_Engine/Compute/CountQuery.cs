@@ -37,7 +37,7 @@ namespace BH.Engine.SQLite
         [Input("tableName", "The name of the table to count from.")]
         [Input("filterResult", "The filter result containing WHERE clause and parameters. Can be null to count all rows.")]
         [Output("sql", "Complete SQL COUNT statement, or null if construction failed.")]
-        public static string CountQuery(string tableName, FilterResult filterResult = null)
+        public static string CountQuery(string tableName, FilterCommand filterResult = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {

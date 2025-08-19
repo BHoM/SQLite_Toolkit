@@ -33,7 +33,7 @@ namespace BH.oM.SQLite.Objects
 
     [Description("Contains the result of processing a filter request into SQL components. \n" +
         "Includes the generated WHERE clause and associated parameters for safe query execution.")]
-    public class FilterResult : BHoMObject
+    public class FilterCommand : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/

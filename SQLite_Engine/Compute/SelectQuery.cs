@@ -41,7 +41,7 @@ namespace BH.Engine.SQLite
         [Input("selectColumns", "List of column names to select. If empty, selects all columns (*).")]
         [Input("orderBy", "Optional ORDER BY clause (without the 'ORDER BY' keyword).")]
         [Output("sql", "Complete SQL SELECT statement, or null if construction failed.")]
-        public static string SelectQuery(string tableName, FilterResult filterResult = null, List<string> selectColumns = null, string orderBy = "")
+        public static string SelectQuery(string tableName, FilterCommand filterResult = null, List<string> selectColumns = null, string orderBy = "")
         {
             if (string.IsNullOrWhiteSpace(tableName))
             {

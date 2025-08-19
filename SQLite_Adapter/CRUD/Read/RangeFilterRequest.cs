@@ -38,7 +38,7 @@ namespace BH.Adapter.SQLite
             List<object> result = new List<object>();
 
             // Convert filter to SQL
-            FilterResult filterResult = Convert.RangeFilter(rangeRequest);
+            FilterCommand filterResult = Convert.RangeFilter(rangeRequest);
             if (filterResult == null)
             {
                 BH.Engine.Base.Compute.RecordWarning("Failed to process range filter request.");

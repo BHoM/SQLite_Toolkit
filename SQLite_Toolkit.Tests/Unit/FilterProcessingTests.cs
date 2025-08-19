@@ -57,7 +57,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -93,7 +93,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -133,7 +133,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -169,7 +169,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
             
             // Assert
             result.Should().NotBeNull("Filter should generate result");
@@ -199,7 +199,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("Range filter should generate result");
@@ -235,7 +235,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("Range filter should generate result");
@@ -269,7 +269,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("DateTime range filter should generate result");
@@ -305,7 +305,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            FilterResult result = BH.Adapter.SQLite.Convert.RangeFilter(request);
+            FilterCommand result = BH.Adapter.SQLite.Convert.RangeFilter(request);
             
             // Assert
             result.Should().NotBeNull("Multi-column range filter should generate result");
@@ -322,13 +322,13 @@ namespace BH.Tests.SQLite.Unit
             // Test combining multiple filter results
             
             // Arrange
-            FilterResult equalityFilter = new FilterResult()
+            FilterCommand equalityFilter = new FilterCommand()
             {
                 WhereClause = "\"SensorId\" = @param1",
                 Parameters = new Dictionary<string, object> { { "@param1", "TEMP001" } }
             };
             
-            FilterResult rangeFilter = new FilterResult()
+            FilterCommand rangeFilter = new FilterCommand()
             {
                 WhereClause = "\"Temperature\" >= @param2 AND \"Temperature\" <= @param3",
                 Parameters = new Dictionary<string, object> 
@@ -338,10 +338,10 @@ namespace BH.Tests.SQLite.Unit
                 }
             };
             
-            List<FilterResult> filters = new List<FilterResult> { equalityFilter, rangeFilter };
+            List<FilterCommand> filters = new List<FilterCommand> { equalityFilter, rangeFilter };
             
             // Act
-            FilterResult combinedResult = BH.Engine.SQLite.Compute.CombineFilterResults(filters, LogicalOperator.And);
+            FilterCommand combinedResult = BH.Engine.SQLite.Compute.CombineFilterResults(filters, LogicalOperator.And);
             
             // Assert
             combinedResult.Should().NotBeNull("Combined filter should generate result");
@@ -363,7 +363,7 @@ namespace BH.Tests.SQLite.Unit
             
             // Arrange
             string tableName = "SensorReadings";
-            FilterResult filter = new FilterResult()
+            FilterCommand filter = new FilterCommand()
             {
                 WhereClause = "\"SensorId\" = @param1",
                 Parameters = new Dictionary<string, object> { { "@param1", "TEMP001" } }
@@ -387,7 +387,7 @@ namespace BH.Tests.SQLite.Unit
             
             // Arrange
             string tableName = "SensorReadings";
-            FilterResult filter = new FilterResult()
+            FilterCommand filter = new FilterCommand()
             {
                 WhereClause = "\"IsValid\" = @param1",
                 Parameters = new Dictionary<string, object> { { "@param1", false } }
@@ -411,7 +411,7 @@ namespace BH.Tests.SQLite.Unit
             
             // Arrange
             string tableName = "SensorReadings";
-            FilterResult filter = new FilterResult()
+            FilterCommand filter = new FilterCommand()
             {
                 WhereClause = "\"Temperature\" > @param1",
                 Parameters = new Dictionary<string, object> { { "@param1", 25.0 } }

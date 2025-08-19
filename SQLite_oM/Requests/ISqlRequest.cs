@@ -20,48 +20,38 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.Data.Requests;
+using BH.oM.SQLite;
 using BH.oM.SQLite.Objects;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 
-namespace BH.Engine.SQLite
+namespace BH.oM.SQLite.Requests
 {
-    public static partial class Compute
+    /***************************************************/
+    /****               Public Classes              ****/
+    /***************************************************/
+
+    [Description("Base interface for SQLite filter requests.")]
+    public interface ISqlRequest : IBHoMObject, IRequest
     {
         /***************************************************/
-        /**** Public Methods                            ****/
+        /**** Properties                              ****/
         /***************************************************/
 
-        [Description("Builds a parameterised DELETE query from a FilterResult and table information.")]
-        [Input("tableName", "The name of the table to delete from.")]
-        [Input("filterResult", "The filter result containing WHERE clause and parameters. Required for safety.")]
-        [Output("sql", "Complete SQL DELETE statement, or null if construction failed.")]
-        public static string DeleteQuery(string tableName, FilterCommand filterResult)
-        {
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: table name is null or empty.");
-                return null;
-            }
+        [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
+        string TableName { get; set; }
 
-            if (filterResult == null || string.IsNullOrWhiteSpace(filterResult.WhereClause))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot build DELETE query: filter result with WHERE clause is required for safety.");
-                return null;
-            }
+        [Description("Maximum number of results to return. If 0, returns all matching records.")]
+        int MaxResults { get; set; }
 
-            StringBuilder sql = new StringBuilder();
-
-            // DELETE FROM clause
-            sql.Append($"DELETE FROM \"{tableName}\"");
-
-            // WHERE clause (required)
-            sql.Append($" WHERE {filterResult.WhereClause}");
-
-            return sql.ToString();
-        }
+        [Description("Logical operator to combine multiple column filters. Default is AND.")]
+        LogicalOperator Logic { get; set; }
 
         /***************************************************/
     }
+
+    /***************************************************/
 }

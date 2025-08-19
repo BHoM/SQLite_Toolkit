@@ -39,7 +39,7 @@ namespace BH.Engine.SQLite
         [Input("filterResults", "Collection of filter results to combine.")]
         [Input("combineLogic", "Logic operator to combine the filters (AND/OR). Default is AND.")]
         [Output("result", "Combined FilterResult, or null if combination failed.")]
-        public static FilterResult CombineFilterResults(IEnumerable<FilterResult> filterResults, LogicalOperator combineLogic = LogicalOperator.And)
+        public static FilterCommand CombineFilterResults(IEnumerable<FilterCommand> filterResults, LogicalOperator combineLogic = LogicalOperator.And)
         {
             if (filterResults == null || !filterResults.Any())
             {
@@ -47,7 +47,7 @@ namespace BH.Engine.SQLite
                 return null;
             }
 
-            List<FilterResult> validResults = filterResults.Where(r => r != null && !string.IsNullOrWhiteSpace(r.WhereClause)).ToList();
+            List<FilterCommand> validResults = filterResults.Where(r => r != null && !string.IsNullOrWhiteSpace(r.WhereClause)).ToList();
             
             if (!validResults.Any())
             {
@@ -68,7 +68,7 @@ namespace BH.Engine.SQLite
 
             // Combine parameters
             Dictionary<string, object> combinedParameters = new Dictionary<string, object>();
-            foreach (FilterResult result in validResults)
+            foreach (FilterCommand result in validResults)
             {
                 if (result.Parameters != null)
                 {
@@ -86,7 +86,7 @@ namespace BH.Engine.SQLite
             List<string> filterTypes = validResults.Select(r => r.FilterType).Distinct().ToList();
             string combinedFilterType = filterTypes.Count == 1 ? filterTypes[0] : "Combined";
 
-            return new FilterResult()
+            return new FilterCommand()
             {
                 WhereClause = combinedWhereClause,
                 Parameters = combinedParameters,
