@@ -41,7 +41,7 @@ namespace BH.Engine.SQLite
         [Input("config", "The PushConfig containing property mappings to validate.")]
         [Input("objectType", "The object Type to validate mappings against.")]
         [Output("validMappings", "Dictionary of valid column-to-property mappings.")]
-        public static Dictionary<string, string> ValidatePropertyMappings(this PushConfig config, Type objectType)
+        public static Dictionary<string, string> PropertyMappings(this PushConfig config, Type objectType)
         {
             Dictionary<string, string> validMappings = new Dictionary<string, string>();
 
@@ -96,7 +96,7 @@ namespace BH.Engine.SQLite
         [Description("Validates fragment mappings in a PushConfig, ensuring fragment types exist and property paths are valid.")]
         [Input("config", "The PushConfig containing fragment mappings to validate.")]
         [Output("validMappings", "Dictionary of valid column-to-fragment property mappings.")]
-        public static Dictionary<string, string> ValidateFragmentMappings(this PushConfig config)
+        public static Dictionary<string, string> FragmentMappings(this PushConfig config)
         {
             Dictionary<string, string> validMappings = new Dictionary<string, string>();
 

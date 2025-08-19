@@ -49,7 +49,7 @@ namespace BH.Engine.SQLite
                 return combinedMappings;
 
             // Add regular property mappings
-            Dictionary<string, string> validPropertyMappings = config.ValidatePropertyMappings(objectType);
+            Dictionary<string, string> validPropertyMappings = config.PropertyMappings(objectType);
             foreach (KeyValuePair<string, string> mapping in validPropertyMappings)
             {
                 combinedMappings[mapping.Key] = new MappingInfo
@@ -62,7 +62,7 @@ namespace BH.Engine.SQLite
             }
 
             // Add fragment mappings
-            Dictionary<string, string> validFragmentMappings = config.ValidateFragmentMappings();
+            Dictionary<string, string> validFragmentMappings = config.FragmentMappings();
             foreach (KeyValuePair<string, string> mapping in validFragmentMappings)
             {
                 if (!combinedMappings.ContainsKey(mapping.Key)) // Avoid overwriting property mappings

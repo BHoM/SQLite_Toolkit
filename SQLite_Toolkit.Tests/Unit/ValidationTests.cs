@@ -194,7 +194,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(barType);
+            Dictionary<string, string> validMappings = config.PropertyMappings(barType);
             bool isValid = validMappings != null && validMappings.Count > 0;
             
             // Assert
@@ -219,7 +219,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(barType);
+            Dictionary<string, string> validMappings = config.PropertyMappings(barType);
             bool isValid = validMappings == null || validMappings.Count < config.PropertyMappings.Count;
             
             // Assert
@@ -239,8 +239,8 @@ namespace BH.Tests.SQLite.Unit
             PushConfig emptyConfig = new PushConfig();
             
             // These should not throw exceptions
-            Action nullConfigAction = () => nullConfig?.ValidatePropertyMappings(barType);
-            Action emptyConfigAction = () => emptyConfig.ValidatePropertyMappings(barType);
+            Action nullConfigAction = () => nullConfig?.PropertyMappings(barType);
+            Action emptyConfigAction = () => emptyConfig.PropertyMappings(barType);
             
             nullConfigAction.Should().NotThrow("Null config should not throw");
             emptyConfigAction.Should().NotThrow("Empty config should not throw");
@@ -263,7 +263,7 @@ namespace BH.Tests.SQLite.Unit
             };
             
             // Act
-            Dictionary<string, string> validMappings = config.ValidatePropertyMappings(barType);
+            Dictionary<string, string> validMappings = config.PropertyMappings(barType);
             bool isValid = validMappings == null || validMappings.Count < config.PropertyMappings.Count;
             
             // Assert
