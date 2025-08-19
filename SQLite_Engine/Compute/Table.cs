@@ -42,7 +42,7 @@ namespace BH.Engine.SQLite
         [Input("ifNotExists", "Whether to add IF NOT EXISTS clause to avoid errors if table already exists.")]
         [Input("dropIfExists", "Whether to drop the table first if it already exists.")]
         [Output("sql", "The SQL CREATE TABLE statement, or null if the schema is invalid.")]
-        public static string Table(TableSchema tableSchema, bool ifNotExists = true, bool dropIfExists = false)
+        public static string TableCommand(TableSchema tableSchema, bool ifNotExists = true, bool dropIfExists = false)
         {
             if (tableSchema == null)
             {

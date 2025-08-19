@@ -52,7 +52,7 @@ namespace BH.Adapter.SQLite
             try
             {
                 // Generate CREATE TABLE SQL using the Engine method
-                string createSql = BH.Engine.SQLite.Compute.Table(tableSchema, ifNotExists: true, dropIfExists: false);
+                string createSql = BH.Engine.SQLite.Compute.TableCommand(tableSchema, ifNotExists: true, dropIfExists: false);
                 
                 if (string.IsNullOrEmpty(createSql))
                 {

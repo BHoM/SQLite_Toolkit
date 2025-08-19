@@ -174,7 +174,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Create the table
-                string createSql = BH.Engine.SQLite.Compute.Table(schema, !dropIfExists, dropIfExists);
+                string createSql = BH.Engine.SQLite.Compute.TableCommand(schema, !dropIfExists, dropIfExists);
                 if (string.IsNullOrWhiteSpace(createSql))
                 {
                     BH.Engine.Base.Compute.RecordError($"Failed to generate CREATE TABLE SQL for schema '{schema.Name}'.");
