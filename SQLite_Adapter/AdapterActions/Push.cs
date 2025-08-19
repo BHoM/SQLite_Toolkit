@@ -91,15 +91,8 @@ namespace BH.Adapter.SQLite
                 return PushTables(objects.Cast<Table>());
             }
 
-            // Ensure objects are BHoM objects
-            if (!typeof(IBHoMObject).IsAssignableFrom(objectType))
-            {
-                BH.Engine.Base.Compute.RecordError($"SQLite adapter only supports BHoM objects. Type {objectType.Name} does not implement IBHoMObject.");
-                return result;
-            }
-
             // Cast to IBHoMObject collection
-            IEnumerable<IBHoMObject> bhoMObjects = objects.Cast<IBHoMObject>();
+            IEnumerable<IObject> bhomObjects = objects.Cast<IObject>();
 
             // Get PushConfig
             PushConfig config = actionConfig as PushConfig ?? new PushConfig();
@@ -133,7 +126,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Step 4: Insert the objects
-                bool insertSuccess = InsertObjects(bhoMObjects, tableName, objectType, config);
+                bool insertSuccess = InsertObjects(bhomObjects, tableName, objectType, config);
                 if (insertSuccess)
                 {
                     result = objects.ToList();
@@ -208,12 +201,12 @@ namespace BH.Adapter.SQLite
 
         /***************************************************/
 
-        private bool InsertObjects(IEnumerable<IBHoMObject> objects, string tableName, Type objectType, PushConfig config)
+        private bool InsertObjects(IEnumerable<IObject> objects, string tableName, Type objectType, PushConfig config)
         {
             if (objects == null || !objects.Any() || string.IsNullOrEmpty(tableName))
                 return false;
 
-            List<IBHoMObject> objectList = objects.ToList();
+            List<IObject> objectList = objects.ToList();
             if (!objectList.Any())
                 return false;
 
@@ -231,13 +224,13 @@ namespace BH.Adapter.SQLite
                 int batchSize = 1000; // Default batch size
                 bool overallSuccess = true;
 
-                List<List<IBHoMObject>> batches = objectList
+                List<List<IObject>> batches = objectList
                     .Select((obj, index) => new { obj, index })
                     .GroupBy(x => x.index / batchSize)
                     .Select(g => g.Select(x => x.obj).ToList())
                     .ToList();
 
-                foreach (List<IBHoMObject> batch in batches)
+                foreach (List<IObject> batch in batches)
                 {
                     bool batchSuccess = InsertObjectBatch(batch, tableName, columnSchema);
                     if (!batchSuccess)
@@ -258,7 +251,7 @@ namespace BH.Adapter.SQLite
 
         /***************************************************/
 
-        private bool InsertObjectBatch(List<IBHoMObject> objects, string tableName, Dictionary<string, PropertyColumnInfo> columnSchema)
+        private bool InsertObjectBatch(List<IObject> objects, string tableName, Dictionary<string, PropertyColumnInfo> columnSchema)
         {
             if (objects == null || !objects.Any())
                 return true;
