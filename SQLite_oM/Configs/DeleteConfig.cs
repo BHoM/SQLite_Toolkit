@@ -20,36 +20,36 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
+using BH.oM.Adapter;
 using BH.oM.Base.Attributes;
-using BH.oM.SQLite;
-using System;
 using System.ComponentModel;
 
-namespace BH.oM.SQLite.Examples
+namespace BH.oM.SQLite.Configs
 {
     /***************************************************/
-    /****               Example Classes              ****/
+    /****               Public Classes               ****/
     /***************************************************/
 
-    [Description("Example enum for material types. " +
-        "Demonstrates how enums are automatically mapped to database columns.")]
-    /***************************************************/
-    /**** Properties                              ****/
-    /***************************************************/
-
-    public enum MaterialType
+    [Description("Configuration for deleting objects from SQLite database with intelligent filtering capabilities.")]
+    public class DeleteConfig : ActionConfig
     {
-        Unknown = 0,
-        Steel = 1,
-        Concrete = 2,
-        Wood = 3,
-        Aluminium = 4,
-        Glass = 5,
-        Plastic = 6
+        /***************************************************/
+        /**** Properties                                ****/
+        /***************************************************/
 
+
+
+        [Description("Whether to require at least one filter condition. If true, prevents accidental deletion of entire table. Default is true.")]
+        public virtual bool RequireFilterConditions { get; set; } = true;
+
+        [Description("Maximum number of rows to delete in a single operation. If 0, no limit is applied. Use with caution.")]
+        public virtual int MaxRowsToDelete { get; set; } = 0;
+
+        [Description("Whether to perform a dry run that returns the count of rows that would be deleted without actually deleting them.")]
+        public virtual bool DryRun { get; set; } = false;
+
+        /***************************************************/
     }
 
     /***************************************************/
-
 }

@@ -22,6 +22,7 @@
 
 using BH.oM.Adapter;
 using BH.oM.Data.Requests;
+using BH.oM.SQLite;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite.Requests;
 using System;
@@ -75,7 +76,7 @@ namespace BH.Adapter.SQLite
 
                 // Execute filtered query
 
-                QueryResult queryResult = ExecuteQuery(sqlQuery.TableName, filterResult);
+                QueryResult queryResult = ExecuteQuery(SqlOperation.Select, sqlQuery.TableName, filterResult);
                 if(queryResult != null)
                     result.Add(queryResult);
 

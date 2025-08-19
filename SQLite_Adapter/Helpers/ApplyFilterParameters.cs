@@ -20,41 +20,57 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.SQLite;
+using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Objects;
-using BH.oM.SQLite.Requests;
-using BH.Engine.SQLite;
+using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace BH.Adapter.SQLite
 {
     public partial class SQLiteAdapter
     {
         /***************************************************/
-        /**** Private Methods                           ****/
+        /**** Private Helper Methods                   ****/
         /***************************************************/
 
-        private IEnumerable<object> EqualityFilterRequest(EqualityFilterRequest equalityRequest)
+        [Description("Applies filter parameters to a SQLite command, converting .NET types to SQLite-compatible values.")]
+        [Input("command", "The SQLite command to add parameters to.")]
+        [Input("filterResult", "The filter command containing parameters to apply.")]
+        [Output("success", "True if parameters were applied successfully, false otherwise.")]
+        private static bool ApplyFilterParameters(SqliteCommand command, FilterCommand filterResult)
         {
-            List<object> result = new List<object>();
-
-            // Convert filter to SQL
-            FilterCommand filterResult = Convert.EqualityFilter(equalityRequest);
-            if (filterResult == null)
+            if (command == null)
             {
-                BH.Engine.Base.Compute.RecordWarning("Failed to process equality filter request.");
-                return result;
+                BH.Engine.Base.Compute.RecordError("Cannot apply filter parameters: command is null.");
+                return false;
             }
 
-            // Set limit if specified
-            if (equalityRequest.MaxResults > 0)
-                filterResult.Limit = equalityRequest.MaxResults;
+            if (filterResult == null || filterResult.Parameters == null)
+            {
+                // No parameters to apply - this is valid for queries without filters
+                return true;
+            }
 
-            // Execute filtered query
-            QueryResult queryResult = ExecuteQuery(SqlOperation.Select, equalityRequest.TableName, filterResult);
-            result.Add(queryResult);
-            
-            return result;
+            foreach (KeyValuePair<string, object> parameter in filterResult.Parameters)
+            {
+                string paramName = parameter.Key;
+                object paramValue = parameter.Value;
+
+                // Ensure parameter name starts with @
+                if (!paramName.StartsWith("@"))
+                {
+                    paramName = "@" + paramName;
+                }
+
+                // Convert value to appropriate SQLite type
+                object sqliteValue = Convert.Value(paramValue);
+                
+                command.Parameters.AddWithValue(paramName, sqliteValue);
+            }
+
+            BH.Engine.Base.Compute.RecordNote($"Applied {filterResult.Parameters.Count} parameters to SQL command.");
+            return true;
         }
 
         /***************************************************/

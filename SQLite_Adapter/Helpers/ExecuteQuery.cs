@@ -20,7 +20,9 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.SQLite;
 using BH.oM.SQLite.Objects;
+using BH.Engine.SQLite;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -33,7 +35,14 @@ namespace BH.Adapter.SQLite
         /**** Private Methods                           ****/
         /***************************************************/
 
-        private QueryResult ExecuteQuery(string tableName, FilterCommand filterResult)
+        /// <summary>
+        /// Unified query execution method that handles SELECT, DELETE, and COUNT operations
+        /// </summary>
+        /// <param name="operation">Type of SQL operation to perform</param>
+        /// <param name="tableName">Target table name</param>
+        /// <param name="filterCommand">Filter conditions to apply</param>
+        /// <returns>QueryResult with appropriate data based on operation type</returns>
+        private QueryResult ExecuteQuery(SqlOperation operation, string tableName, FilterCommand filterCommand)
         {
             QueryResult result = new QueryResult
             {
@@ -44,7 +53,7 @@ namespace BH.Adapter.SQLite
             {
                 result.IsSuccess = false;
                 result.ErrorMessage = "Table name is null or empty.";
-                BH.Engine.Base.Compute.RecordError("Cannot perform filtered retrieval: table name is null or empty.");
+                BH.Engine.Base.Compute.RecordError($"Cannot perform {operation} operation: table name is null or empty.");
                 return result;
             }
 
@@ -59,81 +68,93 @@ namespace BH.Adapter.SQLite
                     return result;
                 }
 
-                // Build the SELECT query
-                string sql = BH.Engine.SQLite.Compute.SelectQuery(tableName, filterResult);
+                // Build the appropriate SQL query based on operation
+                string sql = BuildQueryForOperation(operation, tableName, filterCommand);
                 if (string.IsNullOrEmpty(sql))
                 {
                     result.IsSuccess = false;
-                    result.ErrorMessage = "Failed to construct SELECT query for filtered retrieval.";
-                    BH.Engine.Base.Compute.RecordError("Failed to construct SELECT query for filtered retrieval.");
+                    result.ErrorMessage = $"Failed to construct {operation} query.";
+                    BH.Engine.Base.Compute.RecordError($"Failed to construct {operation} query.");
                     return result;
                 }
 
                 result.ExecutedQuery = sql;
 
-                // Execute the query following the same pattern as CustomSqlRequest
+                // Execute the query with appropriate handling based on operation type
                 using (SqliteCommand command = new SqliteCommand(sql, m_Connection))
                 {
                     // Apply filter parameters if available
-                    if (filterResult != null)
+                    if (filterCommand != null && filterCommand.Parameters != null)
                     {
-                        ApplyFilterParameters(command, filterResult);
+                        ApplyFilterParameters(command, filterCommand);
                     }
 
-                    using (SqliteDataReader reader = command.ExecuteReader())
+                    if (operation == SqlOperation.Delete)
                     {
-                        // Get column names
-                        for (int i = 0; i < reader.FieldCount; i++)
+                        // For DELETE operations, execute non-query and return affected row count
+                        int affectedRows = command.ExecuteNonQuery();
+                        result.RowCount = affectedRows;
+                        result.IsSuccess = true;
+                        BH.Engine.Base.Compute.RecordNote($"Executed {operation} query on table '{tableName}'. Affected {result.RowCount} rows.");
+                    }
+                    else
+                    {
+                        // For SELECT and COUNT operations, read data
+                        using (SqliteDataReader reader = command.ExecuteReader())
                         {
-                            result.ColumnNames.Add(reader.GetName(i));
-                        }
-
-                        // Try to get schema information for type conversion
-                        Dictionary<string, Type> columnTypes = GetTableSchema(tableName);
-                        if (columnTypes.Count > 0)
-                        {
-                            BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: Found {columnTypes.Count} column types for table '{tableName}'");
-                        }
-                        else
-                        {
-                            BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: No schema information found for table '{tableName}'");
-                        }
-
-                        // Read data rows
-                        while (reader.Read())
-                        {
-                            Dictionary<string, object> row = new Dictionary<string, object>();
-                            
+                            // Get column names
                             for (int i = 0; i < reader.FieldCount; i++)
                             {
-                                string columnName = reader.GetName(i);
-                                object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
-                                
-                                // Apply type conversion if schema information is available
-                                if (value != null && columnTypes.ContainsKey(columnName))
+                                result.ColumnNames.Add(reader.GetName(i));
+                            }
+
+                            // Get schema information for type conversion (only for SELECT operations)
+                            Dictionary<string, Type> columnTypes = new Dictionary<string, Type>();
+                            if (operation == SqlOperation.Select)
+                            {
+                                columnTypes = GetTableSchema(tableName);
+                                if (columnTypes.Count > 0)
                                 {
-                                    Type targetType = columnTypes[columnName];
-                                    value = Convert.Value(value, targetType);
+                                    BH.Engine.Base.Compute.RecordNote($"Schema-based type conversion: Found {columnTypes.Count} column types for table '{tableName}'");
+                                }
+                            }
+
+                            // Read data rows
+                            while (reader.Read())
+                            {
+                                Dictionary<string, object> row = new Dictionary<string, object>();
+                                
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    string columnName = reader.GetName(i);
+                                    object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                    
+                                    // Apply type conversion if schema information is available and this is a SELECT operation
+                                    if (value != null && operation == SqlOperation.Select && columnTypes.ContainsKey(columnName))
+                                    {
+                                        Type targetType = columnTypes[columnName];
+                                        value = Convert.Value(value, targetType);
+                                    }
+                                    
+                                    row[columnName] = value;
                                 }
                                 
-                                row[columnName] = value;
+                                result.Data.Add(row);
                             }
-                            
-                            result.Data.Add(row);
+
+                            result.RowCount = result.Data.Count;
                         }
 
-                        result.RowCount = result.Data.Count;
+                        result.IsSuccess = true;
+                        BH.Engine.Base.Compute.RecordNote($"Retrieved {result.RowCount} rows from table '{tableName}' using {operation} operation with filter '{filterCommand?.FilterType ?? "Unknown"}'.");
                     }
                 }
-
-                result.IsSuccess = true;
-                BH.Engine.Base.Compute.RecordNote($"Retrieved {result.RowCount} rows from table '{tableName}' using filter '{filterResult?.FilterType ?? "Unknown"}'.");
             }
             catch (Exception ex)
             {
                 result.IsSuccess = false;
-                result.ErrorMessage = $"Error during filtered retrieval from table '{tableName}': {ex.Message}";
-                BH.Engine.Base.Compute.RecordError($"Error during filtered retrieval from table '{tableName}': {ex.Message}");
+                result.ErrorMessage = $"Error during {operation} operation on table '{tableName}': {ex.Message}";
+                BH.Engine.Base.Compute.RecordError($"Error during {operation} operation on table '{tableName}': {ex.Message}");
             }
 
             return result;
@@ -143,39 +164,20 @@ namespace BH.Adapter.SQLite
         /**** Private Helper Methods                   ****/
         /***************************************************/
 
-        private static bool ApplyFilterParameters(SqliteCommand command, FilterCommand filterResult)
+        private string BuildQueryForOperation(SqlOperation operation, string tableName, FilterCommand filterCommand)
         {
-            if (command == null)
+            switch (operation)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot apply filter parameters: command is null.");
-                return false;
+                case SqlOperation.Select:
+                    return BH.Engine.SQLite.Compute.SelectQuery(tableName, filterCommand);
+                case SqlOperation.Delete:
+                    return BH.Engine.SQLite.Compute.DeleteQuery(tableName, filterCommand);
+                case SqlOperation.Count:
+                    return BH.Engine.SQLite.Compute.CountQuery(tableName, filterCommand);
+                default:
+                    BH.Engine.Base.Compute.RecordError($"Unsupported SQL operation: {operation}");
+                    return null;
             }
-
-            if (filterResult == null || filterResult.Parameters == null)
-            {
-                // No parameters to apply - this is valid for queries without filters
-                return true;
-            }
-
-            foreach (KeyValuePair<string, object> parameter in filterResult.Parameters)
-            {
-                string paramName = parameter.Key;
-                object paramValue = parameter.Value;
-
-                // Ensure parameter name starts with @
-                if (!paramName.StartsWith("@"))
-                {
-                    paramName = "@" + paramName;
-                }
-
-                // Convert value to appropriate SQLite type
-                object sqliteValue = Convert.Value(paramValue);
-                
-                command.Parameters.AddWithValue(paramName, sqliteValue);
-            }
-
-            BH.Engine.Base.Compute.RecordNote($"Applied {filterResult.Parameters.Count} parameters to SQL command.");
-            return true;
         }
 
         /***************************************************/

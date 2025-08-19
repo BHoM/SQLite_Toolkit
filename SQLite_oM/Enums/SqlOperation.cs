@@ -20,47 +20,26 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using System;
 using System.ComponentModel;
 
-namespace BH.oM.SQLite.Examples
+namespace BH.oM.SQLite
 {
     /***************************************************/
-    /****               Example Classes              ****/
+    /****               Public Enums                ****/
     /***************************************************/
 
-    [Description("Example object for simple material properties. " +
-        "Demonstrates how enums and different numeric types are handled automatically.")]
-    public class SimpleMaterial : BHoMObject
+    [Description("Enumeration of SQL operations supported by the SQLite toolkit.")]
+    public enum SqlOperation
     {
-        /***************************************************/
-        /**** Properties                              ****/
-        /***************************************************/
+        [Description("SELECT operation for retrieving data from tables.")]
+        Select,
 
-        [Description("Name of the material.")]
-        public virtual string MaterialName { get; set; } = "";
+        [Description("DELETE operation for removing data from tables.")]
+        Delete,
 
-        [Description("Density of the material in kg/m³.")]
-        public virtual double Density { get; set; } = 0.0;
-
-        [Description("Young's modulus in Pa.")]
-        public virtual double YoungModulus { get; set; } = 0.0;
-
-        [Description("Poisson's ratio (dimensionless).")]
-        public virtual double PoissonRatio { get; set; } = 0.0;
-
-        [Description("Material type classification.")]
-        public virtual MaterialType Type { get; set; } = MaterialType.Unknown;
-
-        [Description("Whether the material is recyclable.")]
-        public virtual bool IsRecyclable { get; set; } = false;
-
-        [Description("Cost per unit volume.")]
-        public virtual decimal CostPerCubicMeter { get; set; } = 0.0m;
-
-        /***************************************************/
+        [Description("COUNT operation for counting rows in tables.")]
+        Count
     }
 
     /***************************************************/

@@ -20,6 +20,7 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.SQLite;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite.Requests;
 using BH.Engine.SQLite;
@@ -50,7 +51,7 @@ namespace BH.Adapter.SQLite
                 filterResult.Limit = rangeRequest.MaxResults;
 
             // Execute filtered query
-            QueryResult queryResult = ExecuteQuery(rangeRequest.TableName, filterResult);
+            QueryResult queryResult = ExecuteQuery(SqlOperation.Select, rangeRequest.TableName, filterResult);
             result.Add(queryResult);
             
             return result;
