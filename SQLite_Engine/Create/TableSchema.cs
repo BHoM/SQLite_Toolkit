@@ -75,9 +75,6 @@ namespace BH.Engine.SQLite
                     return null;
                 }
 
-                // BHoM_Guid is handled automatically through primitive property resolution
-                // No need to manually add it here as it's a primitive property of BHoMObject
-
                 // Convert property mappings to column definitions
                 int position = 0;
                 foreach (PropertyColumnInfo mapping in columnMappings)

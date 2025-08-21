@@ -91,8 +91,8 @@ namespace BH.Adapter.SQLite
                 return PushTables(objects.Cast<Table>());
             }
 
-            // Cast to IBHoMObject collection
-            IEnumerable<IObject> bhomObjects = objects.Cast<IObject>();
+            // Cast to IObject collection
+            IEnumerable<IObject> iObjects = objects.Cast<IObject>();
 
             // Get PushConfig
             PushConfig config = actionConfig as PushConfig ?? new PushConfig();
@@ -126,7 +126,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Step 4: Insert the objects
-                bool insertSuccess = InsertObjects(bhomObjects, tableName, objectType, config);
+                bool insertSuccess = InsertObjects(iObjects, tableName, objectType, config);
                 if (insertSuccess)
                 {
                     result = objects.ToList();
@@ -277,7 +277,7 @@ namespace BH.Adapter.SQLite
                     }
 
                     // Insert each object in the batch
-                    foreach (IBHoMObject obj in objects)
+                    foreach (IObject obj in objects)
                     {
                         // Extract column values for this object
                         Dictionary<string, object> columnValues = obj.GetColumnValues(columnSchema);

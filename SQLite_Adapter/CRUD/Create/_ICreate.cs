@@ -75,7 +75,7 @@ namespace BH.Adapter.SQLite
         /***************************************************/
 
         // Fallback case. If no specific Create is found, use the intelligent object push logic.
-        protected bool Create(IBHoMObject obj)
+        protected bool Create(IObject obj)
         {
             if (obj == null)
             {
@@ -142,7 +142,7 @@ namespace BH.Adapter.SQLite
 
         /***************************************************/
 
-        private bool InsertSingleObject(IBHoMObject obj, string tableName, Type objectType, PushConfig config)
+        private bool InsertSingleObject(IObject obj, string tableName, Type objectType, PushConfig config)
         {
             if (obj == null || string.IsNullOrEmpty(tableName))
                 return false;
