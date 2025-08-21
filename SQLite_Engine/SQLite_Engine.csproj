@@ -24,29 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\pnugent\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="C:\Users\pnugent\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="C:\Users\pnugent\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="C:\Users\pnugent\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="$(NuGetPackageRoot)sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll">
-      <Link>e_sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="BHoM">
       <HintPath>$(ProgramData)\BHoM\Assemblies\BHoM.dll</HintPath>
       <Private>false</Private>
@@ -80,11 +57,6 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="xcopy &quot;$(TargetDir)$(TargetFileName)&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
-    <Exec Command="xcopy &quot;$(TargetDir)Microsoft.Data.Sqlite.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
-    <Exec Command="xcopy &quot;$(TargetDir)SQLitePCLRaw.batteries_v2.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
-    <Exec Command="xcopy &quot;$(TargetDir)SQLitePCLRaw.core.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
-    <Exec Command="xcopy &quot;$(TargetDir)SQLitePCLRaw.provider.e_sqlite3.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
-    <Exec Command="xcopy &quot;$(TargetDir)e_sqlite3.dll&quot;  &quot;C:\ProgramData\BHoM\Assemblies&quot; /Y" />
   </Target>
 
 </Project>

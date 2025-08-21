@@ -20,62 +20,44 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.oM.Adapter;
-using BH.oM.Data.Requests;
 using BH.oM.SQLite;
 using BH.oM.SQLite.Objects;
 using BH.oM.SQLite.Requests;
-using System;
+using BH.Engine.SQLite;
 using System.Collections.Generic;
-using System.Linq;
+using BH.oM.Data.Requests;
 
 namespace BH.Adapter.SQLite
 {
     public partial class SQLiteAdapter
     {
         /***************************************************/
-        /**** Public Methods                            ****/
+        /**** Private Methods                           ****/
         /***************************************************/
 
-        public override IEnumerable<object> Pull(IRequest query, PullType pullType = PullType.AdapterDefault, ActionConfig actionConfig = null)
+        private FilterCommand IFilterCommand(IRequest request)
         {
-            List<object> result = new List<object>();
+                return FilterCommand(request as dynamic);
+        }
 
-            if (query == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: query is null.");
-                return result;
-            }
+        private FilterCommand FilterCommand(EqualityFilterRequest request)
+        {
+                return Convert.EqualityFilter(request);
+        }
 
-            if (m_Connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot pull data: no database connection. Please open a connection first.");
-                return result;
-            }
+        private FilterCommand FilterCommand(RangeFilterRequest request)
+        {
+                return Convert.RangeFilter(request);
+        }
 
-            m_LastUsed = DateTime.Now;
+        /***************************************************/
+        /**** Fallsback Methods                         ****/
+        /***************************************************/
 
-            FilterCommand filterResult = IFilterCommand(query);
-
-            if (filterResult == null)
-            {
-                BH.Engine.Base.Compute.RecordWarning("Failed to process range filter request.");
-                return result;
-            }
-
-            // At this point we know it's an ISqlRequest because it did not return null
-            ISqlRequest sqlQuery = query as ISqlRequest;
-
-            // Set limit if specified
-            if (sqlQuery.MaxResults > 0)
-                filterResult.Limit = sqlQuery.MaxResults;
-
-            // Execute filtered query
-            QueryResult queryResult = ExecuteQuery(SqlOperation.Select, sqlQuery.TableName, filterResult);
-            if (queryResult != null)
-                result.Add(queryResult);
-
-            return result;
+        private FilterCommand FilterCommand(ISqlRequest request)
+        {
+            Engine.Base.Compute.RecordError($"Request of type {request.GetType()} is not supported in this toolkit.");
+            return null;
         }
 
         /***************************************************/
