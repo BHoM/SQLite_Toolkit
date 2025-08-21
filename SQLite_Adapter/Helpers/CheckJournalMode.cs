@@ -20,7 +20,6 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
@@ -34,43 +33,50 @@ namespace BH.Adapter.SQLite
     public partial class SQLiteAdapter
     {
         /***************************************************/
-        /**** Public Methods                            ****/
+        /**** Private Methods                           ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Description("Checks the current journal mode of the database.")]
+        [Input("connection", "The SQLite connection to check.")]
+        [Output("journalMode", "The current journal mode string, or null if the check fails.")]
+        private string CheckJournalMode(SqliteConnection connection)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
-                return false;
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check journal mode: connection is null.");
+                return null;
+            }
+
+            if (connection.State != System.Data.ConnectionState.Open)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot check journal mode: connection is not open.");
+                return null;
+            }
 
             try
             {
                 // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
+                SQLCommand command = BH.Engine.SQLite.Compute.CheckJournalModeCommand();
                 if (command == null)
-                    return false;
+                    return null;
 
                 // Execute the command using the existing ExecuteCommand method
                 Output<List<object>, bool> result = ExecuteCommand(command);
                 if (result.Item2 && result.Item1.Count > 0)
                 {
                     Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
+                    if (row != null && row.ContainsKey("journal_mode"))
                     {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
+                        return row["journal_mode"]?.ToString();
                     }
                 }
 
-                return false;
+                return null;
             }
             catch (Exception ex)
             {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
-                return false;
+                BH.Engine.Base.Compute.RecordError($"Failed to check journal mode: {ex.Message}");
+                return null;
             }
         }
 

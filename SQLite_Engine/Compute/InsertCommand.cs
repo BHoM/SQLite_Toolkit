@@ -20,58 +20,56 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
-using Microsoft.Data.Sqlite;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Description("Creates a SQL command to insert data into a table with parameterised values.")]
+        [Input("tableName", "The name of the table to insert into.")]
+        [Input("columnValues", "Dictionary of column names and their values to insert.")]
+        [Input("conflictClause", "Optional conflict resolution clause (e.g., 'OR REPLACE', 'OR IGNORE').")]
+        [Output("command", "SQLCommand that can be executed to insert the data.")]
+        public static SQLCommand InsertCommand(string tableName, Dictionary<string, object> columnValues, string conflictClause = "OR REPLACE")
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
-                return false;
-
-            try
+            if (string.IsNullOrWhiteSpace(tableName))
             {
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
-                if (command == null)
-                    return false;
-
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
-                {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
-                    {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
-                    }
-                }
-
-                return false;
+                BH.Engine.Base.Compute.RecordError("Cannot create insert command: table name is null or empty.");
+                return null;
             }
-            catch (Exception ex)
+
+            if (columnValues == null || !columnValues.Any())
             {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
-                return false;
+                BH.Engine.Base.Compute.RecordError("Cannot create insert command: no column values provided.");
+                return null;
             }
+
+            List<string> columnNames = columnValues.Keys.ToList();
+            string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
+            string placeholders = string.Join(", ", columnNames.Select(col => $"@{col}"));
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, object> columnValue in columnValues)
+            {
+                parameters[$"@{columnValue.Key}"] = columnValue.Value;
+            }
+
+            SQLCommand command = new SQLCommand()
+            {
+                Command = $"INSERT {conflictClause} INTO \"{tableName}\" ({columns}) VALUES ({placeholders})",
+                Parameters = parameters
+            };
+
+            return command;
         }
 
         /***************************************************/

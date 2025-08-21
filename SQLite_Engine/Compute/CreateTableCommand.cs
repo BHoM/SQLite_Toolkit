@@ -20,58 +20,37 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
-using Microsoft.Data.Sqlite;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Description("Creates a SQL command to execute a CREATE TABLE statement.")]
+        [Input("createTableSql", "The complete CREATE TABLE SQL statement.")]
+        [Output("command", "SQLCommand that can be executed to create the table.")]
+        public static SQLCommand CreateTableCommand(string createTableSql)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
-                return false;
-
-            try
+            if (string.IsNullOrWhiteSpace(createTableSql))
             {
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
-                if (command == null)
-                    return false;
-
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
-                {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
-                    {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
-                    }
-                }
-
-                return false;
+                BH.Engine.Base.Compute.RecordError("Cannot create table command: SQL statement is null or empty.");
+                return null;
             }
-            catch (Exception ex)
+
+            SQLCommand command = new SQLCommand()
             {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
-                return false;
-            }
+                Command = createTableSql,
+                Parameters = new Dictionary<string, object>()
+            };
+
+            return command;
         }
 
         /***************************************************/

@@ -20,9 +20,12 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Commands;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace BH.Adapter.SQLite
@@ -54,28 +57,31 @@ namespace BH.Adapter.SQLite
             try
             {
                 // First check if WAL mode is enabled
-                using (SqliteCommand checkCommand = connection.CreateCommand())
+                string journalMode = CheckJournalMode(connection);
+                if (journalMode == null)
                 {
-                    checkCommand.CommandText = "PRAGMA journal_mode;";
-                    object journalModeResult = checkCommand.ExecuteScalar();
-                    string journalMode = journalModeResult?.ToString();
-
-                    if (!string.Equals(journalMode, "wal", StringComparison.OrdinalIgnoreCase))
-                    {
-                        BH.Engine.Base.Compute.RecordNote("WAL checkpoint skipped: database is not in WAL mode.");
-                        return true; // Not an error, just not needed
-                    }
+                    BH.Engine.Base.Compute.RecordError("Failed to check journal mode.");
+                    return false;
                 }
 
-                // Perform the WAL checkpoint
-                using (SqliteCommand command = connection.CreateCommand())
+                if (!string.Equals(journalMode, "wal", StringComparison.OrdinalIgnoreCase))
                 {
-                    command.CommandText = $"PRAGMA wal_checkpoint({checkpointMode});";
-                    command.ExecuteNonQuery();
+                    BH.Engine.Base.Compute.RecordNote("WAL checkpoint skipped: database is not in WAL mode.");
+                    return true; // Not an error, just not needed
                 }
 
-                BH.Engine.Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
-                return true;
+                // Use Engine method to generate the command
+                SQLCommand command = BH.Engine.SQLite.Compute.WalCheckpointCommand(checkpointMode);
+                if (command == null)
+                    return false;
+
+                // Execute the command using the existing ExecuteCommand method
+                Output<List<object>, bool> result = ExecuteCommand(command);
+                if (result.Item2)
+                {
+                    BH.Engine.Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
+                }
+                return result.Item2;
             }
             catch (Exception ex)
             {

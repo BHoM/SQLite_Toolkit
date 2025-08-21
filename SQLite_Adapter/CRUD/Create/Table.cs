@@ -20,7 +20,9 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Commands;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite.Objects;
 using Microsoft.Data.Sqlite;
@@ -181,9 +183,16 @@ namespace BH.Adapter.SQLite
                     return false;
                 }
 
-                // Execute the creation using the consolidated command method
-                bool executed = Command(connection, createSql, (Dictionary<string, object>)null, $"CREATE TABLE {tableName}");
-                if (!executed)
+                // Execute the creation using the new Engine method and ExecuteCommand
+                SQLCommand command = BH.Engine.SQLite.Compute.CreateTableCommand(createSql);
+                if (command == null)
+                {
+                    BH.Engine.Base.Compute.RecordError($"Failed to create SQL command for table '{tableName}'.");
+                    return false;
+                }
+
+                Output<List<object>, bool> result = ExecuteCommand(command);
+                if (!result.Item2)
                 {
                     BH.Engine.Base.Compute.RecordError($"Failed to execute CREATE TABLE command for '{tableName}'.");
                     return false;

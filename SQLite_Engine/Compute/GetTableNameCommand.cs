@@ -20,58 +20,61 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
-using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Description("Creates a SQL command to get the table name for a given full type name.")]
+        [Input("fullTypeName", "The full type name including namespace.")]
+        [Output("command", "SQLCommand that can be executed to retrieve the table name.")]
+        public static SQLCommand GetTableNameCommand(string fullTypeName)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
-                return false;
-
-            try
+            if (string.IsNullOrWhiteSpace(fullTypeName))
             {
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
-                if (command == null)
-                    return false;
+                BH.Engine.Base.Compute.RecordError("Cannot create get table name query: full type name is null or empty.");
+                return null;
+            }
 
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
+            SQLCommand command = new SQLCommand()
+            {
+                Command = @"
+                    SELECT TableName 
+                    FROM __Types 
+                    WHERE FullTypeName = @FullTypeName",
+                Parameters = new Dictionary<string, object>
                 {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
-                    {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
-                    }
+                    { "@FullTypeName", fullTypeName }
                 }
+            };
 
-                return false;
-            }
-            catch (Exception ex)
+            return command;
+        }
+
+        /***************************************************/
+
+        [Description("Creates a SQL command to get the table name for a given .NET Type.")]
+        [Input("type", "The .NET Type to get the table name for.")]
+        [Output("command", "SQLCommand that can be executed to retrieve the table name.")]
+        public static SQLCommand GetTableNameCommand(Type type)
+        {
+            if (type == null)
             {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
-                return false;
+                BH.Engine.Base.Compute.RecordError("Cannot create get table name query: type is null.");
+                return null;
             }
+
+            string fullTypeName = type.FullName ?? type.Name;
+            return GetTableNameCommand(fullTypeName);
         }
 
         /***************************************************/

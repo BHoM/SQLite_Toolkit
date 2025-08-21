@@ -20,58 +20,43 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
-using Microsoft.Data.Sqlite;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Description("Creates a SQL command to check if a table exists in the database.")]
+        [Input("tableName", "The table name to check for existence.")]
+        [Output("command", "SQLCommand that can be executed to check table existence. Returns 1 if table exists, 0 if not.")]
+        public static SQLCommand TableExistsCommand(string tableName)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
-                return false;
-
-            try
+            if (string.IsNullOrWhiteSpace(tableName))
             {
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
-                if (command == null)
-                    return false;
+                BH.Engine.Base.Compute.RecordError("Cannot create table exists command: table name is null or empty.");
+                return null;
+            }
 
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
+            SQLCommand command = new SQLCommand()
+            {
+                Command = @"
+                    SELECT COUNT(*) 
+                    FROM sqlite_master 
+                    WHERE type='table' AND name=@TableName",
+                Parameters = new Dictionary<string, object>
                 {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
-                    {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
-                    }
+                    { "@TableName", tableName }
                 }
+            };
 
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
-                return false;
-            }
+            return command;
         }
 
         /***************************************************/

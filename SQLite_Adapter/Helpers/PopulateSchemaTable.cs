@@ -64,32 +64,20 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Delete existing entries for this table (in case of schema updates)
-                string deleteSql = "DELETE FROM __Schema WHERE TableName = @TableName";
-                using (SqliteCommand deleteCommand = new SqliteCommand(deleteSql, connection))
+                bool deletedEntries = DeleteSchemaEntries(connection, tableSchema.Name);
+                if (!deletedEntries)
                 {
-                    deleteCommand.Parameters.AddWithValue("@TableName", tableSchema.Name);
-                    deleteCommand.ExecuteNonQuery();
+                    BH.Engine.Base.Compute.RecordWarning($"Failed to delete existing schema entries for table '{tableSchema.Name}', but will continue with insertion.");
                 }
 
                 // Insert schema information for each column
-                string insertSql = @"
-                    INSERT INTO __Schema (TableName, ColumnName, DataType, NetTypeName, IsNullable, IsPrimaryKey, DefaultValue) 
-                    VALUES (@TableName, @ColumnName, @DataType, @NetTypeName, @IsNullable, @IsPrimaryKey, @DefaultValue)";
-
-                using (SqliteCommand insertCommand = new SqliteCommand(insertSql, connection))
+                foreach (Column column in tableSchema.Columns.OrderBy(c => c.Position))
                 {
-                    foreach (Column column in tableSchema.Columns.OrderBy(c => c.Position))
+                    bool inserted = InsertColumnSchema(connection, tableSchema.Name, column);
+                    if (!inserted)
                     {
-                        insertCommand.Parameters.Clear();
-                        insertCommand.Parameters.AddWithValue("@TableName", tableSchema.Name);
-                        insertCommand.Parameters.AddWithValue("@ColumnName", column.Name);
-                        insertCommand.Parameters.AddWithValue("@DataType", column.DataType.ToString());
-                        insertCommand.Parameters.AddWithValue("@NetTypeName", column.NetTypeName ?? (object)DBNull.Value);
-                        insertCommand.Parameters.AddWithValue("@IsNullable", column.AllowNull);
-                        insertCommand.Parameters.AddWithValue("@IsPrimaryKey", column.IsPrimaryKey);
-                        insertCommand.Parameters.AddWithValue("@DefaultValue", column.DefaultValue ?? (object)DBNull.Value);
-
-                        insertCommand.ExecuteNonQuery();
+                        BH.Engine.Base.Compute.RecordError($"Failed to insert schema for column '{column.Name}' in table '{tableSchema.Name}'.");
+                        return false;
                     }
                 }
 

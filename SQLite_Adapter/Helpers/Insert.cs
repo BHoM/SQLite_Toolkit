@@ -20,7 +20,9 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Commands;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -63,23 +65,18 @@ namespace BH.Adapter.SQLite
 
             try
             {
-                List<string> columnNames = columnValues.Keys.ToList();
-                string columns = string.Join(", ", columnNames.Select(col => $"\"{col}\""));
-                string placeholders = string.Join(", ", columnNames.Select(col => $"@{col}"));
-                
-                string insertSql = $"INSERT {conflictClause} INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
+                // Use Engine method to generate the command
+                SQLCommand command = BH.Engine.SQLite.Compute.InsertCommand(tableName, columnValues, conflictClause);
+                if (command == null)
+                    return false;
 
-                Dictionary<string, object> parameters = new Dictionary<string, object>();
-                foreach (KeyValuePair<string, object> columnValue in columnValues)
-                {
-                    parameters[$"@{columnValue.Key}"] = columnValue.Value;
-                }
-
-                return Command(connection, insertSql, parameters, $"INSERT into table '{tableName}'");
+                // Execute the command using the existing ExecuteCommand method
+                Output<List<object>, bool> result = ExecuteCommand(command);
+                return result.Item2;
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Failed to build INSERT statement for table '{tableName}': {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to execute INSERT statement for table '{tableName}': {ex.Message}");
                 return false;
             }
         }

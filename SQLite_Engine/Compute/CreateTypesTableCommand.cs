@@ -20,58 +20,37 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
-using Microsoft.Data.Sqlite;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Description("Creates a SQL command to create the __Types system table for storing type-to-table mappings.")]
+        [Output("command", "SQLCommand that can be executed to create the __Types system table.")]
+        public static SQLCommand CreateTypesTableCommand()
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
-                return false;
-
-            try
+            SQLCommand command = new SQLCommand()
             {
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
-                if (command == null)
-                    return false;
+                Command = @"
+                    CREATE TABLE IF NOT EXISTS __Types (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        FullTypeName TEXT NOT NULL UNIQUE,
+                        TableName TEXT NOT NULL,
+                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        LastModified DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )",
+                Parameters = new Dictionary<string, object>()
+            };
 
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
-                {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
-                    {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
-                    }
-                }
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
-                return false;
-            }
+            return command;
         }
 
         /***************************************************/

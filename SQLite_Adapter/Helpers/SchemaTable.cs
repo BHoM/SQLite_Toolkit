@@ -20,9 +20,12 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
+using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Commands;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace BH.Adapter.SQLite
@@ -46,26 +49,18 @@ namespace BH.Adapter.SQLite
 
             try
             {
-                string createTableSql = @"
-                    CREATE TABLE IF NOT EXISTS __Schema (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        TableName TEXT NOT NULL,
-                        ColumnName TEXT NOT NULL,
-                        DataType TEXT NOT NULL,
-                        NetTypeName TEXT,
-                        IsNullable BOOLEAN DEFAULT 1,
-                        IsPrimaryKey BOOLEAN DEFAULT 0,
-                        DefaultValue TEXT,
-                        DateCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        UNIQUE(TableName, ColumnName)
-                    )";
+                // Use Engine method to generate the command
+                SQLCommand command = BH.Engine.SQLite.Compute.CreateSchemaTableCommand();
+                if (command == null)
+                    return false;
 
-                using (SqliteCommand command = new SqliteCommand(createTableSql, connection))
+                // Execute the command using the existing ExecuteCommand method
+                Output<List<object>, bool> result = ExecuteCommand(command);
+                if (result.Item2)
                 {
-                    command.ExecuteNonQuery();
                     BH.Engine.Base.Compute.RecordNote("Successfully created __Schema system table.");
-                    return true;
                 }
+                return result.Item2;
             }
             catch (Exception ex)
             {

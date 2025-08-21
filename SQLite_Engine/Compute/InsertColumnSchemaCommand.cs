@@ -20,58 +20,56 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
-using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
-using Microsoft.Data.Sqlite;
-using System;
+using BH.oM.SQLite.Objects;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.Adapter.SQLite
+namespace BH.Engine.SQLite
 {
-    public partial class SQLiteAdapter
+    public static partial class Compute
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
-        [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Description("Creates a SQL command to insert schema information for a column into the __Schema system table.")]
+        [Input("tableName", "The table name.")]
+        [Input("column", "The column schema information to insert.")]
+        [Output("command", "SQLCommand that can be executed to insert the column schema.")]
+        public static SQLCommand InsertColumnSchemaCommand(string tableName, Column column)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
-                return false;
-
-            try
+            if (string.IsNullOrWhiteSpace(tableName))
             {
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
-                if (command == null)
-                    return false;
+                BH.Engine.Base.Compute.RecordError("Cannot create insert column schema command: table name is null or empty.");
+                return null;
+            }
 
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
+            if (column == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot create insert column schema command: column is null.");
+                return null;
+            }
+
+            SQLCommand command = new SQLCommand()
+            {
+                Command = @"
+                    INSERT INTO __Schema (TableName, ColumnName, DataType, NetTypeName, IsNullable, IsPrimaryKey, DefaultValue) 
+                    VALUES (@TableName, @ColumnName, @DataType, @NetTypeName, @IsNullable, @IsPrimaryKey, @DefaultValue)",
+                Parameters = new Dictionary<string, object>
                 {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
-                    {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
-                    }
+                    { "@TableName", tableName },
+                    { "@ColumnName", column.Name },
+                    { "@DataType", column.DataType.ToString() },
+                    { "@NetTypeName", column.NetTypeName },
+                    { "@IsNullable", column.AllowNull },
+                    { "@IsPrimaryKey", column.IsPrimaryKey },
+                    { "@DefaultValue", column.DefaultValue }
                 }
+            };
 
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
-                return false;
-            }
+            return command;
         }
 
         /***************************************************/

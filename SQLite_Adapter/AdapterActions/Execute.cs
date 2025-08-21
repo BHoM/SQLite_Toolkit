@@ -183,6 +183,16 @@ namespace BH.Adapter.SQLite
 
                 using (SqliteCommand sqlCommand = new SqliteCommand(command.Command, m_Connection))
                 {
+                    // Add parameters if provided
+                    if (command.Parameters != null && command.Parameters.Count > 0)
+                    {
+                        foreach (KeyValuePair<string, object> parameter in command.Parameters)
+                        {
+                            object sqliteValue = Convert.Value(parameter.Value);
+                            sqlCommand.Parameters.AddWithValue(parameter.Key, sqliteValue);
+                        }
+                    }
+
                     // Execute the command and collect results
                     using (SqliteDataReader reader = sqlCommand.ExecuteReader())
                     {

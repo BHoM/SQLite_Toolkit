@@ -20,7 +20,6 @@
  * along with this code. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.      
  */
 
-using BH.Engine.Base;
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
 using BH.oM.SQLite.Commands;
@@ -34,42 +33,41 @@ namespace BH.Adapter.SQLite
     public partial class SQLiteAdapter
     {
         /***************************************************/
-        /**** Public Methods                            ****/
+        /**** Private Methods                           ****/
         /***************************************************/
 
-        [Description("Checks if a table exists in the database.")]
+        [Description("Deletes existing schema entries for a table from the __Schema system table.")]
         [Input("connection", "Active SQLite database connection.")]
-        [Input("tableName", "The table name to check.")]
-        [Output("exists", "True if the table exists, false otherwise.")]
-        protected bool TableExists(SqliteConnection connection, string tableName)
+        [Input("tableName", "The table name to delete schema entries for.")]
+        [Output("success", "True if schema entries were deleted successfully, false otherwise.")]
+        private bool DeleteSchemaEntries(SqliteConnection connection, string tableName)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(tableName))
+            if (connection == null)
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot delete schema entries: connection is null.");
                 return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                BH.Engine.Base.Compute.RecordError("Cannot delete schema entries: table name is null or empty.");
+                return false;
+            }
 
             try
             {
                 // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.TableExistsCommand(tableName);
+                SQLCommand command = BH.Engine.SQLite.Compute.DeleteSchemaEntriesCommand(tableName);
                 if (command == null)
                     return false;
 
                 // Execute the command using the existing ExecuteCommand method
                 Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
-                {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("COUNT(*)"))
-                    {
-                        long count = System.Convert.ToInt64(row["COUNT(*)"]);
-                        return count > 0;
-                    }
-                }
-
-                return false;
+                return result.Item2;
             }
             catch (Exception ex)
             {
-                Engine.Base.Compute.RecordWarning($"Error checking if table {tableName} exists: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Failed to delete schema entries for table '{tableName}': {ex.Message}");
                 return false;
             }
         }

@@ -22,6 +22,7 @@
 
 using BH.oM.Base.Attributes;
 using BH.oM.Adapter;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace BH.oM.SQLite.Commands
@@ -30,15 +31,18 @@ namespace BH.oM.SQLite.Commands
     /**** Public Classes                            ****/
     /***************************************************/
 
-    [Description("Command for executing custom SQL statements through the SQLite adapter.")]
+    [Description("Command for executing custom SQL statements through the SQLite adapter with parameterised queries.")]
     public class SQLCommand : IExecuteCommand
     {
         /***************************************************/
         /**** Properties                                ****/
         /***************************************************/
 
-        [Description("The SQL command text to execute. Can be any valid SQL statement.")]
+        [Description("The SQL command text to execute. Can be any valid SQL statement with parameter placeholders.")]
         public virtual string Command { get; set; } = "";
+
+        [Description("Optional dictionary of parameters for the SQL command. Parameter names should include the '@' prefix.")]
+        public virtual Dictionary<string, object> Parameters { get; set; } = new Dictionary<string, object>();
 
         /***************************************************/
     }
