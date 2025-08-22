@@ -51,10 +51,21 @@ namespace BH.Engine.SQLite
                 return null;
             }
 
+            // Note: PRAGMA statements don't support parameterised queries in SQLite
+            // We need to validate the table name for security and use string formatting
+            if (!BH.Engine.SQLite.Query.IsValid(tableName, true))
+            {
+                BH.Engine.Base.Compute.RecordError($"Invalid table name format: {tableName}");
+                return null;
+            }
+
             SQLCommand command = new SQLCommand()
             {
                 Command = $"PRAGMA table_info(\"{tableName}\")",
-                Parameters = new Dictionary<string, object>()
+                Parameters = new Dictionary<string, object>
+                {
+                    { "@ColumnName", columnName }
+                }
             };
 
             return command;

@@ -21,9 +21,12 @@
  */
 
 using BH.Engine.Base;
+using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite.Commands;
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace BH.Adapter.SQLite
@@ -61,13 +64,22 @@ namespace BH.Adapter.SQLite
 
             try
             {
-                using (SqliteCommand command = new SqliteCommand($"PRAGMA table_info(\"{tableName}\")", connection))
+                // Use Engine method to generate the command
+                SQLCommand command = BH.Engine.SQLite.Compute.ColumnExistsCommand(tableName, columnName);
+                if (command == null)
+                    return false;
+
+                // Execute the command using the existing ExecuteCommand method
+                Output<List<object>, bool> result = ExecuteCommand(command);
+                if (result.Item2 && result.Item1.Count > 0)
                 {
-                    using (SqliteDataReader reader = command.ExecuteReader())
+                    // Check if any returned row has the specified column name
+                    foreach (object row in result.Item1)
                     {
-                        while (reader.Read())
+                        Dictionary<string, object> columnInfo = row as Dictionary<string, object>;
+                        if (columnInfo != null && columnInfo.ContainsKey("name"))
                         {
-                            string existingColumnName = reader.GetString(1); // Column name is at index 1
+                            string existingColumnName = columnInfo["name"]?.ToString();
                             if (string.Equals(existingColumnName, columnName, StringComparison.OrdinalIgnoreCase))
                             {
                                 return true;

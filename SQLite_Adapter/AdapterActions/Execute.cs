@@ -71,7 +71,7 @@ namespace BH.Adapter.SQLite
                 // Use command file name or fall back to adapter file path
                 string filePath = !string.IsNullOrEmpty(command.FileName) ? command.FileName : m_FilePath;
 
-                m_Connection = ConnectToDatabase(filePath, settings);
+                ConnectToDatabase(filePath, settings);
 
                 if (m_Connection != null)
                 {
@@ -314,6 +314,8 @@ namespace BH.Adapter.SQLite
                     connection.Dispose();
                     return null;
                 }
+
+                m_Connection = connection;
 
                 // Configure the connection based on settings
                 ConfigureConnection(connection, settings);
