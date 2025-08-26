@@ -60,6 +60,9 @@ namespace BH.oM.SQLite.Requests
         [Description("Maximum number of results to return. If 0, returns all matching records.")]
         public virtual int MaxResults { get; set; } = 0;
 
+        [Description("List of columns to sort the results by. Applied in order of list sequence.")]
+        public virtual List<SortColumn> SortColumns { get; set; } = new List<SortColumn>();
+
         /***************************************************/
     }
 

@@ -22,39 +22,29 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
-using BH.oM.Data.Requests;
-using BH.oM.SQLite;
-using BH.oM.SQLite.Objects;
-using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace BH.oM.SQLite.Requests
+namespace BH.oM.SQLite.Objects
 {
     /***************************************************/
     /****               Public Classes              ****/
     /***************************************************/
 
-    [Description("Request for filtering database records based on exact column value matches with support for multiple values per column (IN clause).")]
-    public class EqualityFilterRequest : BHoMObject, ISqlRequest
+    [Description("Defines sorting criteria for a specific column in query results.")]
+    public class SortColumn : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
         /***************************************************/
 
-        [Description("List of column filter conditions. Each filter can specify multiple values for IN clause filtering.")]
-        public virtual List<ColumnFilter> ColumnFilters { get; set; } = new List<ColumnFilter>();
+        [Description("The name of the column to sort by.")]
+        public virtual string ColumnName { get; set; } = "";
 
-        [Description("Target table name for the filter operation. If not specified, will be derived from the request context.")]
-        public virtual string TableName { get; set; } = "";
+        [Description("The sort direction.")]
+        public virtual SortOrder SortDirection { get; set; } = SortOrder.DESC;
 
-        [Description("Logical operator to combine multiple column filters. Default is AND.")]
-        public virtual LogicalOperator Logic { get; set; } = LogicalOperator.And;
-
-        [Description("Maximum number of results to return. If 0, returns all matching records.")]
-        public virtual int MaxResults { get; set; } = 0;
-
-        [Description("List of columns to sort the results by. Applied in order of list sequence.")]
-        public virtual List<SortColumn> SortColumns { get; set; } = new List<SortColumn>();
+        [Description("Optional priority order when multiple sort columns are specified. Lower numbers have higher priority. Default is 0.")]
+        public virtual int Priority { get; set; } = 0;
 
         /***************************************************/
     }

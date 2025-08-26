@@ -55,6 +55,9 @@ namespace BH.oM.SQLite.Objects
         [Description("Optional table name the filter is intended for. Can be used for validation.")]
         public virtual string TableName { get; set; } = "";
 
+        [Description("The SQL ORDER BY clause generated from sort specifications, without the 'ORDER BY' keyword.")]
+        public virtual string OrderByClause { get; set; } = "";
+
         /***************************************************/
     }
 

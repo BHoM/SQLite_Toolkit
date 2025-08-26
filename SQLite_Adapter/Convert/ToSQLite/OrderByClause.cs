@@ -21,54 +21,53 @@
  */
 
 using BH.oM.Base.Attributes;
-using BH.oM.SQLite.Commands;
+using BH.oM.SQLite.Objects;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using BH.oM.SQLite;
 
-namespace BH.Engine.SQLite
+namespace BH.Adapter.SQLite
 {
-    public static partial class Compute
+    public static partial class Convert
     {
         /***************************************************/
         /**** Public Methods                            ****/
         /***************************************************/
 
-        [Description("Creates a SQL command to check if a specific column exists in a table.")]
-        [Input("tableName", "Name of the table to check.")]
-        [Input("columnName", "Name of the column to check for.")]
-        [Output("command", "SQLCommand that can be executed to check column existence. Returns column information if exists, empty result if not.")]
-        public static SQLCommand ColumnExistsCommand(string tableName, string columnName)
+        [Description("Converts a list of SortColumn objects into a SQL ORDER BY clause.")]
+        [Input("sortColumns", "List of sort column specifications to convert.")]
+        [Output("orderByClause", "SQL ORDER BY clause without the 'ORDER BY' keyword, or empty string if no valid sort columns.")]
+        public static string OrderByClause(List<SortColumn> sortColumns)
         {
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create column exists command: table name is null or empty.");
-                return null;
-            }
+            if (sortColumns == null || !sortColumns.Any())
+                return "";
 
-            if (string.IsNullOrWhiteSpace(columnName))
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create column exists command: column name is null or empty.");
-                return null;
-            }
+            List<string> orderByItems = new List<string>();
 
-            // Note: PRAGMA statements don't support parameterised queries in SQLite
-            // We need to validate the table name for security and use string formatting
-            if (!BH.Engine.SQLite.Query.IsValid(tableName, true))
-            {
-                BH.Engine.Base.Compute.RecordError($"Invalid table name format: {tableName}");
-                return null;
-            }
+            // Sort by priority first, then by original order
+            IEnumerable<SortColumn> sortedColumns = sortColumns
+                .Where(sc => sc != null && !string.IsNullOrWhiteSpace(sc.ColumnName))
+                .OrderBy(sc => sc.Priority)
+                .ThenBy(sc => sortColumns.IndexOf(sc));
 
-            SQLCommand command = new SQLCommand()
+            foreach (SortColumn sortColumn in sortedColumns)
             {
-                Command = $"PRAGMA table_info(\"{tableName}\")",
-                Parameters = new Dictionary<string, object>
+                // Validate column name
+                if (!BH.Engine.SQLite.Query.IsValid(sortColumn.ColumnName))
                 {
-                    { "@ColumnName", columnName }
+                    BH.Engine.Base.Compute.RecordWarning($"Invalid column name for sorting: '{sortColumn.ColumnName}'. Skipping.");
+                    continue;
                 }
-            };
 
-            return command;
+                string order = "DESC";
+                if (sortColumn.SortDirection == SortOrder.ASC)
+                    order = "ASC";
+
+                orderByItems.Add($"\"{sortColumn.ColumnName}\" {order}");
+            }
+
+            return orderByItems.Any() ? string.Join(", ", orderByItems) : "";
         }
 
         /***************************************************/

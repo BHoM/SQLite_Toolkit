@@ -427,5 +427,352 @@ namespace BH.Tests.SQLite.Unit
             countQuery.Should().Contain("WHERE", "Should include WHERE clause");
             countQuery.Should().Contain("\"Temperature\" > @param1", "Should include filter condition");
         }
+
+        [Test]
+        public void Test_EqualityFilter_WithSingleSortColumn()
+        {
+            // Test equality filter with single column sorting
+
+            // Arrange
+            EqualityFilterRequest request = new EqualityFilterRequest()
+            {
+                ColumnFilters = new List<ColumnFilter>
+                {
+                    new ColumnFilter()
+                    {
+                        ColumnName = "SensorId",
+                        Values = new List<object> { "TEMP001", "TEMP002" }
+                    }
+                },
+                SortColumns = new List<SortColumn>
+                {
+                    new SortColumn()
+                    {
+                        ColumnName = "Timestamp",
+                        SortDirection = SortOrder.DESC
+                    }
+                },
+                MaxResults = 10
+            };
+            
+            // Act
+            FilterCommand result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
+            
+            // Assert
+            result.Should().NotBeNull("Filter should generate result");
+            result.OrderByClause.Should().NotBeNullOrEmpty("Should generate ORDER BY clause");
+            result.OrderByClause.Should().Be("\"Timestamp\" DESC", "Should generate correct ORDER BY clause");
+            result.Limit.Should().Be(10, "Should set limit from MaxResults");
+            
+            // Verify WHERE clause still works
+            result.WhereClause.Should().Contain("\"SensorId\"", "Should include filter condition");
+            result.WhereClause.Should().Contain("IN", "Should use IN clause for multiple values");
+        }
+
+        [Test]
+        public void Test_EqualityFilter_WithMultipleSortColumns()
+        {
+            // Test equality filter with multiple column sorting and priorities
+            
+            // Arrange
+            EqualityFilterRequest request = new EqualityFilterRequest()
+            {
+                ColumnFilters = new List<ColumnFilter>
+                {
+                    new ColumnFilter()
+                    {
+                        ColumnName = "IsValid",
+                        Values = new List<object> { true }
+                    }
+                },
+                SortColumns = new List<SortColumn>
+                {
+                    new SortColumn()
+                    {
+                        ColumnName = "Priority",
+                        SortDirection = SortOrder.DESC,
+                        Priority = 0
+                    },
+                    new SortColumn()
+                    {
+                        ColumnName = "Name",
+                        SortDirection = SortOrder.ASC,
+                        Priority = 1
+                    },
+                    new SortColumn()
+                    {
+                        ColumnName = "Timestamp",
+                        SortDirection = SortOrder.DESC,
+                        Priority = 2
+                    }
+                }
+            };
+            
+            // Act
+            FilterCommand result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
+            
+            // Assert
+            result.Should().NotBeNull("Filter should generate result");
+            result.OrderByClause.Should().NotBeNullOrEmpty("Should generate ORDER BY clause");
+            result.OrderByClause.Should().Be("\"Priority\" DESC, \"Name\" ASC, \"Timestamp\" DESC", 
+                "Should generate correct multi-column ORDER BY clause with priority ordering");
+        }
+
+        [Test]
+        public void Test_RangeFilter_WithSingleSortColumn()
+        {
+            // Test range filter with single column sorting
+            
+            // Arrange
+            RangeFilterRequest request = new RangeFilterRequest()
+            {
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
+                {
+                    new Dictionary<string, GeneralDomain>
+                    {
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 20.0, Max = 30.0 }
+                        }
+                    }
+                },
+                SortColumns = new List<SortColumn>
+                {
+                    new SortColumn()
+                    {
+                        ColumnName = "Temperature",
+                        SortDirection = SortOrder.ASC
+                    }
+                },
+                MaxResults = 25
+            };
+            
+            // Act
+            FilterCommand result = BH.Adapter.SQLite.Convert.RangeFilter(request);
+            
+            // Assert
+            result.Should().NotBeNull("Filter should generate result");
+            result.OrderByClause.Should().NotBeNullOrEmpty("Should generate ORDER BY clause");
+            result.OrderByClause.Should().Be("\"Temperature\" ASC", "Should generate correct ORDER BY clause");
+            result.Limit.Should().Be(25, "Should set limit from MaxResults");
+            
+            // Verify WHERE clause still works
+            result.WhereClause.Should().Contain("\"Temperature\"", "Should include range condition");
+            result.WhereClause.Should().Contain(">=", "Should include minimum bound");
+            result.WhereClause.Should().Contain("<=", "Should include maximum bound");
+        }
+
+        [Test]
+        public void Test_RangeFilter_WithMultipleSortColumns()
+        {
+            // Test range filter with multiple column sorting
+            
+            // Arrange
+            RangeFilterRequest request = new RangeFilterRequest()
+            {
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>
+                {
+                    new Dictionary<string, GeneralDomain>
+                    {
+                        {
+                            "Temperature",
+                            new GeneralDomain() { Min = 15.0, Max = 35.0 }
+                        },
+                        {
+                            "Humidity",
+                            new GeneralDomain() { Min = 30.0, Max = 70.0 }
+                        }
+                    }
+                },
+                SortColumns = new List<SortColumn>
+                {
+                    new SortColumn()
+                    {
+                        ColumnName = "Timestamp",
+                        SortDirection = SortOrder.DESC,
+                        Priority = 0
+                    },
+                    new SortColumn()
+                    {
+                        ColumnName = "SensorId",
+                        SortDirection = SortOrder.ASC,
+                        Priority = 1
+                    }
+                }
+            };
+            
+            // Act
+            FilterCommand result = BH.Adapter.SQLite.Convert.RangeFilter(request);
+            
+            // Assert
+            result.Should().NotBeNull("Filter should generate result");
+            result.OrderByClause.Should().NotBeNullOrEmpty("Should generate ORDER BY clause");
+            result.OrderByClause.Should().Be("\"Timestamp\" DESC, \"SensorId\" ASC", 
+                "Should generate correct multi-column ORDER BY clause");
+        }
+
+        [Test]
+        public void Test_OrderByClause_EmptyList()
+        {
+            // Test ORDER BY clause generation with empty sort columns
+            
+            // Arrange
+            List<SortColumn> sortColumns = new List<SortColumn>();
+            
+            // Act
+            string result = BH.Adapter.SQLite.Convert.OrderByClause(sortColumns);
+            
+            // Assert
+            result.Should().BeEmpty("Should return empty string for empty sort columns list");
+        }
+
+        [Test]
+        public void Test_OrderByClause_NullList()
+        {
+            // Test ORDER BY clause generation with null sort columns
+            
+            // Arrange
+            List<SortColumn> sortColumns = null;
+            
+            // Act
+            string result = BH.Adapter.SQLite.Convert.OrderByClause(sortColumns);
+            
+            // Assert
+            result.Should().BeEmpty("Should return empty string for null sort columns list");
+        }
+
+        [Test]
+        public void Test_OrderByClause_InvalidColumnName()
+        {
+            // Test ORDER BY clause generation with invalid column name
+            
+            // Arrange
+            List<SortColumn> sortColumns = new List<SortColumn>
+            {
+                new SortColumn()
+                {
+                    ColumnName = "ValidColumn",
+                    SortDirection = SortOrder.ASC
+                },
+                new SortColumn()
+                {
+                    ColumnName = "Invalid Column; DROP TABLE", // SQL injection attempt
+                    SortDirection = SortOrder.DESC
+                },
+                new SortColumn()
+                {
+                    ColumnName = "AnotherValidColumn",
+                    SortDirection = SortOrder.ASC
+                }
+            };
+            
+            // Act
+            string result = BH.Adapter.SQLite.Convert.OrderByClause(sortColumns);
+            
+            // Assert
+            result.Should().NotBeNullOrEmpty("Should generate ORDER BY clause");
+            result.Should().Contain("\"ValidColumn\" ASC", "Should include valid columns");
+            result.Should().Contain("\"AnotherValidColumn\" ASC", "Should include valid columns");
+            result.Should().NotContain("DROP TABLE", "Should exclude invalid column names");
+            result.Should().Be("\"ValidColumn\" ASC, \"AnotherValidColumn\" ASC", 
+                "Should only include valid columns");
+        }
+
+        [Test]
+        public void Test_OrderByClause_PriorityOrdering()
+        {
+            // Test ORDER BY clause generation with priority-based ordering
+            
+            // Arrange - Add columns in non-priority order to verify priority sorting works
+            List<SortColumn> sortColumns = new List<SortColumn>
+            {
+                new SortColumn()
+                {
+                    ColumnName = "ThirdPriority",
+                    SortDirection = SortOrder.ASC,
+                    Priority = 2
+                },
+                new SortColumn()
+                {
+                    ColumnName = "FirstPriority",
+                    SortDirection = SortOrder.DESC,
+                    Priority = 0
+                },
+                new SortColumn()
+                {
+                    ColumnName = "SecondPriority",
+                    SortDirection = SortOrder.ASC,
+                    Priority = 1
+                }
+            };
+            
+            // Act
+            string result = BH.Adapter.SQLite.Convert.OrderByClause(sortColumns);
+            
+            // Assert
+            result.Should().NotBeNullOrEmpty("Should generate ORDER BY clause");
+            result.Should().Be("\"FirstPriority\" DESC, \"SecondPriority\" ASC, \"ThirdPriority\" ASC", 
+                "Should order columns by priority regardless of input order");
+        }
+
+        [Test]
+        public void Test_EqualityFilter_SortingWithNoFilter()
+        {
+            // Test equality filter with sorting but no actual filter conditions
+            
+            // Arrange
+            EqualityFilterRequest request = new EqualityFilterRequest()
+            {
+                ColumnFilters = new List<ColumnFilter>(), // Empty filters
+                SortColumns = new List<SortColumn>
+                {
+                    new SortColumn()
+                    {
+                        ColumnName = "CreatedDate",
+                        SortDirection = SortOrder.DESC
+                    }
+                }
+            };
+            
+            // Act
+            FilterCommand result = BH.Adapter.SQLite.Convert.EqualityFilter(request);
+            
+            // Assert
+            result.Should().NotBeNull("Filter should generate result");
+            result.WhereClause.Should().BeEmpty("Should have empty WHERE clause when no filters");
+            result.OrderByClause.Should().Be("\"CreatedDate\" DESC", "Should still generate ORDER BY clause");
+            result.Parameters.Should().BeEmpty("Should have no parameters when no filters");
+        }
+
+        [Test]
+        public void Test_RangeFilter_SortingWithNoFilter()
+        {
+            // Test range filter with sorting but no actual filter conditions
+            
+            // Arrange
+            RangeFilterRequest request = new RangeFilterRequest()
+            {
+                ColumnRanges = new List<Dictionary<string, GeneralDomain>>(), // Empty ranges
+                SortColumns = new List<SortColumn>
+                {
+                    new SortColumn()
+                    {
+                        ColumnName = "Priority",
+                        SortDirection = SortOrder.ASC
+                    },
+                    new SortColumn()
+                    {
+                        ColumnName = "Name",
+                        SortDirection = SortOrder.DESC
+                    }
+                }
+            };
+            
+            // Act
+            FilterCommand result = BH.Adapter.SQLite.Convert.RangeFilter(request);
+            
+            // Assert
+            result.Should().BeNull("Range filter should return null when no ranges provided");
+        }
     }
 }

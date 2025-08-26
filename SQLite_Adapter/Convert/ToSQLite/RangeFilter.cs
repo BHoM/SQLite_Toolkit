@@ -125,11 +125,16 @@ namespace BH.Adapter.SQLite
                 ? groupConditions[0] 
                 : string.Join(logicOperator, groupConditions);
 
+            // Generate ORDER BY clause from sort columns
+            string orderByClause = OrderByClause(filter.SortColumns);
+
             return new FilterCommand()
             {
                 WhereClause = whereClause,
                 Parameters = parameters,
-                FilterType = "Range"
+                FilterType = "Range",
+                OrderByClause = orderByClause,
+                Limit = filter.MaxResults
             };
         }
 
