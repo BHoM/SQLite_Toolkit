@@ -178,9 +178,6 @@ namespace BH.Adapter.SQLite
                     return output;
                 }
 
-                BH.Engine.Base.Compute.RecordNote($"Executing custom SQL command: {command.Command.Substring(0, Math.Min(100, command.Command.Length))}" + 
-                    (command.Command.Length > 100 ? "..." : ""));
-
                 using (SqliteCommand sqlCommand = new SqliteCommand(command.Command, m_Connection))
                 {
                     // Add parameters if provided
@@ -316,6 +313,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 m_Connection = connection;
+                m_ConnectionString = builder.ConnectionString;
 
                 // Configure the connection based on settings
                 ConfigureConnection(connection, settings);
@@ -479,6 +477,18 @@ namespace BH.Adapter.SQLite
                 // Dispose of the connection object
                 m_Connection.Dispose();
                 m_Connection = null;
+
+                // Force garbage collection to ensure finalizers run
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                // Clear connection pool for this connection string
+                if (!string.IsNullOrEmpty(m_ConnectionString))
+                {
+                    SqliteConnection.ClearPool(new SqliteConnection(m_ConnectionString));
+                }
+
                 return true;
             }
             catch (Exception ex)

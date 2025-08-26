@@ -40,13 +40,13 @@ namespace BH.Adapter.SQLite
         {
             if (connection == null)
             {
-                BH.Engine.Base.Compute.RecordError("Cannot initialize toolkit system: connection is null.");
+                BH.Engine.Base.Compute.RecordError("Cannot initialise toolkit system: connection is null.");
                 return false;
             }
 
             try
             {
-                BH.Engine.Base.Compute.RecordNote("Initializing SQLite Toolkit system...");
+                BH.Engine.Base.Compute.RecordNote("Initialising SQLite Toolkit...");
 
                 // Create all system tables
                 bool systemTablesCreated = AllSystemTables(connection);
@@ -64,12 +64,12 @@ namespace BH.Adapter.SQLite
                     return false;
                 }
 
-                BH.Engine.Base.Compute.RecordNote("SQLite Toolkit system initialized successfully.");
+                BH.Engine.Base.Compute.RecordNote("SQLite Toolkit initialised successfully.");
                 return true;
             }
             catch (Exception ex)
             {
-                BH.Engine.Base.Compute.RecordError($"Error initializing toolkit system: {ex.Message}");
+                BH.Engine.Base.Compute.RecordError($"Error initialising toolkit : {ex.Message}");
                 return false;
             }
         }
