@@ -55,19 +55,17 @@ namespace BH.Adapter.SQLite
 
             try
             {
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.CheckJournalModeCommand();
-                if (command == null)
-                    return null;
-
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2 && result.Item1.Count > 0)
+                // Execute journal mode check directly to avoid recursion through ExecuteCommand
+                using (SqliteCommand sqlCommand = connection.CreateCommand())
                 {
-                    Dictionary<string, object> row = result.Item1[0] as Dictionary<string, object>;
-                    if (row != null && row.ContainsKey("journal_mode"))
+                    sqlCommand.CommandText = "PRAGMA journal_mode;";
+                    
+                    using (SqliteDataReader reader = sqlCommand.ExecuteReader())
                     {
-                        return row["journal_mode"]?.ToString();
+                        if (reader.Read())
+                        {
+                            return reader.GetValue(0)?.ToString();
+                        }
                     }
                 }
 

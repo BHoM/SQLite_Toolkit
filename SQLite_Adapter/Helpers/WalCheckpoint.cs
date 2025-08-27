@@ -71,23 +71,60 @@ namespace BH.Adapter.SQLite
                     return true; // Not an error, just not needed
                 }
 
-                // Use Engine method to generate the command
-                SQLCommand command = BH.Engine.SQLite.Compute.WalCheckpointCommand(checkpointMode);
-                if (command == null)
-                    return false;
-
-                // Execute the command using the existing ExecuteCommand method
-                Output<List<object>, bool> result = ExecuteCommand(command);
-                if (result.Item2)
+                // Execute WAL checkpoint directly to avoid recursion through ExecuteCommand
+                try
                 {
-                    BH.Engine.Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
+                    using (SqliteCommand sqlCommand = connection.CreateCommand())
+                    {
+                        // Build checkpoint command based on mode
+                        string modeString = ConvertCheckpointModeToString(checkpointMode);
+                        sqlCommand.CommandText = $"PRAGMA wal_checkpoint({modeString});";
+                        
+                        // Execute and read results (WAL checkpoint returns row count information)
+                        using (SqliteDataReader reader = sqlCommand.ExecuteReader())
+                        {
+                            // WAL checkpoint returns: busy, log, checkpointed
+                            // We don't need to process the results, just ensure it executed successfully
+                            while (reader.Read())
+                            {
+                                // Results available but not needed for success determination
+                            }
+                        }
+                        
+                        BH.Engine.Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
+                        return true;
+                    }
                 }
-                return result.Item2;
+                catch (Exception ex)
+                {
+                    BH.Engine.Base.Compute.RecordError($"WAL checkpoint execution failed: {ex.Message}");
+                    return false;
+                }
             }
             catch (Exception ex)
             {
                 BH.Engine.Base.Compute.RecordError($"WAL checkpoint failed: {ex.Message}");
                 return false;
+            }
+        }
+
+        /***************************************************/
+        /**** Private Helper Methods                   ****/
+        /***************************************************/
+
+        private string ConvertCheckpointModeToString(WalCheckpointMode mode)
+        {
+            switch (mode)
+            {
+                case WalCheckpointMode.Passive:
+                    return "PASSIVE";
+                case WalCheckpointMode.Full:
+                    return "FULL";
+                case WalCheckpointMode.Restart:
+                    return "RESTART";
+                case WalCheckpointMode.Truncate:
+                default:
+                    return "TRUNCATE";
             }
         }
 

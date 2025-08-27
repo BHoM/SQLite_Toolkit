@@ -214,8 +214,8 @@ namespace BH.Adapter.SQLite
                 BH.Engine.Base.Compute.RecordNote($"SQL command executed successfully. Returned {output.Item1.Count} rows.");
 
                 // Perform WAL checkpoint after SQL command execution if WAL mode is enabled
-                // Skip if this command is itself a WAL checkpoint to prevent recursion
-                if (m_WalModeEnabled && !IsWalCheckpointCommand(command))
+                // WAL checkpoint now uses direct execution, so no recursion risk
+                if (m_WalModeEnabled)
                 {
                     WalCheckpoint(m_Connection, WalCheckpointMode.Truncate);
                 }
@@ -541,16 +541,6 @@ namespace BH.Adapter.SQLite
         }
 
         /***************************************************/
-
-        private bool IsWalCheckpointCommand(SQLCommand command)
-        {
-            if (command == null || string.IsNullOrWhiteSpace(command.Command))
-                return false;
-
-            // Check if the command is a WAL checkpoint by looking for the PRAGMA wal_checkpoint pattern
-            string normalizedCommand = command.Command.Trim().ToUpperInvariant();
-            return normalizedCommand.StartsWith("PRAGMA WAL_CHECKPOINT");
-        }
 
         /***************************************************/
 
