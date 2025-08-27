@@ -35,13 +35,6 @@ namespace BH.Adapter.SQLite
         /**** Private Methods                           ****/
         /***************************************************/
 
-        /// <summary>
-        /// Unified query execution method that handles SELECT, DELETE, and COUNT operations
-        /// </summary>
-        /// <param name="operation">Type of SQL operation to perform</param>
-        /// <param name="tableName">Target table name</param>
-        /// <param name="filterCommand">Filter conditions to apply</param>
-        /// <returns>QueryResult with appropriate data based on operation type</returns>
         private QueryResult ExecuteQuery(SqlOperation operation, string tableName, FilterCommand filterCommand)
         {
             QueryResult result = new QueryResult

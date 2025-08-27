@@ -23,6 +23,7 @@
 using BH.oM.Adapter;
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using BH.oM.SQLite.Configs;
 using BH.oM.SQLite.Objects;
 using BH.Engine.SQLite;
@@ -136,7 +137,7 @@ namespace BH.Adapter.SQLite
                 // Perform WAL checkpoint after push operation if WAL mode is enabled
                 if (m_WalModeEnabled && insertSuccess)
                 {
-                    WalCheckpoint(m_Connection, "TRUNCATE");
+                    WalCheckpoint(m_Connection, WalCheckpointMode.Truncate);
                 }
 
                 return result;
@@ -337,7 +338,7 @@ namespace BH.Adapter.SQLite
                 // Perform WAL checkpoint after push operation if WAL mode is enabled
                 if (m_WalModeEnabled && success)
                 {
-                    WalCheckpoint(m_Connection, "TRUNCATE");
+                    WalCheckpoint(m_Connection, WalCheckpointMode.Truncate);
                 }
 
                 return result;
@@ -377,7 +378,7 @@ namespace BH.Adapter.SQLite
                 // Perform WAL checkpoint after push operation if WAL mode is enabled
                 if (m_WalModeEnabled && success)
                 {
-                    WalCheckpoint(m_Connection, "TRUNCATE");
+                    WalCheckpoint(m_Connection, WalCheckpointMode.Truncate);
                 }
 
                 return result;

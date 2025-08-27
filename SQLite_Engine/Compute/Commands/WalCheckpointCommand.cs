@@ -21,6 +21,7 @@
  */
 
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using BH.oM.SQLite.Commands;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,20 +35,40 @@ namespace BH.Engine.SQLite
         /***************************************************/
 
         [Description("Creates a SQL command to perform a WAL checkpoint operation.")]
-        [Input("checkpointMode", "The checkpoint mode to use (PASSIVE, FULL, RESTART, or TRUNCATE).")]
+        [Input("checkpointMode", "The checkpoint mode to use for the WAL checkpoint operation.")]
         [Output("command", "SQLCommand that can be executed to perform the WAL checkpoint.")]
-        public static SQLCommand WalCheckpointCommand(string checkpointMode = "TRUNCATE")
+        public static SQLCommand WalCheckpointCommand(WalCheckpointMode checkpointMode = WalCheckpointMode.Truncate)
         {
-            if (string.IsNullOrWhiteSpace(checkpointMode))
-                checkpointMode = "TRUNCATE";
+            string modeString = ConvertCheckpointModeToString(checkpointMode);
 
             SQLCommand command = new SQLCommand()
             {
-                Command = $"PRAGMA wal_checkpoint({checkpointMode});",
+                Command = $"PRAGMA wal_checkpoint({modeString});",
                 Parameters = new Dictionary<string, object>()
             };
 
             return command;
+        }
+
+        /***************************************************/
+
+        [Description("Converts WalCheckpointMode enum to the corresponding SQLite string value.")]
+        [Input("mode", "The WAL checkpoint mode enum value.")]
+        [Output("modeString", "The corresponding SQLite checkpoint mode string.")]
+        private static string ConvertCheckpointModeToString(WalCheckpointMode mode)
+        {
+            switch (mode)
+            {
+                case WalCheckpointMode.Passive:
+                    return "PASSIVE";
+                case WalCheckpointMode.Full:
+                    return "FULL";
+                case WalCheckpointMode.Restart:
+                    return "RESTART";
+                case WalCheckpointMode.Truncate:
+                default:
+                    return "TRUNCATE";
+            }
         }
 
         /***************************************************/

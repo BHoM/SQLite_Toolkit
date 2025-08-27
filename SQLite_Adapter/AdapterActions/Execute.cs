@@ -212,6 +212,12 @@ namespace BH.Adapter.SQLite
 
                 output.Item2 = true;
                 BH.Engine.Base.Compute.RecordNote($"SQL command executed successfully. Returned {output.Item1.Count} rows.");
+
+                // Perform WAL checkpoint after SQL command execution if WAL mode is enabled
+                if (m_WalModeEnabled)
+                {
+                    WalCheckpoint(m_Connection, WalCheckpointMode.Truncate);
+                }
             }
             catch (Exception ex)
             {
@@ -461,7 +467,7 @@ namespace BH.Adapter.SQLite
                     // Perform WAL checkpoint if WAL mode is enabled
                     if (m_WalModeEnabled)
                     {
-                        WalCheckpoint(m_Connection, "TRUNCATE");
+                        WalCheckpoint(m_Connection, WalCheckpointMode.Truncate);
                     }
 
                     // Run optimisation commands if requested

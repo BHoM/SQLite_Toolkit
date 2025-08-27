@@ -22,6 +22,7 @@
 
 using BH.oM.Base;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using BH.oM.SQLite.Commands;
 using Microsoft.Data.Sqlite;
 using System;
@@ -38,9 +39,9 @@ namespace BH.Adapter.SQLite
 
         [Description("Performs a WAL checkpoint operation to commit data from the write-ahead log to the main database file.")]
         [Input("connection", "The SQLite connection to perform the checkpoint on.")]
-        [Input("checkpointMode", "The checkpoint mode to use. TRUNCATE is recommended for normal operations.")]
+        [Input("checkpointMode", "The checkpoint mode to use. Truncate is recommended for normal operations.")]
         [Output("success", "True if the checkpoint was successful, false otherwise.")]
-        private bool WalCheckpoint(SqliteConnection connection, string checkpointMode = "TRUNCATE")
+        private bool WalCheckpoint(SqliteConnection connection, WalCheckpointMode checkpointMode = WalCheckpointMode.Truncate)
         {
             if (connection == null)
             {

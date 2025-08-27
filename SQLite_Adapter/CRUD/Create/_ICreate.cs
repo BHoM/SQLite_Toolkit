@@ -66,7 +66,7 @@ namespace BH.Adapter.SQLite
             // Perform WAL checkpoint after push operation if WAL mode is enabled
             if (m_WalModeEnabled && success)
             {
-                WalCheckpoint(m_Connection, "TRUNCATE");
+                WalCheckpoint(m_Connection, WalCheckpointMode.Truncate);
             }
 
             return success;
