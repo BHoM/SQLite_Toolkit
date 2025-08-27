@@ -45,12 +45,6 @@ namespace BH.Adapter.SQLite
         [Output("success", "True if the insert executed successfully, false otherwise.")]
         private bool Insert(SqliteConnection connection, string tableName, Dictionary<string, object> columnValues, string conflictClause = "OR REPLACE")
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot execute insert: no database connection.");
-                return false;
-            }
-
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 BH.Engine.Base.Compute.RecordError("Cannot execute insert: table name is null or empty.");

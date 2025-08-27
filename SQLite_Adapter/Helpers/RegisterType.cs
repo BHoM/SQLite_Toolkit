@@ -43,12 +43,6 @@ namespace BH.Adapter.SQLite
         [Output("registration", "The TypeRegistration object containing the assigned ID, full type name, table name and creation timestamp, or null if registration fails due to database errors.")]
         private TypeRegistration RegisterType(SqliteConnection connection, Type type, string tableName = "")
         {
-            if (connection == null || type == null)
-            {
-                Engine.Base.Compute.RecordError("Cannot register type: connection or type is null.");
-                return null;
-            }
-
             string fullTypeName = type.FullName ?? type.Name;
             string finalTableName;
             

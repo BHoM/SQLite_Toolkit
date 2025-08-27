@@ -43,18 +43,6 @@ namespace BH.Adapter.SQLite
         [Output("success", "True if the checkpoint was successful, false otherwise.")]
         private bool WalCheckpoint(SqliteConnection connection, WalCheckpointMode checkpointMode = WalCheckpointMode.Truncate)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot perform WAL checkpoint: connection is null.");
-                return false;
-            }
-
-            if (connection.State != System.Data.ConnectionState.Open)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot perform WAL checkpoint: connection is not open.");
-                return false;
-            }
-
             try
             {
                 // First check if WAL mode is enabled
@@ -72,33 +60,25 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Execute WAL checkpoint directly to avoid recursion through ExecuteCommand
-                try
+                using (SqliteCommand sqlCommand = connection.CreateCommand())
                 {
-                    using (SqliteCommand sqlCommand = connection.CreateCommand())
+                    // Build checkpoint command based on mode
+                    string modeString = ConvertCheckpointModeToString(checkpointMode);
+                    sqlCommand.CommandText = $"PRAGMA wal_checkpoint({modeString});";
+                    
+                    // Execute and read results (WAL checkpoint returns row count information)
+                    using (SqliteDataReader reader = sqlCommand.ExecuteReader())
                     {
-                        // Build checkpoint command based on mode
-                        string modeString = ConvertCheckpointModeToString(checkpointMode);
-                        sqlCommand.CommandText = $"PRAGMA wal_checkpoint({modeString});";
-                        
-                        // Execute and read results (WAL checkpoint returns row count information)
-                        using (SqliteDataReader reader = sqlCommand.ExecuteReader())
+                        // WAL checkpoint returns: busy, log, checkpointed
+                        // We don't need to process the results, just ensure it executed successfully
+                        while (reader.Read())
                         {
-                            // WAL checkpoint returns: busy, log, checkpointed
-                            // We don't need to process the results, just ensure it executed successfully
-                            while (reader.Read())
-                            {
-                                // Results available but not needed for success determination
-                            }
+                            // Results available but not needed for success determination
                         }
-                        
-                        BH.Engine.Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
-                        return true;
                     }
-                }
-                catch (Exception ex)
-                {
-                    BH.Engine.Base.Compute.RecordError($"WAL checkpoint execution failed: {ex.Message}");
-                    return false;
+                    
+                    BH.Engine.Base.Compute.RecordNote($"WAL checkpoint completed successfully using mode: {checkpointMode}");
+                    return true;
                 }
             }
             catch (Exception ex)

@@ -41,18 +41,6 @@ namespace BH.Adapter.SQLite
         [Output("journalMode", "The current journal mode string, or null if the check fails.")]
         private string CheckJournalMode(SqliteConnection connection)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot check journal mode: connection is null.");
-                return null;
-            }
-
-            if (connection.State != System.Data.ConnectionState.Open)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot check journal mode: connection is not open.");
-                return null;
-            }
-
             try
             {
                 // Execute journal mode check directly to avoid recursion through ExecuteCommand

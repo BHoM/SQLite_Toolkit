@@ -41,9 +41,6 @@ namespace BH.Adapter.SQLite
         [Output("registration", "The TypeRegistration if found, null otherwise.")]
         private TypeRegistration GetTypeRegistration(SqliteConnection connection, string fullTypeName)
         {
-            if (connection == null || string.IsNullOrWhiteSpace(fullTypeName))
-                return null;
-
             try
             {
                 string selectSql = @"
@@ -86,9 +83,6 @@ namespace BH.Adapter.SQLite
         [Output("registration", "The TypeRegistration if found, null otherwise.")]
         private TypeRegistration GetTypeRegistration(SqliteConnection connection, Type type)
         {
-            if (type == null)
-                return null;
-
             string fullTypeName = type.FullName ?? type.Name;
             return GetTypeRegistration(connection, fullTypeName);
         }

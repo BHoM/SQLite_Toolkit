@@ -47,12 +47,6 @@ namespace BH.Adapter.SQLite
         // This adapter focuses on connection management and query execution.
         protected override bool ICreate<T>(IEnumerable<T> objects, ActionConfig actionConfig = null)
         {
-            if (m_Connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create objects: no database connection. Please open a connection first.");
-                return false;
-            }
-
             // Update last used timestamp
             m_LastUsed = DateTime.Now;
 
@@ -77,18 +71,6 @@ namespace BH.Adapter.SQLite
         // Fallback case. If no specific Create is found, use the intelligent object push logic.
         protected bool Create(IObject obj)
         {
-            if (obj == null)
-            {
-                BH.Engine.Base.Compute.RecordWarning("Cannot create object: object is null.");
-                return false;
-            }
-
-            if (m_Connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create object: no database connection.");
-                return false;
-            }
-
             Type objectType = obj.GetType();
             PushConfig config = new PushConfig(); // Use default config for CRUD operations
 
