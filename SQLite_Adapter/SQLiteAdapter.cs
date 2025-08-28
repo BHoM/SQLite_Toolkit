@@ -61,10 +61,11 @@ namespace BH.Adapter.SQLite
 
                 ExecuteCommand(new oM.Adapter.Commands.Open() { FileName = m_FilePath });
             }
-            else
-            {
-                ExecuteCommand(new oM.Adapter.Commands.Close());
-            }
+        }
+
+        ~SQLiteAdapter()
+        {
+            ExecuteCommand(new oM.Adapter.Commands.Close());
         }
 
         /***************************************************/
@@ -72,21 +73,21 @@ namespace BH.Adapter.SQLite
         /***************************************************/
 
         private string m_FilePath = "";
-        private static SqliteConnection m_Connection = null;
+        private SqliteConnection m_Connection = null;
 
         // Connection state and diagnostics
-        private static System.Data.ConnectionState m_ConnectionState = System.Data.ConnectionState.Closed;
-        private static string m_ConnectionString = "";
-        private static string m_SqliteVersion = "";
-        private static DateTime m_ConnectedAt = DateTime.MinValue;
-        private static DateTime m_LastUsed = DateTime.MinValue;
+        private System.Data.ConnectionState m_ConnectionState = System.Data.ConnectionState.Closed;
+        private string m_ConnectionString = "";
+        private string m_SqliteVersion = "";
+        private DateTime m_ConnectedAt = DateTime.MinValue;
+        private DateTime m_LastUsed = DateTime.MinValue;
 
         // Database configuration state (actual vs requested)
         private SQLiteSettings m_sqliteSettings;
-        private static bool m_WalModeEnabled = false;
-        private static bool m_ForeignKeysEnabled = false;
-        private static int m_PageSize = 4096;
-        private static int m_CacheSize = -2000;
+        private bool m_WalModeEnabled = false;
+        private bool m_ForeignKeysEnabled = false;
+        private int m_PageSize = 4096;
+        private int m_CacheSize = -2000;
 
 
 
