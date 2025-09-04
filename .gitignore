@@ -59,3 +59,21 @@ bld/
 *.suo
 *.user
 .vs/
+
+# Development Process Files #
+#############################
+Request.md
+Spec.md
+Plan.md
+CodeGen.md
+Review.md
+
+# Code-space Files #
+####################
+*.code-workspace
+.vscode/
+.cursor/
+
+# Test Data #
+#############
+TestDatabases/

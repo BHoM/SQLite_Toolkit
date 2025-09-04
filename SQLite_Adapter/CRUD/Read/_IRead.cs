@@ -1,6 +1,6 @@
 /*
  * This file is part of the Buildings and Habitats object Model (BHoM)
- * Copyright (c) 2015 - 2024, the respective contributors. All rights reserved.
+ * Copyright (c) 2015 - 2025, the respective contributors. All rights reserved.
  *
  * Each contributor holds copyright over their respective contributions.
  * The project versioning (Git) records all such contribution source information.
@@ -41,8 +41,11 @@ namespace BH.Adapter.SQLite
         // It gets called once per each Type.
         protected override IEnumerable<IBHoMObject> IRead(Type type, IList ids, ActionConfig actionConfig = null)
         {
-            // Preferrably, different Create logic for different object types should go in separate methods.
-            // We achieve this by using the ICreate method to only dynamically dispatching to *type-specific Create implementations*
+            // Basic implementation - can be enhanced later to use the new filter system
+            // For now, follows the existing pattern and returns empty list
+            
+            // Preferrably, different Read logic for different object types should go in separate methods.
+            // We achieve this by using the IRead method to only dynamically dispatch to *type-specific Read implementations*
             // In other words:
             // if (type == typeof(SomeType1))
             //     return ReadSomeType1(ids as dynamic);

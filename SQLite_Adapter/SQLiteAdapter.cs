@@ -1,6 +1,6 @@
 /*
  * This file is part of the Buildings and Habitats object Model (BHoM)
- * Copyright (c) 2015 - 2024, the respective contributors. All rights reserved.
+ * Copyright (c) 2015 - 2025, the respective contributors. All rights reserved.
  *
  * Each contributor holds copyright over their respective contributions.
  * The project versioning (Git) records all such contribution source information.
@@ -22,12 +22,17 @@
 
 using BH.Adapter;
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
+using BH.oM.SQLite.Configs;
+using BH.Engine.SQLite;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SQLitePCL;
 
 namespace BH.Adapter.SQLite
 {
@@ -38,31 +43,55 @@ namespace BH.Adapter.SQLite
         /***************************************************/
 
         [Description("Adapter for SQLite.")]
-        [Output("The created SQLite adapter.")]
-        public SQLiteAdapter()
+        [Input("filepath", "File path to the SQLite database. Use empty string for in-memory database.")]
+        [Input("settings", "SQLite-specific settings for database operations. If null, default settings will be used.")]
+        [Input("active", "Whether the adapter should be active and ready for operations.")]
+        [Output("adapter", "The created SQLite adapter.")]
+        public SQLiteAdapter(string filepath = "", SQLiteSettings settings = null, bool active = false)
         {
-            // The Adapter constructor can be used to configure the Adapter behaviour.
-            // For example:
-            m_AdapterSettings.DefaultPushType = oM.Adapter.PushType.CreateOnly; // Adapter `Push` Action simply calls "Create" method.
-            
-            // See the wiki, the AdapterSettings object and other Adapters to see how it can be configured.
+            if (active)
+            {
+                // Set the SQLite-specific settings
+                if (settings != null)
+                    m_sqliteSettings = settings;
 
-            // If your toolkit needs to define this.AdapterComparers and or this.DependencyTypes,
-            // this constructor has to populate those properties.
-            // See the wiki for more information.
+                // Store the file path and active state
+                m_FilePath = filepath;
+                m_AdapterSettings.UseAdapterId = false;
+
+                ExecuteCommand(new oM.Adapter.Commands.Open() { FileName = m_FilePath });
+            }
+            else
+                GC.Collect();
         }
 
-        // You can add any other constructors that take more inputs here. 
+        ~SQLiteAdapter()
+        {
+            ExecuteCommand(new oM.Adapter.Commands.Close());
+        }
 
         /***************************************************/
         /**** Private  Fields                           ****/
         /***************************************************/
 
-        // You can add any private variable that should be in common to any other adapter methods here.
-        // If you need to add some private methods, please consider first what their nature is:
-        // if a method does not need any external call (API call, connection call, etc.)
-        // we place them in the Engine project, and then reference them from the Adapter.
-        // See the wiki for more information.
+        private string m_FilePath = "";
+        private SqliteConnection m_Connection = null;
+
+        // Connection state and diagnostics
+        private System.Data.ConnectionState m_ConnectionState = System.Data.ConnectionState.Closed;
+        private string m_ConnectionString = "";
+        private string m_SqliteVersion = "";
+        private DateTime m_ConnectedAt = DateTime.MinValue;
+        private DateTime m_LastUsed = DateTime.MinValue;
+
+        // Database configuration state (actual vs requested)
+        private SQLiteSettings m_sqliteSettings;
+        private bool m_WalModeEnabled = false;
+        private bool m_ForeignKeysEnabled = false;
+        private int m_PageSize = 4096;
+        private int m_CacheSize = -2000;
+
+
 
         /***************************************************/
     }
