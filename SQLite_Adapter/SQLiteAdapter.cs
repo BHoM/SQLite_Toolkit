@@ -61,6 +61,8 @@ namespace BH.Adapter.SQLite
 
                 ExecuteCommand(new oM.Adapter.Commands.Open() { FileName = m_FilePath });
             }
+            else
+                GC.Collect();
         }
 
         ~SQLiteAdapter()
