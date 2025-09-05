@@ -102,17 +102,17 @@ namespace BH.Tests.SQLite.Unit
             queryResult.Data.Count.Should().Be(1, "One row should be returned");
 
             Dictionary<string, object> retrievedRow = queryResult.Data.First();
-            
+
             // Normal values should be preserved
             retrievedRow["Name"].Should().Be("NaN Test Object");
             System.Convert.ToDouble(retrievedRow["NormalValue"]).Should().Be(42.5);
 
             // NaN and Infinity values should be converted back to NaN
             // (NULL in database converted back to NaN when ConvertToNull strategy is used)
-            retrievedRow["DoubleValue"].Should().BeNull("DoubleValue should be NULL in database when ConvertToNull strategy is used");
-            retrievedRow["FloatValue"].Should().BeNull("FloatValue should be NULL in database when ConvertToNull strategy is used");
-            retrievedRow["PositiveInfinity"].Should().BeNull("PositiveInfinity should be NULL in database when ConvertToNull strategy is used");
-            retrievedRow["NegativeInfinity"].Should().BeNull("NegativeInfinity should be NULL in database when ConvertToNull strategy is used");
+            retrievedRow["DoubleValue"].Should().Be(double.NaN);
+            retrievedRow["FloatValue"].Should().Be(float.NaN);
+            retrievedRow["PositiveInfinity"].Should().Be(double.NaN);
+            retrievedRow["NegativeInfinity"].Should().Be(double.NaN);
         }
 
         [Test]
@@ -157,7 +157,7 @@ namespace BH.Tests.SQLite.Unit
             queryResult.Data.Count.Should().Be(1, "One row should be returned");
 
             Dictionary<string, object> retrievedRow = queryResult.Data.First();
-            
+
             // Normal values should be preserved
             retrievedRow["Name"].Should().Be("Zero Test Object");
             System.Convert.ToDouble(retrievedRow["NormalValue"]).Should().Be(42.5);
@@ -174,7 +174,7 @@ namespace BH.Tests.SQLite.Unit
     /****               Test Objects                  ****/
     /***************************************************/
 
- public class NaNTestObject : BHoMObject
+    public class NaNTestObject : BHoMObject
     {
         /***************************************************/
         /**** Properties                              ****/
