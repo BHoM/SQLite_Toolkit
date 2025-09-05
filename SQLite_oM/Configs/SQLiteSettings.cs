@@ -61,6 +61,9 @@ namespace BH.oM.SQLite.Configs
         [Description("Whether to automatically initialize system tables (__Types, __Schema) on database connection.")]
         public virtual bool InitialiseSystemTables { get; set; } = true;
 
+        [Description("Defines how NaN (Not a Number) and Infinity values are handled during SQLite conversion operations.")]
+        public virtual NaNHandling NaNHandling { get; set; } = NaNHandling.ConvertToNull;
+
         /***************************************************/
     }
 

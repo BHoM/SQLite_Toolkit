@@ -158,7 +158,15 @@ namespace BH.Engine.SQLite
                 }
                 else if (mapping.PropertyType.IsValueType)
                 {
-                    column.AllowNull = false; // Non-nullable value types
+                    // Allow null for floating-point types to support NaN handling
+                    if (mapping.PropertyType == typeof(double) || mapping.PropertyType == typeof(float))
+                    {
+                        column.AllowNull = true;
+                    }
+                    else
+                    {
+                        column.AllowNull = false; // Other non-nullable value types
+                    }
                 }
 
                 return column;

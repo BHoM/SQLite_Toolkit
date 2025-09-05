@@ -185,7 +185,8 @@ namespace BH.Adapter.SQLite
                     {
                         foreach (KeyValuePair<string, object> parameter in command.Parameters)
                         {
-                            object sqliteValue = Convert.Value(parameter.Value);
+                            NaNHandling nanHandling = m_sqliteSettings?.NaNHandling ?? NaNHandling.ConvertToNull;
+                            object sqliteValue = Convert.Value(parameter.Value, nanHandling);
                             sqlCommand.Parameters.AddWithValue(parameter.Key, sqliteValue);
                         }
                     }
