@@ -178,6 +178,9 @@ namespace BH.Adapter.SQLite
                     return output;
                 }
 
+                // Determine NaN handling strategy once outside the loop
+                NaNHandling nanHandling = m_sqliteSettings?.NaNHandling ?? NaNHandling.ConvertToNull;
+                
                 using (SqliteCommand sqlCommand = new SqliteCommand(command.Command, m_Connection))
                 {
                     // Add parameters if provided
@@ -185,7 +188,6 @@ namespace BH.Adapter.SQLite
                     {
                         foreach (KeyValuePair<string, object> parameter in command.Parameters)
                         {
-                            NaNHandling nanHandling = m_sqliteSettings?.NaNHandling ?? NaNHandling.ConvertToNull;
                             object sqliteValue = Convert.Value(parameter.Value, nanHandling);
                             sqlCommand.Parameters.AddWithValue(parameter.Key, sqliteValue);
                         }

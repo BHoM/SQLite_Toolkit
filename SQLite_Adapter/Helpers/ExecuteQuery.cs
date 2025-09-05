@@ -116,17 +116,19 @@ namespace BH.Adapter.SQLite
                             while (reader.Read())
                             {
                                 Dictionary<string, object> row = new Dictionary<string, object>();
-                                
+
+                                NaNHandling nanHandling = m_sqliteSettings?.NaNHandling ?? NaNHandling.ConvertToNull;
+
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
                                     string columnName = reader.GetName(i);
                                     object value = reader.IsDBNull(i) ? null : reader.GetValue(i);
                                     
                                     // Apply type conversion if schema information is available and this is a SELECT operation
-                                    if (value != null && operation == SqlOperation.Select && columnTypes.ContainsKey(columnName))
+                                    if (operation == SqlOperation.Select && columnTypes.ContainsKey(columnName))
                                     {
                                         Type targetType = columnTypes[columnName];
-                                        value = Convert.Value(value, targetType);
+                                        value = Convert.Value(value, targetType, nanHandling);
                                     }
                                     
                                     row[columnName] = value;
