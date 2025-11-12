@@ -222,7 +222,7 @@ namespace BH.Adapter.SQLite
                 }
 
                 // Process objects in batches for performance
-                int batchSize = 1000; // Default batch size
+                int batchSize = m_sqliteSettings?.BatchSize ?? 1000; // Use configured batch size or default to 1000
                 bool overallSuccess = true;
 
                 List<List<IObject>> batches = objectList
@@ -269,36 +269,43 @@ namespace BH.Adapter.SQLite
 
                 string insertSql = $"INSERT OR REPLACE INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
 
-                using (SqliteCommand command = new SqliteCommand(insertSql, m_Connection))
+                // Wrap batch in transaction for improved performance
+                using (SqliteTransaction transaction = m_Connection.BeginTransaction())
                 {
-                    // Add parameters for all columns
-                    for (int i = 0; i < columnNames.Count; i++)
+                    using (SqliteCommand command = new SqliteCommand(insertSql, m_Connection, transaction))
                     {
-                        command.Parameters.Add($"@param{i}", Microsoft.Data.Sqlite.SqliteType.Text);
-                    }
-
-                    // Insert each object in the batch
-                    foreach (IObject obj in objects)
-                    {
-                        // Extract column values for this object
-                        Dictionary<string, object> columnValues = obj.GetColumnValues(columnSchema);
-
-                        // BHoM_Guid is automatically extracted via GetColumnValues if it's in the schema
-                        // No special handling needed as it's a primitive property
-
-                        // Set parameter values
+                        // Add parameters for all columns
                         for (int i = 0; i < columnNames.Count; i++)
                         {
-                            string columnName = columnNames[i];
-                            object value = columnValues.ContainsKey(columnName) ? columnValues[columnName] : null;
-
-                            // Convert to SQLite-compatible value
-                            object sqliteValue = Convert.Value(value);
-                            command.Parameters[$"@param{i}"].Value = sqliteValue;
+                            command.Parameters.Add($"@param{i}", Microsoft.Data.Sqlite.SqliteType.Text);
                         }
 
-                        command.ExecuteNonQuery();
+                        // Insert each object in the batch
+                        foreach (IObject obj in objects)
+                        {
+                            // Extract column values for this object
+                            Dictionary<string, object> columnValues = obj.GetColumnValues(columnSchema);
+
+                            // BHoM_Guid is automatically extracted via GetColumnValues if it's in the schema
+                            // No special handling needed as it's a primitive property
+
+                            // Set parameter values
+                            for (int i = 0; i < columnNames.Count; i++)
+                            {
+                                string columnName = columnNames[i];
+                                object value = columnValues.ContainsKey(columnName) ? columnValues[columnName] : null;
+
+                                // Convert to SQLite-compatible value
+                                object sqliteValue = Convert.Value(value);
+                                command.Parameters[$"@param{i}"].Value = sqliteValue;
+                            }
+
+                            command.ExecuteNonQuery();
+                        }
                     }
+
+                    // Commit the transaction
+                    transaction.Commit();
                 }
 
                 return true;
