@@ -237,7 +237,7 @@ namespace BH.Adapter.SQLite
                     if (!batchSuccess)
                     {
                         overallSuccess = false;
-                        BH.Engine.Base.Compute.RecordWarning($"Failed to insert batch of {batch.Count} objects into table '{tableName}'.");
+                        Engine.Base.Compute.RecordWarning($"Failed to insert batch of {batch.Count} objects into table '{tableName}'.");
                     }
                 }
 
@@ -269,6 +269,9 @@ namespace BH.Adapter.SQLite
 
                 string insertSql = $"INSERT OR REPLACE INTO \"{tableName}\" ({columns}) VALUES ({placeholders})";
 
+                // Determine NaN handling strategy once outside the loop
+                NaNHandling nanHandling = m_sqliteSettings?.NaNHandling ?? NaNHandling.ConvertToNull;
+
                 // Wrap batch in transaction for improved performance
                 using (SqliteTransaction transaction = m_Connection.BeginTransaction())
                 {
@@ -296,7 +299,7 @@ namespace BH.Adapter.SQLite
                                 object value = columnValues.ContainsKey(columnName) ? columnValues[columnName] : null;
 
                                 // Convert to SQLite-compatible value
-                                object sqliteValue = Convert.Value(value);
+                                object sqliteValue = Convert.Value(value, nanHandling);
                                 command.Parameters[$"@param{i}"].Value = sqliteValue;
                             }
 
