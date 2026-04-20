@@ -21,6 +21,7 @@
  */
 
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using System;
 using System.ComponentModel;
 
@@ -35,11 +36,36 @@ namespace BH.Adapter.SQLite
         [Description("Converts a SQLite value back to its original .NET type based on schema information.")]
         [Input("sqliteValue", "The value returned from SQLite.")]
         [Input("targetType", "The original .NET type to convert to.")]
+        [Input("nanHandling", "Strategy for handling NULL values when converting back to numeric types. Defaults to ConvertToNull.")]
         [Output("convertedValue", "The value converted to its original .NET type.")]
-        public static object Value(object sqliteValue, Type targetType)
+        public static object Value(object sqliteValue, Type targetType, NaNHandling nanHandling = NaNHandling.ConvertToNull)
         {
+            // Handle NULL values - only apply special NaN handling for floating-point types
             if (sqliteValue == null || sqliteValue == DBNull.Value)
+            {
+                Type underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+                
+                // Only process NaN handling for floating-point types
+                if (underlyingType == typeof(double) || underlyingType == typeof(float))
+                {
+                    if (nanHandling == NaNHandling.ConvertToNull)
+                    {
+                        if (underlyingType == typeof(double))
+                            return double.NaN;
+                        if (underlyingType == typeof(float))
+                            return float.NaN;
+                    }
+                    else if (nanHandling == NaNHandling.ConvertToZero)
+                    {
+                        if (underlyingType == typeof(double))
+                            return 0.0;
+                        if (underlyingType == typeof(float))
+                            return 0.0f;
+                    }
+                }
+                
                 return null;
+            }
 
             if (targetType == null)
                 return sqliteValue;

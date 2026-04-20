@@ -38,12 +38,6 @@ namespace BH.Adapter.SQLite
         [Output("success", "True if all system tables were created successfully, false otherwise.")]
         private bool AllSystemTables(SqliteConnection connection)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot create system tables: connection is null.");
-                return false;
-            }
-
             try
             {
                 // Check if __Types table exists before creating
