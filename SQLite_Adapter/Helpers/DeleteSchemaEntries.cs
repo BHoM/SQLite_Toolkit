@@ -42,12 +42,6 @@ namespace BH.Adapter.SQLite
         [Output("success", "True if schema entries were deleted successfully, false otherwise.")]
         private bool DeleteSchemaEntries(SqliteConnection connection, string tableName)
         {
-            if (connection == null)
-            {
-                BH.Engine.Base.Compute.RecordError("Cannot delete schema entries: connection is null.");
-                return false;
-            }
-
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 BH.Engine.Base.Compute.RecordError("Cannot delete schema entries: table name is null or empty.");

@@ -21,6 +21,7 @@
  */
 
 using BH.oM.Base.Attributes;
+using BH.oM.SQLite;
 using BH.oM.SQLite.Objects;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
@@ -38,8 +39,9 @@ namespace BH.Adapter.SQLite
         [Input("command", "The SQLite command to add parameters to.")]
         [Input("filterResult", "The filter command containing parameters to apply.")]
         [Output("success", "True if parameters were applied successfully, false otherwise.")]
-        private static bool ApplyFilterParameters(SqliteCommand command, FilterCommand filterResult)
+        private static bool ApplyFilterParameters(SqliteCommand command, FilterCommand filterResult, NaNHandling naNHandling)
         {
+            
             if (command == null)
             {
                 BH.Engine.Base.Compute.RecordError("Cannot apply filter parameters: command is null.");

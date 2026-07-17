@@ -38,7 +38,7 @@ namespace BH.Adapter.SQLite
         [Output("version", "The SQLite version string, or 'Unknown' if query fails.")]
         private string GetSqliteVersion(SqliteConnection connection)
         {
-            if (connection == null || connection.State != System.Data.ConnectionState.Open)
+            if (connection.State != System.Data.ConnectionState.Open)
             {
                 BH.Engine.Base.Compute.RecordWarning("Cannot get SQLite version: connection is null or not open.");
                 return "Unknown";

@@ -48,11 +48,19 @@ namespace BH.Engine.SQLite
                 return true;
 
             // Additional types that are suitable for database storage but not .NET primitives
-            return actualType == typeof(string) ||
-                   actualType == typeof(DateTime) ||
-                   actualType == typeof(Guid) ||
-                   actualType == typeof(decimal) ||
-                   actualType.IsEnum;
+            if (actualType == typeof(string) ||
+                actualType == typeof(DateTime) ||
+                actualType == typeof(Guid) ||
+                actualType == typeof(decimal) ||
+                actualType.IsEnum)
+                return true;
+
+            // Check if the type implements IComparable - this covers structural result ObjectId and ResultCase properties
+            // that use IComparable for flexibility across different adapter implementations
+            if (typeof(IComparable).IsAssignableFrom(actualType))
+                return true;
+
+            return false;
         }
 
         /***************************************************/
