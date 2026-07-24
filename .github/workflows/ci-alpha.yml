@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  ci-build:
     runs-on: windows-2025-vs2026
     timeout-minutes: 30
     steps:
@@ -26,7 +26,7 @@ jobs:
           app_id: ${{ secrets.BHOM_APP_ID }}
           private_key: ${{ secrets.BHOM_APP_PRIVATE_KEY }}
 
-  copyright-compliance:
+  ci-copyright-compliance:
     runs-on: windows-2025-vs2026
     timeout-minutes: 20
     permissions:
@@ -42,7 +42,7 @@ jobs:
           app_id: ${{ secrets.BHOM_APP_ID }}
           private_key: ${{ secrets.BHOM_APP_PRIVATE_KEY }}
 
-  project-compliance:
+  ci-project-compliance:
     runs-on: windows-2025-vs2026
     timeout-minutes: 20
     permissions:
@@ -58,7 +58,7 @@ jobs:
           app_id: ${{ secrets.BHOM_APP_ID }}
           private_key: ${{ secrets.BHOM_APP_PRIVATE_KEY }}
 
-  serialisation:
+  ci-serialisation:
     runs-on: windows-2025-vs2026
     timeout-minutes: 90
     steps:
