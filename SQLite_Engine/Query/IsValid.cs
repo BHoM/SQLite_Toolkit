@@ -440,7 +440,8 @@ namespace BH.Engine.SQLite
 
         private static readonly string[] AllowedSqlStarts = {
             "select", "create table", "create index", "insert into", "update", "delete from",
-            "pragma", "with", "drop table", "drop index", "alter table"
+            "pragma", "with", "drop table", "drop index", "alter table",
+            "attach database", "detach database"
         };
 
         private static readonly string[] ForbiddenKeywords = {
